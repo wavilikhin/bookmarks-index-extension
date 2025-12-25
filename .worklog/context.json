@@ -15,6 +15,14 @@
       "status": "active",
       "createdAt": "2025-12-25T12:35:32.508Z",
       "updatedAt": "2025-12-25T12:35:32.508Z"
+    },
+    {
+      "id": "mjlfzdwy813mhux244e",
+      "name": "Bookmarks Index - Full Implementation",
+      "description": "Implemented the complete init-plan.md: Phase 1 (Foundation - stores, storage, types), Phase 2 (Auth - login, AuthGuard, theme), Phase 3 (Core CRUD - hooks, modals connected to stores), Phase 4 (Polish - extension manifest, build config)",
+      "status": "completed",
+      "createdAt": "2025-12-25T12:51:49.426Z",
+      "updatedAt": "2025-12-25T13:01:12.905Z"
     }
   ],
   "plans": [
@@ -88,9 +96,71 @@
           "status": "completed"
         }
       ],
-      "status": "active",
+      "status": "archived",
       "createdAt": "2025-12-25T12:35:42.448Z",
       "updatedAt": "2025-12-25T12:42:19.589Z"
+    },
+    {
+      "id": "mjlfo0hv2qip4rqx22o",
+      "featureId": "mjlfeg4cd4e7me47dx",
+      "steps": [
+        {
+          "id": "step-0",
+          "description": "Phase 1: Foundation - Install dependencies (idb-keyval, zustand, nanoid, zod), create TypeScript entities, implement storage layer, set up Zustand stores",
+          "status": "pending"
+        },
+        {
+          "id": "step-1",
+          "description": "Phase 2: Auth & Layout - Build fake auth system with AuthGuard and LoginForm, create app layout with spaces sidebar",
+          "status": "pending"
+        },
+        {
+          "id": "step-2",
+          "description": "Phase 3: Core CRUD - Implement Space management UI and operations, Group management with tabs, Bookmark management with grid",
+          "status": "pending"
+        },
+        {
+          "id": "step-3",
+          "description": "Phase 4: Polish - Add search, drag-and-drop reordering, settings modal, extension manifest configuration",
+          "status": "pending"
+        }
+      ],
+      "status": "active",
+      "createdAt": "2025-12-25T12:42:58.819Z",
+      "updatedAt": "2025-12-25T12:42:58.819Z"
+    },
+    {
+      "id": "mjlljkrl4ybvctzb1d2",
+      "featureId": "mjlfzdwy813mhux244e",
+      "steps": [
+        {
+          "id": "step-0",
+          "description": "Phase 1: Foundation - Install dependencies (idb-keyval, zustand, nanoid, zod), create TypeScript entities, implement storage layer, set up Zustand stores",
+          "status": "completed",
+          "meta": "Installed idb-keyval, zustand, nanoid, zod. Created types/index.ts with BaseEntity, User, Space, Group, Bookmark interfaces. Built storage layer (keys.ts, idb.ts, seed.ts) and utilities (entity.ts, validators.ts). Implemented three Zustand stores: auth-store, data-store, ui-store."
+        },
+        {
+          "id": "step-1",
+          "description": "Phase 2: Auth & Layout - Build fake auth system with AuthGuard and LoginForm, implement theme system with use-theme hook",
+          "status": "completed",
+          "meta": "Created auth-guard.tsx (handles init, loading, auth redirect) and login-form.tsx (username-based login with Zod validation). Implemented use-theme.ts hook. Updated App.tsx to wrap with AuthGuard."
+        },
+        {
+          "id": "step-2",
+          "description": "Phase 3: Core CRUD - Implement hooks (use-spaces, use-groups, use-bookmarks), connect UI components to stores",
+          "status": "completed",
+          "meta": "Created use-spaces.ts, use-groups.ts, use-bookmarks.ts hooks with selectors and actions. Rewrote new-tab/index.tsx to use stores instead of mock data. Updated user-menu.tsx for new User type (username instead of name)."
+        },
+        {
+          "id": "step-3",
+          "description": "Phase 4: Polish - Configure extension manifest, update Vite config for extension build, add build scripts",
+          "status": "completed",
+          "meta": "Created public/manifest.json (Manifest V3), SVG icons, updated vite.config.ts for extension build with relative paths. Added build:extension and build:watch scripts to package.json. Updated index.html with proper title and favicon."
+        }
+      ],
+      "status": "active",
+      "createdAt": "2025-12-25T15:27:29.505Z",
+      "updatedAt": "2025-12-25T15:27:40.419Z"
     }
   ],
   "logs": [
@@ -114,8 +184,55 @@
       "type": "note",
       "content": "Completed full UI implementation for New Tab Bookmark Manager. Components created: SpacesSidebar (vertical nav with floating pill active state), GroupTabs (horizontal tabs with underline indicator and scroll fade), BookmarkGrid (Chrome-style circular favicon tiles), BookmarkItem (individual bookmark with hover overlay), UserMenu (avatar dropdown with theme switcher), AddEditModal (reusable CRUD dialog), EmptyState (contextual empty messages), NewTabPage (main layout composing all pieces). Build successful with no TypeScript errors.",
       "timestamp": "2025-12-25T12:42:25.271Z"
+    },
+    {
+      "id": "mjlfo1w67mpyacphq7f",
+      "featureId": "mjlfeg4cd4e7me47dx",
+      "type": "decision",
+      "content": "Architecture decisions made: 1) Zustand for state management (lightweight, good TypeScript support), 2) Flat storage model in IndexedDB via idb-keyval (efficient updates, better querying), 3) Username-based fake auth stored in localStorage, 4) Soft delete with isArchived flag for all entities, 5) Prefixed nanoid for entity IDs (e.g., space_abc123)",
+      "timestamp": "2025-12-25T12:43:00.630Z"
+    },
+    {
+      "id": "mjlfx9y8ih03dsn25x8",
+      "featureId": "mjlfeg4cd4e7me47dx",
+      "type": "note",
+      "content": "Created comprehensive implementation plan in init-plan.md covering: architecture decisions, data models, project structure, 4 implementation phases with detailed task breakdowns, extension configuration, testing strategy, and future considerations.",
+      "timestamp": "2025-12-25T12:50:10.976Z"
+    },
+    {
+      "id": "mjlfzowl4k9wugxwp1s",
+      "featureId": "mjlfzdwy813mhux244e",
+      "type": "discovery",
+      "content": "Current state assessment: UI components exist (SpacesSidebar, GroupTabs, BookmarkGrid, UserMenu, etc.) but use mock data from types/index.ts. Missing: storage layer, Zustand stores, auth components, hooks, extension manifest. Need to implement full Phase 1-4 from init-plan.md.",
+      "timestamp": "2025-12-25T12:52:03.669Z"
+    },
+    {
+      "id": "mjlgbingf8gdl0ioo8l",
+      "featureId": "mjlfzdwy813mhux244e",
+      "type": "note",
+      "content": "Implementation complete! All 4 phases of init-plan.md are done: (1) Foundation layer with idb-keyval, zustand, nanoid, zod; (2) Auth with login-form.tsx, auth-guard.tsx, and theme system; (3) Core CRUD with hooks connecting UI to stores; (4) Extension config with manifest.json and Vite build config. Build passes, extension ready for testing.",
+      "timestamp": "2025-12-25T13:01:15.436Z"
+    },
+    {
+      "id": "mjllk190fhj5lyx1275",
+      "featureId": "mjlfzdwy813mhux244e",
+      "type": "note",
+      "content": "Full init-plan.md implementation complete. All 4 phases done: Foundation (stores, storage, types), Auth (login, guard, theme), Core CRUD (hooks, UI integration), Polish (manifest, build config). AGENTS.md updated with complete project structure and architecture documentation.",
+      "timestamp": "2025-12-25T15:27:50.868Z"
     }
   ],
-  "notes": [],
-  "activeFeatureId": "mjlfeg4cd4e7me47dx"
+  "notes": [
+    {
+      "id": "mjlljzrkg4hl5xnr1z",
+      "featureId": "mjlfzdwy813mhux244e",
+      "content": "Project structure after full implementation:\n\n**Stores (src/stores/):**\n- auth-store.ts: user, isAuthenticated, isLoading, initialize(), login(), logout()\n- data-store.ts: spaces[], groups[], bookmarks[], CRUD for all entities\n- ui-store.ts: activeSpaceId, selectedGroupId, theme, modal state\n\n**Storage (src/lib/storage/):**\n- keys.ts: StorageKeys constants, IdPrefixes\n- idb.ts: IndexedDB wrapper using idb-keyval, get/set for all entities\n- seed.ts: getSeedSpaces/Groups/Bookmarks, createSeedData()\n\n**Hooks (src/hooks/):**\n- use-spaces.ts: useSpaces(), useActiveSpace(), useSpaceActions()\n- use-groups.ts: useGroups(spaceId), useSelectedGroup(), useGroupActions()\n- use-bookmarks.ts: useBookmarks(groupId), useBookmarkActions()\n- use-theme.ts: useTheme() → { theme, setTheme }\n\n**Components (src/components/):**\n- auth/: auth-guard.tsx, login-form.tsx\n- new-tab/: index.tsx, spaces-sidebar.tsx, group-tabs.tsx, bookmark-grid.tsx, bookmark-item.tsx, user-menu.tsx, add-edit-modal.tsx, empty-state.tsx\n- ui/: 13 shadcn components\n\n**Running modes:**\n- Web app: bun dev → localhost:5173\n- Extension: bun run build:extension → load dist/ in Chrome",
+      "tags": [
+        "architecture",
+        "structure",
+        "implementation"
+      ],
+      "createdAt": "2025-12-25T15:27:48.944Z"
+    }
+  ],
+  "activeFeatureId": "mjlfzdwy813mhux244e"
 }

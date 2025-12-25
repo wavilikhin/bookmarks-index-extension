@@ -1,7 +1,12 @@
-import { ComponentExample } from "@/components/component-example";
+import { AuthGuard } from "@/components/auth/auth-guard"
+import { NewTabPage } from "@/components/new-tab"
 
 export function App() {
-return <ComponentExample />;
+  return (
+    <AuthGuard>
+      <NewTabPage />
+    </AuthGuard>
+  )
 }
 
-export default App;
+export default App

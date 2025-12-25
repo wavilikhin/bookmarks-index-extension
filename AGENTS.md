@@ -22,128 +22,201 @@ This project uses **shadcn/ui** with the **Base-Lyra** style (built on `@base-ui
 ## Path Aliases
 
 - `@/components` - Components directory
-- `@/components/ui` - UI components
+- `@/components/ui` - shadcn/ui components
+- `@/components/auth` - Authentication components
+- `@/components/new-tab` - Main application components
 - `@/lib` - Library utilities
+- `@/lib/storage` - IndexedDB storage layer
+- `@/lib/utils` - Entity and validation utilities
 - `@/hooks` - Custom hooks
+- `@/stores` - Zustand state stores
+- `@/types` - TypeScript type definitions
 
 ## Commands
 
 ```bash
-# Add a new component
-bunx shadcn@latest add <component>
-
-# List available components
-bunx shadcn@latest add
-
-# Start dev server
+# Start dev server (web app mode)
 bun dev
 
-# Build
+# Build for production
 bun run build
+
+# Build for Chrome extension
+bun run build:extension
+
+# Build with watch mode
+bun run build:watch
+
+# Preview production build
+bun run preview
 
 # Lint
 bun run lint
+
+# Add a new shadcn component
+bunx shadcn@latest add <component>
 ```
 
-## Component Usage
+## Project Structure
 
-### Imports
-
-```tsx
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+```
+src/
+├── components/
+│   ├── auth/
+│   │   ├── auth-guard.tsx      # Auth wrapper, loading states, redirects
+│   │   └── login-form.tsx      # Username input form
+│   ├── new-tab/
+│   │   ├── index.tsx           # Main layout, orchestrates all components
+│   │   ├── spaces-sidebar.tsx  # Left sidebar with space navigation
+│   │   ├── group-tabs.tsx      # Horizontal tabs for groups
+│   │   ├── bookmark-grid.tsx   # Grid of bookmark items
+│   │   ├── bookmark-item.tsx   # Individual bookmark circle
+│   │   ├── user-menu.tsx       # Avatar dropdown with theme/logout
+│   │   ├── add-edit-modal.tsx  # CRUD modal for entities
+│   │   └── empty-state.tsx     # Empty state messages
+│   └── ui/                     # shadcn/ui components (13 installed)
+├── hooks/
+│   ├── use-spaces.ts           # Space selectors and actions
+│   ├── use-groups.ts           # Group selectors and actions
+│   ├── use-bookmarks.ts        # Bookmark selectors and actions
+│   └── use-theme.ts            # Theme management
+├── lib/
+│   ├── storage/
+│   │   ├── keys.ts             # Storage key constants
+│   │   ├── idb.ts              # IndexedDB wrapper (idb-keyval)
+│   │   └── seed.ts             # Sample data for new users
+│   ├── utils/
+│   │   ├── entity.ts           # ID generation, timestamps
+│   │   └── validators.ts       # Zod schemas
+│   └── utils.ts                # cn() utility
+├── stores/
+│   ├── auth-store.ts           # User auth state (login/logout)
+│   ├── data-store.ts           # Spaces, Groups, Bookmarks CRUD
+│   └── ui-store.ts             # UI state (selections, modals, theme)
+├── types/
+│   └── index.ts                # All TypeScript interfaces
+├── App.tsx                     # Root with AuthGuard wrapper
+├── main.tsx                    # React entry point
+└── index.css                   # Tailwind + CSS variables
 ```
 
-### Base UI Patterns
+## Architecture
 
-This style uses `@base-ui/react` primitives which provide:
+### Data Flow
 
-- `render` prop pattern for composition
-- Built-in accessibility
-- Unstyled primitives
-
-Example with render prop:
-
-```tsx
-<AlertDialogTrigger render={<Button />}>
-  Open Dialog
-</AlertDialogTrigger>
+```
+User Action → Hook → Store → IndexedDB
+                ↓
+            UI Update
 ```
 
-### Styling
+### State Management (Zustand)
 
-- CSS variables are defined in `src/index.css`
-- Uses OKLCH color space for better color manipulation
-- Use `cn()` utility for conditional class merging
+| Store | Purpose | Key State |
+|-------|---------|-----------|
+| `auth-store` | Authentication | `user`, `isAuthenticated`, `isLoading` |
+| `data-store` | Entity CRUD | `spaces`, `groups`, `bookmarks` |
+| `ui-store` | UI state | `activeSpaceId`, `selectedGroupId`, `theme` |
 
-## Installed Components
+### Storage Layer (IndexedDB)
 
-- `alert-dialog`
-- `badge`
-- `button`
-- `card`
-- `combobox`
-- `dropdown-menu`
-- `field`
-- `input`
-- `input-group`
-- `label`
-- `select`
-- `separator`
-- `textarea`
+- Uses `idb-keyval` with custom store `bookmarks-index-db`
+- Keys follow pattern: `bookmarks:{entity}:{userId}`
+- All data is user-scoped for multi-user support
+
+### Entity Structure
+
+```
+User (user_xxx)
+└── Spaces (space_xxx)
+    └── Groups (group_xxx)
+        └── Bookmarks (bookmark_xxx)
+```
+
+| Field | Description |
+|-------|-------------|
+| `id` | Prefixed nanoid (e.g., `space_abc123`) |
+| `userId` | Owner reference (denormalized) |
+| `isArchived` | Soft delete flag |
+| `createdAt/updatedAt` | ISO 8601 timestamps |
+
+### Hooks API
+
+```typescript
+// Spaces
+const spaces = useSpaces()
+const activeSpace = useActiveSpace()
+const { createSpace, updateSpace, deleteSpace } = useSpaceActions()
+
+// Groups
+const groups = useGroups(spaceId)
+const selectedGroup = useSelectedGroup()
+const { createGroup, updateGroup, deleteGroup } = useGroupActions()
+
+// Bookmarks
+const bookmarks = useBookmarks(groupId)
+const { createBookmark, updateBookmark, deleteBookmark } = useBookmarkActions()
+
+// Theme
+const { theme, setTheme } = useTheme()
+```
+
+## Installed shadcn/ui Components
+
+- `alert-dialog` - Confirmation dialogs
+- `badge` - Status badges
+- `button` - Buttons with variants
+- `card` - Card containers
+- `combobox` - Searchable select
+- `dropdown-menu` - Context menus
+- `field` - Form field wrapper
+- `input` - Text inputs
+- `input-group` - Input with addons
+- `label` - Form labels
+- `select` - Native select
+- `separator` - Visual dividers
+- `textarea` - Multi-line input
 
 ## Best Practices
 
-1. **Always use bun** instead of npm for all commands
-2. **Use shadcn CLI** to add new components - don't copy manually
-3. **Follow Base-Lyra patterns** - use `render` prop for composition
-4. **Use path aliases** - prefer `@/components/ui/button` over relative paths
-5. **Use cn() utility** - for merging Tailwind classes
-6. **Check Context7** - for up-to-date shadcn/ui component documentation
+1. **Always use bun** - Not npm or yarn
+2. **Use shadcn CLI** - `bunx shadcn@latest add <component>`
+3. **Use path aliases** - `@/components/ui/button` not relative paths
+4. **Use hooks** - Don't access stores directly in components
+5. **Use cn()** - For conditional Tailwind classes
+6. **Follow Base-Lyra patterns** - `render` prop for composition
 
-## MCP you should always use
+## Extension vs Web App
 
-### Worklog MCP - Compact System Instructions
+Both modes use identical code:
+- **Web App**: `bun dev` → http://localhost:5173
+- **Extension**: `bun run build:extension` → load `dist/` in Chrome
 
-You have access to worklog MCP tools for persistent feature context across sessions.
+IndexedDB works in both contexts, data persists across sessions.
 
-#### Auto-Use (No Permission Needed)
+---
 
-1. **Session start** → worklog:summary (always, silently)
-2. **New feature** → feature:set with name + description
-3. **Create plan** → plan:set with steps array
-4. **Complete step** → plan:annotate with status "completed"
-5. **Deviate from plan** → plan:annotate with meta comment
-6. **Important decision** → log:add type:"decision"
-7. **Requirements change** → log:add type:"change" + update feature:set if needed
-8. **Blocker/Discovery** → log:add type:"blocker" or "discovery"
+## MCP: Worklog
 
-#### Proactive Prompting
+Use worklog MCP tools for persistent context across sessions.
 
-Ask "Should I remember/save this?" when:
+### Auto-Use (No Permission Needed)
 
-- User shares preferences or constraints
-- Failed approach after significant effort
-- Extended discussion reaches conclusion
-- Important context mentioned casually
+1. **Session start** → `worklog:summary`
+2. **New feature** → `feature:set` with name + description
+3. **Create plan** → `plan:set` with steps array
+4. **Complete step** → `plan:annotate` with status "completed"
+5. **Important decision** → `log:add` type:"decision"
+6. **Discovery** → `log:add` type:"discovery"
 
-#### Pattern
+### Pattern
 
 ```
 [Start] worklog:summary → load context
 [New feature] feature:set → track it
 [Plan created] plan:set → save steps
-[Work] plan:annotate → update status, note deviations
+[Work] plan:annotate → update status
 [Decisions] log:add → record rationale
-[Important context] → ask to save with note:remember
 ```
 
-#### Quality Rules
-
-- Only meaningful events (not every tiny change)
-- Log WHY, not just WHAT
-- Ask when uncertain about importance
-- Keep feature description and plan current
-- Enable seamless session continuity
-
-**Goal**: Users feel like you "remember everything" without being aware of the mechanics.
+**Goal**: Seamless session continuity - users feel you "remember everything".
