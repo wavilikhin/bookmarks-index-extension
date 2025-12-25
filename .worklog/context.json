@@ -1,0 +1,121 @@
+{
+  "features": [
+    {
+      "id": "mjlfdes146fcbaztpku",
+      "name": "Bookmarks Index Browser Extension",
+      "description": "Browser extension replacing new tab page with hierarchical bookmark management: User > Spaces > Groups > Bookmarks. MVP includes fake auth, IndexedDB storage (idb-keyval), and CRUD for all entities.",
+      "status": "active",
+      "createdAt": "2025-12-25T12:34:44.114Z",
+      "updatedAt": "2025-12-25T12:35:28.602Z"
+    },
+    {
+      "id": "mjlfeg4cd4e7me47dx",
+      "name": "New Tab Bookmark Manager UI",
+      "description": "Complete UI implementation for browser extension new tab page with hierarchical bookmark management: Spaces sidebar (left), Groups tabs (top), Bookmark grid (center), and User account (top right). Chrome-inspired but elevated aesthetic with refined minimalism.",
+      "status": "active",
+      "createdAt": "2025-12-25T12:35:32.508Z",
+      "updatedAt": "2025-12-25T12:35:32.508Z"
+    }
+  ],
+  "plans": [
+    {
+      "id": "mjlfensgzbvxz2bybu",
+      "featureId": "mjlfeg4cd4e7me47dx",
+      "steps": [
+        {
+          "id": "step-0",
+          "description": "Define design direction: Refined Minimalism aesthetic with Chrome DNA, extend OKLCH theme with subtle warmth",
+          "status": "completed"
+        },
+        {
+          "id": "step-1",
+          "description": "Create type definitions for User, Space, Group, and Bookmark entities",
+          "status": "completed"
+        },
+        {
+          "id": "step-2",
+          "description": "Create SpacesSidebar component - vertical space list with icons, add button, active states",
+          "status": "completed"
+        },
+        {
+          "id": "step-3",
+          "description": "Create GroupTabs component - horizontal tabs with add button, drag reorder placeholder",
+          "status": "completed"
+        },
+        {
+          "id": "step-4",
+          "description": "Create BookmarkGrid component - circular favicon tiles with titles, add button",
+          "status": "completed"
+        },
+        {
+          "id": "step-5",
+          "description": "Create BookmarkItem component - individual bookmark circle with hover states",
+          "status": "completed"
+        },
+        {
+          "id": "step-6",
+          "description": "Create UserMenu component - avatar dropdown with settings",
+          "status": "completed"
+        },
+        {
+          "id": "step-7",
+          "description": "Create AddEditModal component - reusable modal for CRUD operations on all entities",
+          "status": "completed"
+        },
+        {
+          "id": "step-8",
+          "description": "Create DeleteConfirmDialog component using alert-dialog",
+          "status": "completed"
+        },
+        {
+          "id": "step-9",
+          "description": "Create EmptyState components for first-time, no groups, no bookmarks",
+          "status": "completed"
+        },
+        {
+          "id": "step-10",
+          "description": "Create main NewTabPage layout component composing all pieces",
+          "status": "completed"
+        },
+        {
+          "id": "step-11",
+          "description": "Add CSS custom properties and animations to index.css",
+          "status": "completed"
+        },
+        {
+          "id": "step-12",
+          "description": "Update App.tsx to render NewTabPage",
+          "status": "completed"
+        }
+      ],
+      "status": "active",
+      "createdAt": "2025-12-25T12:35:42.448Z",
+      "updatedAt": "2025-12-25T12:42:19.589Z"
+    }
+  ],
+  "logs": [
+    {
+      "id": "mjlfeh5rqyk63f2b6c",
+      "featureId": "mjlfeg4cd4e7me47dx",
+      "type": "decision",
+      "content": "Architecture decisions: 1) Zustand with persist middleware for state management - lightweight, TypeScript-friendly, has proven persist middleware. 2) Flat storage model in IndexedDB with idb-keyval - entities stored separately with relationship IDs for query flexibility and simpler CRUD. 3) UUID-based IDs with user namespace prefixing for data isolation. 4) Service layer pattern for CRUD operations to separate business logic from storage.",
+      "timestamp": "2025-12-25T12:35:33.855Z"
+    },
+    {
+      "id": "mjlfesty6wat8md0r8a",
+      "featureId": "mjlfeg4cd4e7me47dx",
+      "type": "decision",
+      "content": "Design Direction: \"Refined Minimalism with Chrome DNA\" - Taking Chrome's new tab page as inspiration but elevating it with: (1) Subtle depth via soft shadows and layered backgrounds, (2) Refined typography with Inter Variable, (3) Generous negative space with intentional asymmetry in the sidebar, (4) The existing green primary as an accent for active states and CTAs, (5) Micro-interactions that feel tactile but not distracting. Key differentiator: The spaces sidebar uses a \"floating pill\" active state instead of typical highlighting, creating a distinctive but premium feel.",
+      "timestamp": "2025-12-25T12:35:48.982Z"
+    },
+    {
+      "id": "mjlfnalzqk1s6e7jbel",
+      "featureId": "mjlfeg4cd4e7me47dx",
+      "type": "note",
+      "content": "Completed full UI implementation for New Tab Bookmark Manager. Components created: SpacesSidebar (vertical nav with floating pill active state), GroupTabs (horizontal tabs with underline indicator and scroll fade), BookmarkGrid (Chrome-style circular favicon tiles), BookmarkItem (individual bookmark with hover overlay), UserMenu (avatar dropdown with theme switcher), AddEditModal (reusable CRUD dialog), EmptyState (contextual empty messages), NewTabPage (main layout composing all pieces). Build successful with no TypeScript errors.",
+      "timestamp": "2025-12-25T12:42:25.271Z"
+    }
+  ],
+  "notes": [],
+  "activeFeatureId": "mjlfeg4cd4e7me47dx"
+}
