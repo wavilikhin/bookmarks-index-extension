@@ -1,6 +1,6 @@
 // Auth actions for authentication operations
-import { action, wrap } from "@reatom/core"
-import { userAtom, isLoadingAtom, isInitializedAtom } from "./atoms"
+import {action, wrap, withAsync} from "@reatom/core"
+import {userAtom} from "./atoms"
 import {
   getCurrentUserId,
   setCurrentUserId,
@@ -8,88 +8,67 @@ import {
   getUser,
   setUser,
 } from "@/lib/storage/idb"
-import { createTimestamps } from "@/lib/utils/entity"
-import type { User, UserSettings } from "@/types"
+import {createTimestamps} from "@/lib/utils/entity"
+import type {User, UserSettings} from "@/types"
 
 /**
  * Initialize auth - check for existing session on app start
  */
 export const initializeAuth = action(async () => {
-  if (isInitializedAtom()) return
+  const currentUserId = await wrap(getCurrentUserId())
 
-  isLoadingAtom.set(true)
-
-  try {
-    const currentUserId = await wrap(getCurrentUserId())
-
-    if (currentUserId) {
-      const user = await wrap(getUser(currentUserId))
-      if (user) {
-        userAtom.set(user)
-      }
-    }
-  } catch (error) {
-    console.error("Failed to initialize auth:", error)
-  } finally {
-    isLoadingAtom.set(false)
-    isInitializedAtom.set(true)
+  if (!currentUserId) {
+    return
   }
-}, "auth.initialize")
+
+  const user = await wrap(getUser(currentUserId))
+  if (!user) {
+    return
+  }
+
+  userAtom.set(user)
+}, "auth.initialize").extend(withAsync())
 
 /**
  * Login - create or find existing user by username
  */
 export const login = action(async (username: string) => {
-  isLoadingAtom.set(true)
+  // Generate a deterministic user ID from username
+  // This allows the same username to access the same data
+  const userId = `user_${username.toLowerCase()}`
+  console.log("login", userId)
 
-  try {
-    // Generate a deterministic user ID from username
-    // This allows the same username to access the same data
-    const userId = `user_${username.toLowerCase()}`
+  // Check if user exists
+  let user = await wrap(getUser(userId))
 
-    // Check if user exists
-    let user = await wrap(getUser(userId))
-
-    if (!user) {
-      // Create new user
-      user = {
-        id: userId,
-        username,
-        settings: {
-          theme: "system",
-        },
-        ...createTimestamps(),
-      }
-      await wrap(setUser(user))
+  if (!user) {
+    console.log("login", "user not found, creating new user")
+    // Create new user
+    user = {
+      id: userId,
+      username,
+      settings: {
+        theme: "system",
+      },
+      ...createTimestamps(),
     }
-
-    // Set session
-    await wrap(setCurrentUserId(userId))
-    userAtom.set(user)
-  } catch (error) {
-    console.error("Failed to login:", error)
-    throw error
-  } finally {
-    isLoadingAtom.set(false)
+    console.log("login", "user created", user)
+    await wrap(setUser(user))
   }
-}, "auth.login")
+
+  // Set session
+  console.log("login", "setting session", userId)
+  await wrap(setCurrentUserId(userId))
+  userAtom.set(user)
+}, "auth.login").extend(withAsync())
 
 /**
  * Logout - clear session but preserve data
  */
 export const logout = action(async () => {
-  isLoadingAtom.set(true)
-
-  try {
-    await wrap(clearCurrentUserId())
-    userAtom.set(null)
-  } catch (error) {
-    console.error("Failed to logout:", error)
-    throw error
-  } finally {
-    isLoadingAtom.set(false)
-  }
-}, "auth.logout")
+  await wrap(clearCurrentUserId())
+  userAtom.set(null)
+}, "auth.logout").extend(withAsync())
 
 /**
  * Update user settings (e.g., theme preference)
@@ -98,17 +77,12 @@ export const updateSettings = action(async (newSettings: Partial<UserSettings>) 
   const user = userAtom()
   if (!user) return
 
-  try {
-    const updatedUser: User = {
-      ...user,
-      settings: { ...user.settings, ...newSettings },
-      updatedAt: new Date().toISOString(),
-    }
-
-    await wrap(setUser(updatedUser))
-    userAtom.set(updatedUser)
-  } catch (error) {
-    console.error("Failed to update settings:", error)
-    throw error
+  const updatedUser: User = {
+    ...user,
+    settings: {...user.settings, ...newSettings},
+    updatedAt: new Date().toISOString(),
   }
-}, "auth.updateSettings")
+
+  await wrap(setUser(updatedUser))
+  userAtom.set(updatedUser)
+}, "auth.updateSettings").extend(withAsync())

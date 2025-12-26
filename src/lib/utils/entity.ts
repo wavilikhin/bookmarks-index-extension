@@ -1,6 +1,6 @@
 // Entity utility functions
-import { nanoid } from "nanoid"
-import { IdPrefixes } from "@/lib/storage/keys"
+import {nanoid} from "nanoid"
+import {IdPrefixes} from "@/lib/storage/keys"
 
 type EntityPrefix = keyof typeof IdPrefixes
 
@@ -16,8 +16,9 @@ export function generateId(prefix: EntityPrefix): string {
 /**
  * Create timestamp fields for a new entity
  * @returns Object with createdAt and updatedAt ISO strings
+ * TODO: rewrite using .extend()
  */
-export function createTimestamps(): { createdAt: string; updatedAt: string } {
+export function createTimestamps(): {createdAt: string; updatedAt: string} {
   const now = new Date().toISOString()
   return {
     createdAt: now,
@@ -29,7 +30,7 @@ export function createTimestamps(): { createdAt: string; updatedAt: string } {
  * Create an updated timestamp for entity updates
  * @returns Object with updatedAt ISO string
  */
-export function updateTimestamp(): { updatedAt: string } {
+export function updateTimestamp(): {updatedAt: string} {
   return {
     updatedAt: new Date().toISOString(),
   }

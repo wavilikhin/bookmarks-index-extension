@@ -1,5 +1,5 @@
 // Data actions for CRUD operations on spaces, groups, and bookmarks
-import { action, wrap } from "@reatom/core"
+import { action } from "@reatom/core"
 import { spacesAtom, groupsAtom, bookmarksAtom, isDataLoadingAtom } from "./atoms"
 import {
   getSpaces,
@@ -34,9 +34,16 @@ export const loadAllData = action(async (userId: string) => {
   isDataLoadingAtom.set(true)
 
   try {
-    let [spaces, groups, bookmarks] = await wrap(
-      Promise.all([getSpaces(userId), getGroups(userId), getBookmarks(userId)])
-    )
+    // Load all data - use Promise.all and await the result
+    const [spacesData, groupsData, bookmarksData] = await Promise.all([
+      getSpaces(userId),
+      getGroups(userId),
+      getBookmarks(userId),
+    ])
+
+    let spaces = spacesData
+    let groups = groupsData
+    let bookmarks = bookmarksData
 
     // If no data exists, seed with sample data
     if (spaces.length === 0) {
@@ -46,13 +53,11 @@ export const loadAllData = action(async (userId: string) => {
       bookmarks = seedData.bookmarks
 
       // Persist seed data
-      await wrap(
-        Promise.all([
-          setSpaces(userId, spaces),
-          setGroups(userId, groups),
-          setBookmarks(userId, bookmarks),
-        ])
-      )
+      await Promise.all([
+        setSpaces(userId, spaces),
+        setGroups(userId, groups),
+        setBookmarks(userId, bookmarks),
+      ])
     }
 
     // Filter out archived items for display and set state
@@ -97,7 +102,7 @@ export const createSpace = action(async (userId: string, input: CreateSpaceInput
   }
 
   const updatedSpaces = [...spaces, newSpace]
-  await wrap(setSpaces(userId, updatedSpaces))
+  await setSpaces(userId, updatedSpaces)
   spacesAtom.set(updatedSpaces)
 
   return newSpace
@@ -114,7 +119,7 @@ export const updateSpace = action(async (id: string, input: UpdateSpaceInput) =>
   const updatedSpace = { ...space, ...input, ...updateTimestamp() }
   const updatedSpaces = spaces.map((s) => (s.id === id ? updatedSpace : s))
 
-  await wrap(setSpaces(space.userId, updatedSpaces))
+  await setSpaces(space.userId, updatedSpaces)
   spacesAtom.set(updatedSpaces)
 }, "data.updateSpace")
 
@@ -136,13 +141,11 @@ export const deleteSpace = action(
         (b) => !groupIds.includes(b.groupId)
       )
 
-      await wrap(
-        Promise.all([
-          setSpaces(userId, updatedSpaces),
-          setGroups(userId, updatedGroups),
-          setBookmarks(userId, updatedBookmarks),
-        ])
-      )
+      await Promise.all([
+        setSpaces(userId, updatedSpaces),
+        setGroups(userId, updatedGroups),
+        setBookmarks(userId, updatedBookmarks),
+      ])
 
       spacesAtom.set(updatedSpaces)
       groupsAtom.set(updatedGroups)
@@ -162,13 +165,11 @@ export const deleteSpace = action(
           : b
       )
 
-      await wrap(
-        Promise.all([
-          setSpaces(userId, updatedSpaces),
-          setGroups(userId, updatedGroups),
-          setBookmarks(userId, updatedBookmarks),
-        ])
-      )
+      await Promise.all([
+        setSpaces(userId, updatedSpaces),
+        setGroups(userId, updatedGroups),
+        setBookmarks(userId, updatedBookmarks),
+      ])
 
       spacesAtom.set(updatedSpaces.filter((s) => !s.isArchived))
       groupsAtom.set(updatedGroups.filter((g) => !g.isArchived))
@@ -188,7 +189,7 @@ export const reorderSpaces = action(async (userId: string, orderedIds: string[])
     return { ...space, order: index, ...updateTimestamp() }
   })
 
-  await wrap(setSpaces(userId, updatedSpaces))
+  await setSpaces(userId, updatedSpaces)
   spacesAtom.set(updatedSpaces)
 }, "data.reorderSpaces")
 
@@ -215,7 +216,7 @@ export const createGroup = action(async (userId: string, input: CreateGroupInput
   }
 
   const updatedGroups = [...groups, newGroup]
-  await wrap(setGroups(userId, updatedGroups))
+  await setGroups(userId, updatedGroups)
   groupsAtom.set(updatedGroups)
 
   return newGroup
@@ -232,7 +233,7 @@ export const updateGroup = action(async (id: string, input: UpdateGroupInput) =>
   const updatedGroup = { ...group, ...input, ...updateTimestamp() }
   const updatedGroups = groups.map((g) => (g.id === id ? updatedGroup : g))
 
-  await wrap(setGroups(group.userId, updatedGroups))
+  await setGroups(group.userId, updatedGroups)
   groupsAtom.set(updatedGroups)
 }, "data.updateGroup")
 
@@ -248,12 +249,10 @@ export const deleteGroup = action(
       const updatedGroups = groups.filter((g) => g.id !== id)
       const updatedBookmarks = bookmarks.filter((b) => b.groupId !== id)
 
-      await wrap(
-        Promise.all([
-          setGroups(userId, updatedGroups),
-          setBookmarks(userId, updatedBookmarks),
-        ])
-      )
+      await Promise.all([
+        setGroups(userId, updatedGroups),
+        setBookmarks(userId, updatedBookmarks),
+      ])
 
       groupsAtom.set(updatedGroups)
       bookmarksAtom.set(updatedBookmarks)
@@ -265,12 +264,10 @@ export const deleteGroup = action(
         b.groupId === id ? { ...b, isArchived: true, ...updateTimestamp() } : b
       )
 
-      await wrap(
-        Promise.all([
-          setGroups(userId, updatedGroups),
-          setBookmarks(userId, updatedBookmarks),
-        ])
-      )
+      await Promise.all([
+        setGroups(userId, updatedGroups),
+        setBookmarks(userId, updatedBookmarks),
+      ])
 
       groupsAtom.set(updatedGroups.filter((g) => !g.isArchived))
       bookmarksAtom.set(updatedBookmarks.filter((b) => !b.isArchived))
@@ -292,7 +289,7 @@ export const reorderGroups = action(
     })
 
     const updatedGroups = [...otherGroups, ...reorderedGroups]
-    await wrap(setGroups(userId, updatedGroups))
+    await setGroups(userId, updatedGroups)
     groupsAtom.set(updatedGroups)
   },
   "data.reorderGroups"
@@ -329,7 +326,7 @@ export const createBookmark = action(
     }
 
     const updatedBookmarks = [...bookmarks, newBookmark]
-    await wrap(setBookmarks(userId, updatedBookmarks))
+    await setBookmarks(userId, updatedBookmarks)
     bookmarksAtom.set(updatedBookmarks)
 
     return newBookmark
@@ -350,7 +347,7 @@ export const updateBookmark = action(async (id: string, input: UpdateBookmarkInp
     b.id === id ? updatedBookmark : b
   )
 
-  await wrap(setBookmarks(bookmark.userId, updatedBookmarks))
+  await setBookmarks(bookmark.userId, updatedBookmarks)
   bookmarksAtom.set(updatedBookmarks)
 }, "data.updateBookmark")
 
@@ -363,13 +360,13 @@ export const deleteBookmark = action(
 
     if (hard) {
       const updatedBookmarks = bookmarks.filter((b) => b.id !== id)
-      await wrap(setBookmarks(userId, updatedBookmarks))
+      await setBookmarks(userId, updatedBookmarks)
       bookmarksAtom.set(updatedBookmarks)
     } else {
       const updatedBookmarks = bookmarks.map((b) =>
         b.id === id ? { ...b, isArchived: true, ...updateTimestamp() } : b
       )
-      await wrap(setBookmarks(userId, updatedBookmarks))
+      await setBookmarks(userId, updatedBookmarks)
       bookmarksAtom.set(updatedBookmarks.filter((b) => !b.isArchived))
     }
   },
@@ -389,7 +386,7 @@ export const reorderBookmarks = action(
     })
 
     const updatedBookmarks = [...otherBookmarks, ...reorderedBookmarks]
-    await wrap(setBookmarks(userId, updatedBookmarks))
+    await setBookmarks(userId, updatedBookmarks)
     bookmarksAtom.set(updatedBookmarks)
   },
   "data.reorderBookmarks"

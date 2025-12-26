@@ -2,35 +2,20 @@
 // This file provides a single import point for all store functionality
 
 // Re-export from @reatom packages for convenience
-export { context, clearStack, connectLogger } from "@reatom/core"
-export { reatomContext } from "@reatom/react"
+export {context, clearStack, connectLogger} from "@reatom/core"
+export {reatomContext} from "@reatom/react"
 
 // ============================================
 // Auth Module
 // ============================================
-export {
-  userAtom,
-  isLoadingAtom as isAuthLoadingAtom,
-  isInitializedAtom,
-  isAuthenticatedAtom,
-} from "./auth/atoms"
+export {userAtom, isAuthenticatedAtom} from "./auth/atoms"
 
-export {
-  initializeAuth,
-  login,
-  logout,
-  updateSettings,
-} from "./auth/actions"
+export {initializeAuth, login, logout, updateSettings} from "./auth/actions"
 
 // ============================================
 // Data Module
 // ============================================
-export {
-  spacesAtom,
-  groupsAtom,
-  bookmarksAtom,
-  isDataLoadingAtom,
-} from "./data/atoms"
+export {spacesAtom, groupsAtom, bookmarksAtom, isDataLoadingAtom} from "./data/atoms"
 
 export {
   sortedSpacesAtom,
@@ -67,10 +52,4 @@ export {
   themeAtom,
 } from "./ui/atoms"
 
-export {
-  setActiveSpace,
-  setSelectedGroup,
-  openModal,
-  closeModal,
-  setTheme,
-} from "./ui/actions"
+export {setActiveSpace, setSelectedGroup, openModal, closeModal, setTheme} from "./ui/actions"

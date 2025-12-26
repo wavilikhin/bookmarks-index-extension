@@ -1,12 +1,30 @@
-import * as React from "react"
-import { Bookmark } from "lucide-react"
-import { reatomComponent } from "@reatom/react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { isLoadingAtom } from "@/stores/auth/atoms"
-import { login } from "@/stores/auth/actions"
-import { usernameSchema } from "@/lib/utils/validators"
+import {Bookmark} from "lucide-react"
+import {bindField, reatomComponent} from "@reatom/react"
+import {Button} from "@/components/ui/button"
+import {Input} from "@/components/ui/input"
+import {Label} from "@/components/ui/label"
+import {login} from "@/stores/auth/actions"
+import {usernameSchema} from "@/lib/utils/validators"
+import {reatomForm, wrap} from "@reatom/core"
+import z from "zod"
+
+const loginForm = reatomForm(
+  {
+    username: "",
+  },
+  {
+    name: "loginForm",
+    schema: z.object({
+      username: usernameSchema,
+    }),
+    validateOnBlur: true,
+    onSubmit: async ({username}) => {
+      console.log("loginForm.onSubmit", username)
+      await wrap(login(username))
+      loginForm.reset()
+    },
+  }
+)
 
 /**
  * LoginForm - Username-based authentication for local storage
@@ -15,72 +33,58 @@ import { usernameSchema } from "@/lib/utils/validators"
  * Data is isolated per username in IndexedDB.
  */
 export const LoginForm = reatomComponent(() => {
-  const [username, setUsername] = React.useState("")
-  const [error, setError] = React.useState<string | null>(null)
-  const isLoading = isLoadingAtom()
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-
-    // Validate username
-    const result = usernameSchema.safeParse(username)
-    if (!result.success) {
-      setError(result.error.issues[0].message)
-      return
-    }
-
-    try {
-      await login(username)
-    } catch {
-      setError("Failed to login. Please try again.")
-    }
-  }
-
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="w-full max-w-sm space-y-8 px-4">
+    <div className='flex min-h-screen items-center justify-center bg-background'>
+      <div className='w-full max-w-sm space-y-8 px-4'>
         {/* Logo and title */}
-        <div className="flex flex-col items-center gap-4 text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
-            <Bookmark className="h-7 w-7 text-primary" />
+        <div className='flex flex-col items-center gap-4 text-center'>
+          <div className='flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10'>
+            <Bookmark className='h-7 w-7 text-primary' />
           </div>
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+            <h1 className='text-2xl font-semibold tracking-tight text-foreground'>
               Bookmarks Index
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className='mt-1 text-sm text-muted-foreground'>
               Organize your bookmarks with spaces and groups
             </p>
           </div>
         </div>
 
         {/* Login form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            loginForm.submit()
+          }}
+          className='space-y-4'
+        >
+          <div className='space-y-2'>
+            <Label htmlFor='username'>Username</Label>
             <Input
-              id="username"
-              type="text"
-              placeholder="Enter your username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              disabled={isLoading}
-              autoFocus
-              autoComplete="username"
+              id='username'
+              type='text'
+              placeholder='Enter your username'
+              {...bindField(loginForm.fields.username)}
             />
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {loginForm.fields.username.validation.errors().map((error) => (
+              <p
+                key={error.message}
+                className='text-sm text-destructive'
+              >
+                {error.message}
+              </p>
+            ))}
           </div>
 
           <Button
-            type="submit"
-            className="w-full"
-            disabled={isLoading || !username.trim()}
+            type='submit'
+            className='w-full'
           >
-            {isLoading ? "Signing in..." : "Continue"}
+            {login.pending() ? "Signing in..." : "Sign in"}
           </Button>
 
-          <p className="text-center text-xs text-muted-foreground">
+          <p className='text-center text-xs text-muted-foreground'>
             Your data is stored locally in your browser.
             <br />
             Use the same username to access your bookmarks.

@@ -2,6 +2,7 @@
 // Note: These hooks are designed to be used inside reatomComponent wrappers
 // where atom calls are automatically tracked
 
+import { useWrap } from "@reatom/react"
 import { groupsAtom } from "@/stores/data/atoms"
 import { getGroupsBySpaceId } from "@/stores/data/computed"
 import { selectedGroupIdAtom } from "@/stores/ui/atoms"
@@ -37,26 +38,32 @@ export function useSelectedGroup() {
 
 /**
  * useGroupActions - Returns CRUD actions for groups
- * Can be called inside or outside reatomComponent
+ * Must be called inside a reatomComponent to preserve Reatom context
  */
 export function useGroupActions() {
   const user = userAtom()
+  
+  // Wrap actions to preserve Reatom context in event handlers
+  const wrappedCreateGroup = useWrap(createGroup)
+  const wrappedUpdateGroup = useWrap(updateGroup)
+  const wrappedDeleteGroup = useWrap(deleteGroup)
+  const wrappedReorderGroups = useWrap(reorderGroups)
 
   return {
     createGroup: async (input: CreateGroupInput) => {
       if (!user) throw new Error("User not authenticated")
-      return createGroup(user.id, input)
+      return wrappedCreateGroup(user.id, input)
     },
     updateGroup: async (id: string, input: UpdateGroupInput) => {
-      return updateGroup(id, input)
+      return wrappedUpdateGroup(id, input)
     },
     deleteGroup: async (id: string, hard?: boolean) => {
       if (!user) throw new Error("User not authenticated")
-      return deleteGroup(user.id, id, hard)
+      return wrappedDeleteGroup(user.id, id, hard)
     },
     reorderGroups: async (spaceId: string, orderedIds: string[]) => {
       if (!user) throw new Error("User not authenticated")
-      return reorderGroups(user.id, spaceId, orderedIds)
+      return wrappedReorderGroups(user.id, spaceId, orderedIds)
     },
     setSelectedGroup: (groupId: string | null) => setSelectedGroup(groupId),
   }
