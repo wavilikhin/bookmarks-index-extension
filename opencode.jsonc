@@ -4,15 +4,15 @@
     "context7": {
       "type": "local",
       "command": ["bunx", "-y", "@upstash/context7-mcp"],
-      "enabled": true
+      "enabled": true,
     },
     "worklog-server": {
       "type": "local",
       "command": ["bunx", "-y", "worklog-mcp-server"],
       "enabled": true,
       "environment": {
-        "WORKSPACE_ROOT": "/Users/vladislavvavilihin/Dev/pets/bookmarks-index"
-      }
-    }
+        "WORKSPACE_ROOT": "/Users/vladislavvavilihin/Dev/pets/bookmarks-index",
+      },
+    },
   },
 }

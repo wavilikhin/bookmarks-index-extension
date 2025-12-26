@@ -2,8 +2,8 @@
 // Note: These hooks are designed to be used inside reatomComponent wrappers
 // where atom calls are automatically tracked
 
-import { themeAtom } from "@/stores/ui/atoms"
-import { setTheme } from "@/stores/ui/actions"
+import { themeAtom } from "@/stores/ui/atoms";
+import { setTheme } from "@/stores/ui/actions";
 
 /**
  * useTheme - Hook for theme management
@@ -13,10 +13,10 @@ import { setTheme } from "@/stores/ui/actions"
  * Must be called inside a reatomComponent
  */
 export function useTheme() {
-  const theme = themeAtom()
+  const theme = themeAtom();
 
   return {
     theme,
     setTheme: (newTheme: "light" | "dark" | "system") => setTheme(newTheme),
-  }
+  };
 }

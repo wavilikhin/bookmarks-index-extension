@@ -17,6 +17,7 @@ Create a git commit following conventional commits specification.
    - Identify the primary purpose: feature, fix, refactor, docs, etc.
 
 3. **Compose commit message using this format:**
+
    ```
    <type>[optional scope]: <description>
 
@@ -44,6 +45,7 @@ Create a git commit following conventional commits specification.
    - Or add footer: `BREAKING CHANGE: description`
 
 6. **Execute commit:**
+
    ```bash
    git add <files>  # or git add -A
    git commit -m "<type>(scope): description" -m "Body explaining what and why."
@@ -54,18 +56,21 @@ Create a git commit following conventional commits specification.
 ## Examples
 
 Simple fix:
+
 ```bash
 git add -A
 git commit -m "fix(bookmarks): prevent duplicate entries on rapid clicks"
 ```
 
 Feature with context:
+
 ```bash
 git add src/components/new-tab/
 git commit -m "feat(spaces): add color customization" -m "Allows users to assign colors to spaces for visual organization. Colors persist in IndexedDB and sync across sessions."
 ```
 
 Refactor:
+
 ```bash
 git add -A
 git commit -m "refactor(hooks): extract shared selector logic into base hook" -m "Reduces duplication across use-spaces, use-groups, use-bookmarks by centralizing filter and sort operations."

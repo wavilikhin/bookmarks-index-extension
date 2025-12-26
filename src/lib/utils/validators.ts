@@ -1,5 +1,5 @@
 // Zod schemas for input validation
-import { z } from "zod"
+import { z } from "zod";
 
 // Space validation schema
 export const spaceInputSchema = z.object({
@@ -9,7 +9,7 @@ export const spaceInputSchema = z.object({
     .max(50, "Name must be 50 characters or less"),
   icon: z.string().min(1, "Icon is required").max(4, "Icon must be an emoji"),
   color: z.string().optional(),
-})
+});
 
 // Group validation schema
 export const groupInputSchema = z.object({
@@ -19,7 +19,7 @@ export const groupInputSchema = z.object({
     .min(1, "Name is required")
     .max(50, "Name must be 50 characters or less"),
   icon: z.string().optional(),
-})
+});
 
 // Bookmark validation schema
 export const bookmarkInputSchema = z.object({
@@ -34,19 +34,19 @@ export const bookmarkInputSchema = z.object({
     .refine(
       (val) => {
         try {
-          new URL(val)
-          return true
+          new URL(val);
+          return true;
         } catch {
-          return false
+          return false;
         }
       },
-      { message: "Please enter a valid URL" }
+      { message: "Please enter a valid URL" },
     ),
   description: z
     .string()
     .max(500, "Description must be 500 characters or less")
     .optional(),
-})
+});
 
 // Username validation for login
 export const usernameSchema = z
@@ -55,10 +55,10 @@ export const usernameSchema = z
   .max(30, "Username must be 30 characters or less")
   .regex(
     /^[a-zA-Z0-9_-]+$/,
-    "Username can only contain letters, numbers, underscores, and hyphens"
-  )
+    "Username can only contain letters, numbers, underscores, and hyphens",
+  );
 
 // Export types from schemas
-export type SpaceInput = z.infer<typeof spaceInputSchema>
-export type GroupInput = z.infer<typeof groupInputSchema>
-export type BookmarkInput = z.infer<typeof bookmarkInputSchema>
+export type SpaceInput = z.infer<typeof spaceInputSchema>;
+export type GroupInput = z.infer<typeof groupInputSchema>;
+export type BookmarkInput = z.infer<typeof bookmarkInputSchema>;

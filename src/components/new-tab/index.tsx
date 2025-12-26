@@ -1,12 +1,12 @@
-import * as React from "react"
-import {Trash2} from "lucide-react"
-import {reatomComponent, useWrap} from "@reatom/react"
-import {SpacesSidebar} from "./spaces-sidebar"
-import {GroupTabs} from "./group-tabs"
-import {BookmarkGrid} from "./bookmark-grid"
-import {UserMenu} from "./user-menu"
-import {AddEditModal} from "./add-edit-modal"
-import {EmptyState} from "./empty-state"
+import * as React from "react";
+import { Trash2 } from "lucide-react";
+import { reatomComponent, useWrap } from "@reatom/react";
+import { SpacesSidebar } from "./spaces-sidebar";
+import { GroupTabs } from "./group-tabs";
+import { BookmarkGrid } from "./bookmark-grid";
+import { UserMenu } from "./user-menu";
+import { AddEditModal } from "./add-edit-modal";
+import { EmptyState } from "./empty-state";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -17,31 +17,31 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogMedia,
-} from "@/components/ui/alert-dialog"
-import type {Space, Group, Bookmark, EntityType} from "@/types"
+} from "@/components/ui/alert-dialog";
+import type { Space, Group, Bookmark, EntityType } from "@/types";
 
 // Reatom atoms and actions
-import {userAtom} from "@/stores/auth/atoms"
-import {activeSpaceIdAtom, selectedGroupIdAtom} from "@/stores/ui/atoms"
-import {setActiveSpace, setSelectedGroup} from "@/stores/ui/actions"
+import { userAtom } from "@/stores/auth/atoms";
+import { activeSpaceIdAtom, selectedGroupIdAtom } from "@/stores/ui/atoms";
+import { setActiveSpace, setSelectedGroup } from "@/stores/ui/actions";
 
 // Hooks
-import {useSpaces, useSpaceActions} from "@/hooks/use-spaces"
-import {useGroups, useGroupActions} from "@/hooks/use-groups"
-import {useBookmarks, useBookmarkActions} from "@/hooks/use-bookmarks"
-import {useTheme} from "@/hooks/use-theme"
+import { useSpaces, useSpaceActions } from "@/hooks/use-spaces";
+import { useGroups, useGroupActions } from "@/hooks/use-groups";
+import { useBookmarks, useBookmarkActions } from "@/hooks/use-bookmarks";
+import { useTheme } from "@/hooks/use-theme";
 
 interface ModalState {
-  isOpen: boolean
-  mode: "create" | "edit"
-  entityType: EntityType
-  entity?: Space | Group | Bookmark
+  isOpen: boolean;
+  mode: "create" | "edit";
+  entityType: EntityType;
+  entity?: Space | Group | Bookmark;
 }
 
 interface DeleteState {
-  isOpen: boolean
-  entityType: EntityType
-  entity?: Space | Group | Bookmark
+  isOpen: boolean;
+  entityType: EntityType;
+  entity?: Space | Group | Bookmark;
 }
 
 /**
@@ -56,87 +56,94 @@ interface DeleteState {
  */
 export const NewTabPage = reatomComponent(() => {
   // Auth state from atoms
-  const user = userAtom()
+  const user = userAtom();
 
   // UI state from atoms
-  const activeSpaceId = activeSpaceIdAtom()
-  const selectedGroupId = selectedGroupIdAtom()
+  const activeSpaceId = activeSpaceIdAtom();
+  const selectedGroupId = selectedGroupIdAtom();
 
   // Theme
-  const {theme, setTheme} = useTheme()
+  const { theme, setTheme } = useTheme();
 
   // Data from hooks (which call atoms internally)
-  const spaces = useSpaces()
-  const groups = useGroups(activeSpaceId)
-  const bookmarks = useBookmarks(selectedGroupId)
+  const spaces = useSpaces();
+  const groups = useGroups(activeSpaceId);
+  const bookmarks = useBookmarks(selectedGroupId);
 
   // Actions
-  const {createSpace, updateSpace, deleteSpace} = useSpaceActions()
-  const {createGroup, updateGroup, deleteGroup} = useGroupActions()
-  const {createBookmark, updateBookmark, deleteBookmark} = useBookmarkActions()
+  const { createSpace, updateSpace, deleteSpace } = useSpaceActions();
+  const { createGroup, updateGroup, deleteGroup } = useGroupActions();
+  const { createBookmark, updateBookmark, deleteBookmark } =
+    useBookmarkActions();
 
   // Wrap UI actions for use in callbacks
-  const doSetActiveSpace = useWrap(setActiveSpace)
-  const doSetSelectedGroup = useWrap(setSelectedGroup)
+  const doSetActiveSpace = useWrap(setActiveSpace);
+  const doSetSelectedGroup = useWrap(setSelectedGroup);
 
   // Modal states
   const [modalState, setModalState] = React.useState<ModalState>({
     isOpen: false,
     mode: "create",
     entityType: "space",
-  })
+  });
   const [deleteState, setDeleteState] = React.useState<DeleteState>({
     isOpen: false,
     entityType: "space",
-  })
+  });
 
   // Set initial active space when spaces load
   React.useEffect(() => {
     if (spaces.length > 0 && !activeSpaceId) {
-      doSetActiveSpace(spaces[0].id)
+      doSetActiveSpace(spaces[0].id);
     }
-  }, [spaces, activeSpaceId, doSetActiveSpace])
+  }, [spaces, activeSpaceId, doSetActiveSpace]);
 
   // Set initial selected group when space changes or groups load
   React.useEffect(() => {
     if (groups.length > 0 && !selectedGroupId) {
-      doSetSelectedGroup(groups[0].id)
+      doSetSelectedGroup(groups[0].id);
     } else if (groups.length === 0) {
-      doSetSelectedGroup(null)
+      doSetSelectedGroup(null);
     }
-  }, [groups, selectedGroupId, doSetSelectedGroup])
+  }, [groups, selectedGroupId, doSetSelectedGroup]);
 
   // Reset selected group when space changes
   React.useEffect(() => {
     if (activeSpaceId && groups.length > 0) {
       // Check if current selected group belongs to active space
-      const currentGroup = groups.find((g) => g.id === selectedGroupId)
+      const currentGroup = groups.find((g) => g.id === selectedGroupId);
       if (!currentGroup) {
-        doSetSelectedGroup(groups[0].id)
+        doSetSelectedGroup(groups[0].id);
       }
     }
-  }, [activeSpaceId, groups, selectedGroupId, doSetSelectedGroup])
+  }, [activeSpaceId, groups, selectedGroupId, doSetSelectedGroup]);
 
   // Modal handlers
   const openCreateModal = (entityType: EntityType) => {
-    setModalState({isOpen: true, mode: "create", entityType})
-  }
+    setModalState({ isOpen: true, mode: "create", entityType });
+  };
 
-  const openEditModal = (entityType: EntityType, entity: Space | Group | Bookmark) => {
-    setModalState({isOpen: true, mode: "edit", entityType, entity})
-  }
+  const openEditModal = (
+    entityType: EntityType,
+    entity: Space | Group | Bookmark,
+  ) => {
+    setModalState({ isOpen: true, mode: "edit", entityType, entity });
+  };
 
   const closeModal = () => {
-    setModalState((prev) => ({...prev, isOpen: false}))
-  }
+    setModalState((prev) => ({ ...prev, isOpen: false }));
+  };
 
-  const openDeleteDialog = (entityType: EntityType, entity: Space | Group | Bookmark) => {
-    setDeleteState({isOpen: true, entityType, entity})
-  }
+  const openDeleteDialog = (
+    entityType: EntityType,
+    entity: Space | Group | Bookmark,
+  ) => {
+    setDeleteState({ isOpen: true, entityType, entity });
+  };
 
   const closeDeleteDialog = () => {
-    setDeleteState((prev) => ({...prev, isOpen: false}))
-  }
+    setDeleteState((prev) => ({ ...prev, isOpen: false }));
+  };
 
   // CRUD handlers
   const handleSubmit = async (data: Record<string, string>) => {
@@ -148,9 +155,9 @@ export const NewTabPage = reatomComponent(() => {
               name: data.name,
               icon: data.icon || "📁",
               color: data.color,
-            })
-            doSetActiveSpace(newSpace.id)
-            break
+            });
+            doSetActiveSpace(newSpace.id);
+            break;
           }
           case "group": {
             if (activeSpaceId) {
@@ -158,10 +165,10 @@ export const NewTabPage = reatomComponent(() => {
                 spaceId: activeSpaceId,
                 name: data.name,
                 icon: data.icon,
-              })
-              doSetSelectedGroup(newGroup.id)
+              });
+              doSetSelectedGroup(newGroup.id);
             }
-            break
+            break;
           }
           case "bookmark":
             if (selectedGroupId) {
@@ -170,14 +177,14 @@ export const NewTabPage = reatomComponent(() => {
                 title: data.title,
                 url: data.url,
                 description: data.description,
-              })
+              });
             }
-            break
+            break;
         }
       } else {
         // Edit mode
-        const entity = modalState.entity
-        if (!entity) return
+        const entity = modalState.entity;
+        if (!entity) return;
 
         switch (modalState.entityType) {
           case "space":
@@ -185,81 +192,81 @@ export const NewTabPage = reatomComponent(() => {
               name: data.name,
               icon: data.icon,
               color: data.color,
-            })
-            break
+            });
+            break;
           case "group":
             await updateGroup(entity.id, {
               name: data.name,
               icon: data.icon,
-            })
-            break
+            });
+            break;
           case "bookmark":
             await updateBookmark(entity.id, {
               title: data.title,
               url: data.url,
               description: data.description,
-            })
-            break
+            });
+            break;
         }
       }
-      closeModal()
+      closeModal();
     } catch (error) {
-      console.error("Failed to save:", error)
+      console.error("Failed to save:", error);
     }
-  }
+  };
 
   const handleDelete = async () => {
-    const entity = deleteState.entity
-    if (!entity) return
+    const entity = deleteState.entity;
+    if (!entity) return;
 
     try {
       switch (deleteState.entityType) {
         case "space": {
-          await deleteSpace(entity.id, true)
+          await deleteSpace(entity.id, true);
           // Select another space if available
-          const remainingSpaces = spaces.filter((s) => s.id !== entity.id)
+          const remainingSpaces = spaces.filter((s) => s.id !== entity.id);
           if (remainingSpaces.length > 0) {
-            doSetActiveSpace(remainingSpaces[0].id)
+            doSetActiveSpace(remainingSpaces[0].id);
           } else {
-            doSetActiveSpace(null)
+            doSetActiveSpace(null);
           }
-          break
+          break;
         }
         case "group": {
-          await deleteGroup(entity.id, true)
+          await deleteGroup(entity.id, true);
           // Select another group if available
-          const remainingGroups = groups.filter((g) => g.id !== entity.id)
+          const remainingGroups = groups.filter((g) => g.id !== entity.id);
           if (remainingGroups.length > 0) {
-            doSetSelectedGroup(remainingGroups[0].id)
+            doSetSelectedGroup(remainingGroups[0].id);
           } else {
-            doSetSelectedGroup(null)
+            doSetSelectedGroup(null);
           }
-          break
+          break;
         }
         case "bookmark":
-          await deleteBookmark(entity.id, true)
-          break
+          await deleteBookmark(entity.id, true);
+          break;
       }
-      closeDeleteDialog()
+      closeDeleteDialog();
     } catch (error) {
-      console.error("Failed to delete:", error)
+      console.error("Failed to delete:", error);
     }
-  }
+  };
 
   // Determine empty state
   const getEmptyState = () => {
-    if (spaces.length === 0) return "no-spaces"
-    if (groups.length === 0) return "no-groups"
-    if (bookmarks.length === 0) return "no-bookmarks"
-    return null
-  }
+    if (spaces.length === 0) return "no-spaces";
+    if (groups.length === 0) return "no-groups";
+    if (bookmarks.length === 0) return "no-bookmarks";
+    return null;
+  };
 
-  const emptyState = getEmptyState()
+  const emptyState = getEmptyState();
 
-  if (!user) return null
+  if (!user) return null;
 
   return (
-    <div className='flex h-screen w-full bg-background'>
+    <div className="flex h-screen w-full bg-background">
       {/* Left sidebar - Spaces */}
       <SpacesSidebar
         spaces={spaces}
@@ -271,10 +278,10 @@ export const NewTabPage = reatomComponent(() => {
       />
 
       {/* Main content area */}
-      <main className='flex flex-1 flex-col overflow-hidden'>
+      <main className="flex flex-1 flex-col overflow-hidden">
         {/* Top bar - Groups tabs + User menu */}
-        <header className='flex items-center justify-between border-b border-border/50 bg-background'>
-          <div className='flex-1'>
+        <header className="flex items-center justify-between border-b border-border/50 bg-background">
+          <div className="flex-1">
             {activeSpaceId && (
               <GroupTabs
                 groups={groups}
@@ -288,7 +295,7 @@ export const NewTabPage = reatomComponent(() => {
           </div>
 
           {/* User menu */}
-          <div className='flex items-center gap-2 px-4 py-2'>
+          <div className="flex items-center gap-2 px-4 py-2">
             <UserMenu
               user={user}
               onSettings={() => console.log("Open settings")}
@@ -299,14 +306,14 @@ export const NewTabPage = reatomComponent(() => {
         </header>
 
         {/* Content area - Bookmark grid or empty state */}
-        <div className='flex flex-1 overflow-auto'>
+        <div className="flex flex-1 overflow-auto">
           {emptyState ? (
             <EmptyState
               type={emptyState}
               onAction={() => {
-                if (emptyState === "no-spaces") openCreateModal("space")
-                else if (emptyState === "no-groups") openCreateModal("group")
-                else openCreateModal("bookmark")
+                if (emptyState === "no-spaces") openCreateModal("space");
+                else if (emptyState === "no-groups") openCreateModal("group");
+                else openCreateModal("bookmark");
               }}
             />
           ) : (
@@ -314,7 +321,9 @@ export const NewTabPage = reatomComponent(() => {
               bookmarks={bookmarks}
               onAddBookmark={() => openCreateModal("bookmark")}
               onEditBookmark={(bookmark) => openEditModal("bookmark", bookmark)}
-              onDeleteBookmark={(bookmark) => openDeleteDialog("bookmark", bookmark)}
+              onDeleteBookmark={(bookmark) =>
+                openDeleteDialog("bookmark", bookmark)
+              }
             />
           )}
         </div>
@@ -337,25 +346,30 @@ export const NewTabPage = reatomComponent(() => {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogMedia className='bg-destructive/10'>
-              <Trash2 className='size-5 text-destructive' />
+            <AlertDialogMedia className="bg-destructive/10">
+              <Trash2 className="size-5 text-destructive" />
             </AlertDialogMedia>
-            <AlertDialogTitle>Delete {deleteState.entityType}?</AlertDialogTitle>
+            <AlertDialogTitle>
+              Delete {deleteState.entityType}?
+            </AlertDialogTitle>
             <AlertDialogDescription>
               {deleteState.entityType === "space" && (
                 <>
-                  This will permanently delete this space and all its groups and bookmarks. This
-                  action cannot be undone.
+                  This will permanently delete this space and all its groups and
+                  bookmarks. This action cannot be undone.
                 </>
               )}
               {deleteState.entityType === "group" && (
                 <>
-                  This will permanently delete this group and all its bookmarks. This action cannot
-                  be undone.
+                  This will permanently delete this group and all its bookmarks.
+                  This action cannot be undone.
                 </>
               )}
               {deleteState.entityType === "bookmark" && (
-                <>This will permanently delete this bookmark. This action cannot be undone.</>
+                <>
+                  This will permanently delete this bookmark. This action cannot
+                  be undone.
+                </>
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -363,7 +377,7 @@ export const NewTabPage = reatomComponent(() => {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Delete
             </AlertDialogAction>
@@ -371,5 +385,5 @@ export const NewTabPage = reatomComponent(() => {
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  )
-}, "NewTabPage")
+  );
+}, "NewTabPage");

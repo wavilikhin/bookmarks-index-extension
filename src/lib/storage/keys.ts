@@ -6,7 +6,7 @@ export const StorageKeys = {
   spaces: (userId: string) => `bookmarks:spaces:${userId}`,
   groups: (userId: string) => `bookmarks:groups:${userId}`,
   bookmarks: (userId: string) => `bookmarks:bookmarks:${userId}`,
-} as const
+} as const;
 
 // ID prefixes for different entity types
 export const IdPrefixes = {
@@ -14,4 +14,4 @@ export const IdPrefixes = {
   space: "space_",
   group: "group_",
   bookmark: "bookmark_",
-} as const
+} as const;

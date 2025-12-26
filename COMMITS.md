@@ -14,19 +14,19 @@ This project follows the [Conventional Commits](https://www.conventionalcommits.
 
 ## Types
 
-| Type | Description | SemVer |
-|------|-------------|--------|
-| `feat` | New feature | MINOR |
-| `fix` | Bug fix | PATCH |
-| `docs` | Documentation only | - |
-| `style` | Code style (formatting, semicolons, etc.) | - |
-| `refactor` | Code change that neither fixes a bug nor adds a feature | - |
-| `perf` | Performance improvement | - |
-| `test` | Adding or updating tests | - |
-| `build` | Build system or external dependencies | - |
-| `ci` | CI configuration | - |
-| `chore` | Other changes that don't modify src or test files | - |
-| `revert` | Reverts a previous commit | - |
+| Type       | Description                                             | SemVer |
+| ---------- | ------------------------------------------------------- | ------ |
+| `feat`     | New feature                                             | MINOR  |
+| `fix`      | Bug fix                                                 | PATCH  |
+| `docs`     | Documentation only                                      | -      |
+| `style`    | Code style (formatting, semicolons, etc.)               | -      |
+| `refactor` | Code change that neither fixes a bug nor adds a feature | -      |
+| `perf`     | Performance improvement                                 | -      |
+| `test`     | Adding or updating tests                                | -      |
+| `build`    | Build system or external dependencies                   | -      |
+| `ci`       | CI configuration                                        | -      |
+| `chore`    | Other changes that don't modify src or test files       | -      |
+| `revert`   | Reverts a previous commit                               | -      |
 
 ## Scopes
 
@@ -87,7 +87,7 @@ Refs: #42
 3. Don't end description with a period
 4. Separate body from description with a blank line
 5. Wrap body at 72 characters
-6. Use body to explain *what* and *why*, not *how*
+6. Use body to explain _what_ and _why_, not _how_
 
 ## Multi-type Commits
 

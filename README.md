@@ -50,14 +50,14 @@ bun run build:extension
 
 ## Scripts
 
-| Command | Description |
-|---------|-------------|
-| `bun dev` | Start development server |
-| `bun run build` | Build for production |
-| `bun run build:extension` | Build Chrome extension |
-| `bun run build:watch` | Build with watch mode |
-| `bun run preview` | Preview production build |
-| `bun run lint` | Run ESLint |
+| Command                   | Description              |
+| ------------------------- | ------------------------ |
+| `bun dev`                 | Start development server |
+| `bun run build`           | Build for production     |
+| `bun run build:extension` | Build Chrome extension   |
+| `bun run build:watch`     | Build with watch mode    |
+| `bun run preview`         | Preview production build |
+| `bun run lint`            | Run ESLint               |
 
 ## Project Structure
 

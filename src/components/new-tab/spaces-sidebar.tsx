@@ -1,28 +1,28 @@
-import * as React from "react"
-import { Plus, MoreHorizontal, Pencil, Trash2 } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import * as React from "react";
+import { Plus, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu"
-import type { Space } from "@/types"
+} from "@/components/ui/dropdown-menu";
+import type { Space } from "@/types";
 
 interface SpacesSidebarProps {
-  spaces: Space[]
-  activeSpaceId: string | null
-  onSelectSpace: (spaceId: string) => void
-  onAddSpace: () => void
-  onEditSpace: (space: Space) => void
-  onDeleteSpace: (space: Space) => void
+  spaces: Space[];
+  activeSpaceId: string | null;
+  onSelectSpace: (spaceId: string) => void;
+  onAddSpace: () => void;
+  onEditSpace: (space: Space) => void;
+  onDeleteSpace: (space: Space) => void;
 }
 
 /**
  * SpacesSidebar - Left vertical navigation for spaces
- * 
+ *
  * Design: Floating pill active state with subtle shadow depth.
  * The sidebar uses a narrow width to maximize main content area,
  * with icons + text that truncate elegantly.
@@ -84,19 +84,25 @@ export function SpacesSidebar({
         </Button>
       </div>
     </aside>
-  )
+  );
 }
 
 interface SpaceItemProps {
-  space: Space
-  isActive: boolean
-  onSelect: () => void
-  onEdit: () => void
-  onDelete: () => void
+  space: Space;
+  isActive: boolean;
+  onSelect: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
 }
 
-function SpaceItem({ space, isActive, onSelect, onEdit, onDelete }: SpaceItemProps) {
-  const [showMenu, setShowMenu] = React.useState(false)
+function SpaceItem({
+  space,
+  isActive,
+  onSelect,
+  onEdit,
+  onDelete,
+}: SpaceItemProps) {
+  const [showMenu, setShowMenu] = React.useState(false);
 
   return (
     <div
@@ -105,14 +111,14 @@ function SpaceItem({ space, isActive, onSelect, onEdit, onDelete }: SpaceItemPro
         "cursor-pointer select-none",
         isActive
           ? "bg-primary/10 text-primary shadow-sm shadow-primary/5"
-          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+          : "text-muted-foreground hover:bg-muted hover:text-foreground",
       )}
       onClick={onSelect}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
-          onSelect()
+          onSelect();
         }
       }}
     >
@@ -135,7 +141,7 @@ function SpaceItem({ space, isActive, onSelect, onEdit, onDelete }: SpaceItemPro
                 "hidden size-6 items-center justify-center rounded-md opacity-0 transition-opacity",
                 "hover:bg-foreground/10 focus:opacity-100 group-hover:opacity-100",
                 "md:flex",
-                showMenu && "opacity-100"
+                showMenu && "opacity-100",
               )}
               onClick={(e) => e.stopPropagation()}
             />
@@ -146,8 +152,8 @@ function SpaceItem({ space, isActive, onSelect, onEdit, onDelete }: SpaceItemPro
         <DropdownMenuContent align="end" sideOffset={4}>
           <DropdownMenuItem
             onClick={(e) => {
-              e.stopPropagation()
-              onEdit()
+              e.stopPropagation();
+              onEdit();
             }}
           >
             <Pencil className="mr-2 size-3.5" />
@@ -157,8 +163,8 @@ function SpaceItem({ space, isActive, onSelect, onEdit, onDelete }: SpaceItemPro
           <DropdownMenuItem
             variant="destructive"
             onClick={(e) => {
-              e.stopPropagation()
-              onDelete()
+              e.stopPropagation();
+              onDelete();
             }}
           >
             <Trash2 className="mr-2 size-3.5" />
@@ -172,7 +178,7 @@ function SpaceItem({ space, isActive, onSelect, onEdit, onDelete }: SpaceItemPro
         <div className="absolute -left-0.5 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-primary md:-left-3" />
       )}
     </div>
-  )
+  );
 }
 
-export type { SpacesSidebarProps }
+export type { SpacesSidebarProps };

@@ -1,36 +1,40 @@
-import * as React from "react"
-import { MoreHorizontal, Pencil, Trash2, ExternalLink } from "lucide-react"
-import { cn } from "@/lib/utils"
+import * as React from "react";
+import { MoreHorizontal, Pencil, Trash2, ExternalLink } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu"
-import type { Bookmark } from "@/types"
+} from "@/components/ui/dropdown-menu";
+import type { Bookmark } from "@/types";
 
 interface BookmarkItemProps {
-  bookmark: Bookmark
-  onEdit: () => void
-  onDelete: () => void
+  bookmark: Bookmark;
+  onEdit: () => void;
+  onDelete: () => void;
 }
 
 /**
  * BookmarkItem - Individual bookmark circle with favicon
- * 
+ *
  * Design: Chrome-inspired circular favicon display with title below.
  * Hover reveals subtle elevation and context menu.
  * The favicon container has a soft background for loading/missing states.
  */
-export function BookmarkItem({ bookmark, onEdit, onDelete }: BookmarkItemProps) {
-  const [showMenu, setShowMenu] = React.useState(false)
-  const [imgError, setImgError] = React.useState(false)
-  const [imgLoaded, setImgLoaded] = React.useState(false)
+export function BookmarkItem({
+  bookmark,
+  onEdit,
+  onDelete,
+}: BookmarkItemProps) {
+  const [showMenu, setShowMenu] = React.useState(false);
+  const [imgError, setImgError] = React.useState(false);
+  const [imgLoaded, setImgLoaded] = React.useState(false);
 
   const handleClick = () => {
-    window.open(bookmark.url, "_blank", "noopener,noreferrer")
-  }
+    window.open(bookmark.url, "_blank", "noopener,noreferrer");
+  };
 
   // Generate initials from title for fallback
   const initials = bookmark.title
@@ -38,14 +42,14 @@ export function BookmarkItem({ bookmark, onEdit, onDelete }: BookmarkItemProps) 
     .slice(0, 2)
     .map((word) => word[0])
     .join("")
-    .toUpperCase()
+    .toUpperCase();
 
   return (
     <div
       className={cn(
         "group relative flex w-24 flex-col items-center gap-2 rounded-lg p-3 transition-all duration-200",
         "cursor-pointer select-none",
-        "hover:bg-muted/50"
+        "hover:bg-muted/50",
       )}
     >
       {/* Favicon circle */}
@@ -54,7 +58,7 @@ export function BookmarkItem({ bookmark, onEdit, onDelete }: BookmarkItemProps) 
         className={cn(
           "relative flex size-14 items-center justify-center rounded-full transition-all duration-200",
           "bg-muted/70 ring-1 ring-border/50",
-          "group-hover:shadow-md group-hover:shadow-foreground/5 group-hover:ring-border"
+          "group-hover:shadow-md group-hover:shadow-foreground/5 group-hover:ring-border",
         )}
       >
         {/* Loading skeleton */}
@@ -69,7 +73,7 @@ export function BookmarkItem({ bookmark, onEdit, onDelete }: BookmarkItemProps) 
             alt=""
             className={cn(
               "size-7 rounded-sm object-contain transition-opacity duration-200",
-              imgLoaded ? "opacity-100" : "opacity-0"
+              imgLoaded ? "opacity-100" : "opacity-0",
             )}
             onLoad={() => setImgLoaded(true)}
             onError={() => setImgError(true)}
@@ -85,7 +89,7 @@ export function BookmarkItem({ bookmark, onEdit, onDelete }: BookmarkItemProps) 
         <div
           className={cn(
             "absolute inset-0 flex items-center justify-center rounded-full bg-foreground/80 opacity-0 transition-opacity",
-            "group-hover:opacity-100"
+            "group-hover:opacity-100",
           )}
         >
           <ExternalLink className="size-4 text-background" />
@@ -109,7 +113,7 @@ export function BookmarkItem({ bookmark, onEdit, onDelete }: BookmarkItemProps) 
               className={cn(
                 "absolute right-1 top-1 flex size-6 items-center justify-center rounded-md bg-background/80 opacity-0 shadow-sm ring-1 ring-border/50 backdrop-blur-sm transition-opacity",
                 "hover:bg-muted focus:opacity-100 group-hover:opacity-100",
-                showMenu && "opacity-100"
+                showMenu && "opacity-100",
               )}
               onClick={(e) => e.stopPropagation()}
             />
@@ -120,8 +124,8 @@ export function BookmarkItem({ bookmark, onEdit, onDelete }: BookmarkItemProps) 
         <DropdownMenuContent align="end" sideOffset={4}>
           <DropdownMenuItem
             onClick={(e) => {
-              e.stopPropagation()
-              onEdit()
+              e.stopPropagation();
+              onEdit();
             }}
           >
             <Pencil className="mr-2 size-3.5" />
@@ -131,8 +135,8 @@ export function BookmarkItem({ bookmark, onEdit, onDelete }: BookmarkItemProps) 
           <DropdownMenuItem
             variant="destructive"
             onClick={(e) => {
-              e.stopPropagation()
-              onDelete()
+              e.stopPropagation();
+              onDelete();
             }}
           >
             <Trash2 className="mr-2 size-3.5" />
@@ -141,7 +145,7 @@ export function BookmarkItem({ bookmark, onEdit, onDelete }: BookmarkItemProps) 
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
-  )
+  );
 }
 
-export type { BookmarkItemProps }
+export type { BookmarkItemProps };

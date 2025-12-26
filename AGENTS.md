@@ -10,14 +10,14 @@ This project uses **shadcn/ui** with the **Base-Lyra** style (built on `@base-ui
 
 ## Configuration
 
-| Item | Value |
-|------|-------|
-| Style | `base-lyra` |
-| CSS Variables | Enabled (OKLCH colors) |
-| TypeScript | Enabled |
-| Tailwind CSS | v4 |
-| Icon Library | Lucide React |
-| Package Manager | **bun** (not npm) |
+| Item            | Value                  |
+| --------------- | ---------------------- |
+| Style           | `base-lyra`            |
+| CSS Variables   | Enabled (OKLCH colors) |
+| TypeScript      | Enabled                |
+| Tailwind CSS    | v4                     |
+| Icon Library    | Lucide React           |
+| Package Manager | **bun** (not npm)      |
 
 ## Path Aliases
 
@@ -122,33 +122,33 @@ User Action → Hook → Store → IndexedDB
 
 This project uses **Reatom v1000** for state management with atomic state design.
 
-| Module | Purpose | Key Exports |
-|--------|---------|-------------|
-| `auth/` | Authentication | `userAtom`, `isAuthenticatedAtom`, `login`, `logout` |
-| `data/` | Entity CRUD | `spacesAtom`, `groupsAtom`, `bookmarksAtom`, CRUD actions |
-| `ui/` | UI state | `activeSpaceIdAtom`, `themeAtom`, `modalTypeAtom` |
+| Module  | Purpose        | Key Exports                                               |
+| ------- | -------------- | --------------------------------------------------------- |
+| `auth/` | Authentication | `userAtom`, `isAuthenticatedAtom`, `login`, `logout`      |
+| `data/` | Entity CRUD    | `spacesAtom`, `groupsAtom`, `bookmarksAtom`, CRUD actions |
+| `ui/`   | UI state       | `activeSpaceIdAtom`, `themeAtom`, `modalTypeAtom`         |
 
 #### Reatom Patterns
 
 ```typescript
 // Atoms - reactive state containers
-import { atom, computed, action, wrap } from "@reatom/core"
+import { atom, computed, action, wrap } from "@reatom/core";
 
 // Define atoms with initial value and name
-export const userAtom = atom<User | null>(null, "auth.user")
+export const userAtom = atom<User | null>(null, "auth.user");
 
 // Computed values - derived state
 export const isAuthenticatedAtom = computed(
   () => userAtom() !== null,
-  "auth.isAuthenticated"
-)
+  "auth.isAuthenticated",
+);
 
 // Actions - state mutations (sync or async)
 export const login = action(async (username: string) => {
   // Use wrap() for async operations to preserve context
-  const user = await wrap(getUser(userId))
-  userAtom.set(user)
-}, "auth.login")
+  const user = await wrap(getUser(userId));
+  userAtom.set(user);
+}, "auth.login");
 ```
 
 #### React Integration
@@ -203,32 +203,32 @@ User (user_xxx)
         └── Bookmarks (bookmark_xxx)
 ```
 
-| Field | Description |
-|-------|-------------|
-| `id` | Prefixed nanoid (e.g., `space_abc123`) |
-| `userId` | Owner reference (denormalized) |
-| `isArchived` | Soft delete flag |
-| `createdAt/updatedAt` | ISO 8601 timestamps |
+| Field                 | Description                            |
+| --------------------- | -------------------------------------- |
+| `id`                  | Prefixed nanoid (e.g., `space_abc123`) |
+| `userId`              | Owner reference (denormalized)         |
+| `isArchived`          | Soft delete flag                       |
+| `createdAt/updatedAt` | ISO 8601 timestamps                    |
 
 ### Hooks API
 
 ```typescript
 // Spaces
-const spaces = useSpaces()
-const activeSpace = useActiveSpace()
-const { createSpace, updateSpace, deleteSpace } = useSpaceActions()
+const spaces = useSpaces();
+const activeSpace = useActiveSpace();
+const { createSpace, updateSpace, deleteSpace } = useSpaceActions();
 
 // Groups
-const groups = useGroups(spaceId)
-const selectedGroup = useSelectedGroup()
-const { createGroup, updateGroup, deleteGroup } = useGroupActions()
+const groups = useGroups(spaceId);
+const selectedGroup = useSelectedGroup();
+const { createGroup, updateGroup, deleteGroup } = useGroupActions();
 
 // Bookmarks
-const bookmarks = useBookmarks(groupId)
-const { createBookmark, updateBookmark, deleteBookmark } = useBookmarkActions()
+const bookmarks = useBookmarks(groupId);
+const { createBookmark, updateBookmark, deleteBookmark } = useBookmarkActions();
 
 // Theme
-const { theme, setTheme } = useTheme()
+const { theme, setTheme } = useTheme();
 ```
 
 ## Installed shadcn/ui Components
@@ -259,6 +259,7 @@ const { theme, setTheme } = useTheme()
 ## Extension vs Web App
 
 Both modes use identical code:
+
 - **Web App**: `bun dev` → http://localhost:5173
 - **Extension**: `bun run build:extension` → load `dist/` in Chrome
 

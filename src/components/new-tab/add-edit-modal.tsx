@@ -1,27 +1,32 @@
-import * as React from "react"
-import { Bookmark, FolderOpen, Layers } from "lucide-react"
-import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Field, FieldLabel, FieldError } from "@/components/ui/field"
-import type { Space, Group, Bookmark as BookmarkType, EntityType } from "@/types"
+import * as React from "react";
+import { Bookmark, FolderOpen, Layers } from "lucide-react";
+import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Field, FieldLabel, FieldError } from "@/components/ui/field";
+import type {
+  Space,
+  Group,
+  Bookmark as BookmarkType,
+  EntityType,
+} from "@/types";
 
 // Placeholder types for each entity
 type PlaceholderConfig = {
-  name?: string
-  icon?: string
-  title?: string
-  url?: string
-}
+  name?: string;
+  icon?: string;
+  title?: string;
+  url?: string;
+};
 
 // Entity type configurations
 const entityConfig: Record<
   EntityType,
   {
-    icon: typeof Layers | typeof FolderOpen | typeof Bookmark
-    label: string
-    placeholders: PlaceholderConfig
+    icon: typeof Layers | typeof FolderOpen | typeof Bookmark;
+    label: string;
+    placeholders: PlaceholderConfig;
   }
 > = {
   space: {
@@ -47,20 +52,20 @@ const entityConfig: Record<
       url: "https://github.com",
     },
   },
-}
+};
 
 interface AddEditModalProps {
-  isOpen: boolean
-  onClose: () => void
-  entityType: EntityType
-  mode: "create" | "edit"
-  entity?: Space | Group | BookmarkType
-  onSubmit: (data: Record<string, string>) => void
+  isOpen: boolean;
+  onClose: () => void;
+  entityType: EntityType;
+  mode: "create" | "edit";
+  entity?: Space | Group | BookmarkType;
+  onSubmit: (data: Record<string, string>) => void;
 }
 
 /**
  * AddEditModal - Reusable modal for CRUD operations
- * 
+ *
  * Design: Clean, focused dialog with contextual icon.
  * Validates required fields before submission.
  */
@@ -72,81 +77,84 @@ export function AddEditModal({
   entity,
   onSubmit,
 }: AddEditModalProps) {
-  const config = entityConfig[entityType]
-  const Icon = config.icon
+  const config = entityConfig[entityType];
+  const Icon = config.icon;
 
-  const [formData, setFormData] = React.useState<Record<string, string>>({})
-  const [errors, setErrors] = React.useState<Record<string, string>>({})
+  const [formData, setFormData] = React.useState<Record<string, string>>({});
+  const [errors, setErrors] = React.useState<Record<string, string>>({});
 
   // Initialize form data when entity changes
   React.useEffect(() => {
     if (mode === "edit" && entity) {
-      const data: Record<string, string> = {}
-      if ("name" in entity) data.name = entity.name
-      if ("icon" in entity) data.icon = (entity as Space).icon
-      if ("title" in entity) data.title = (entity as BookmarkType).title
-      if ("url" in entity) data.url = (entity as BookmarkType).url
-      setFormData(data)
+      const data: Record<string, string> = {};
+      if ("name" in entity) data.name = entity.name;
+      if ("icon" in entity) data.icon = (entity as Space).icon;
+      if ("title" in entity) data.title = (entity as BookmarkType).title;
+      if ("url" in entity) data.url = (entity as BookmarkType).url;
+      setFormData(data);
     } else {
-      setFormData({})
+      setFormData({});
     }
-    setErrors({})
-  }, [mode, entity, isOpen])
+    setErrors({});
+  }, [mode, entity, isOpen]);
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     // Validate required fields based on entity type
-    const newErrors: Record<string, string> = {}
-    
+    const newErrors: Record<string, string> = {};
+
     if (entityType === "space") {
-      if (!formData.name?.trim()) newErrors.name = "Name is required"
-      if (!formData.icon?.trim()) newErrors.icon = "Icon is required"
+      if (!formData.name?.trim()) newErrors.name = "Name is required";
+      if (!formData.icon?.trim()) newErrors.icon = "Icon is required";
     } else if (entityType === "group") {
-      if (!formData.name?.trim()) newErrors.name = "Name is required"
+      if (!formData.name?.trim()) newErrors.name = "Name is required";
     } else if (entityType === "bookmark") {
-      if (!formData.title?.trim()) newErrors.title = "Title is required"
-      if (!formData.url?.trim()) newErrors.url = "URL is required"
+      if (!formData.title?.trim()) newErrors.title = "Title is required";
+      if (!formData.url?.trim()) newErrors.url = "URL is required";
     }
 
     // Validate URL format for bookmarks
     if (entityType === "bookmark" && formData.url) {
       try {
-        new URL(formData.url)
+        new URL(formData.url);
       } catch {
-        newErrors.url = "Please enter a valid URL"
+        newErrors.url = "Please enter a valid URL";
       }
     }
 
     if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors)
-      return
+      setErrors(newErrors);
+      return;
     }
 
-    onSubmit(formData)
-    onClose()
-  }
+    onSubmit(formData);
+    onClose();
+  };
 
   const handleChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors((prev) => {
-        const next = { ...prev }
-        delete next[field]
-        return next
-      })
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
     }
-  }
+  };
 
   return (
-    <DialogPrimitive.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <DialogPrimitive.Root
+      open={isOpen}
+      onOpenChange={(open) => !open && onClose()}
+    >
       <DialogPrimitive.Portal>
         <DialogPrimitive.Backdrop
           className={cn(
             "fixed inset-0 z-50 bg-black/10 backdrop-blur-xs",
             "data-open:animate-in data-closed:animate-out",
             "data-closed:fade-out-0 data-open:fade-in-0",
-            "duration-150"
+            "duration-150",
           )}
         />
         <DialogPrimitive.Popup
@@ -157,7 +165,7 @@ export function AddEditModal({
             "data-open:animate-in data-closed:animate-out",
             "data-closed:fade-out-0 data-open:fade-in-0",
             "data-closed:zoom-out-95 data-open:zoom-in-95",
-            "duration-150"
+            "duration-150",
           )}
         >
           <form onSubmit={handleSubmit}>
@@ -168,7 +176,9 @@ export function AddEditModal({
               </div>
               <div>
                 <DialogPrimitive.Title className="text-sm font-medium">
-                  {mode === "create" ? `Add ${config.label}` : `Edit ${config.label}`}
+                  {mode === "create"
+                    ? `Add ${config.label}`
+                    : `Edit ${config.label}`}
                 </DialogPrimitive.Title>
                 <DialogPrimitive.Description className="text-xs text-muted-foreground">
                   {mode === "create"
@@ -264,7 +274,7 @@ export function AddEditModal({
         </DialogPrimitive.Popup>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
-  )
+  );
 }
 
-export type { AddEditModalProps }
+export type { AddEditModalProps };

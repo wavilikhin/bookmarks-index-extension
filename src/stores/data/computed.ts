@@ -1,14 +1,14 @@
 // Computed values for data queries
-import { computed } from "@reatom/core"
-import { spacesAtom, groupsAtom, bookmarksAtom } from "./atoms"
+import { computed } from "@reatom/core";
+import { spacesAtom, groupsAtom, bookmarksAtom } from "./atoms";
 
 /**
  * Get sorted spaces by order
  */
 export const sortedSpacesAtom = computed(
   () => [...spacesAtom()].sort((a, b) => a.order - b.order),
-  "data.sortedSpaces"
-)
+  "data.sortedSpaces",
+);
 
 /**
  * Get space by ID
@@ -16,8 +16,8 @@ export const sortedSpacesAtom = computed(
 export function getSpaceById(id: string) {
   return computed(
     () => spacesAtom().find((s) => s.id === id),
-    `data.spaceById.${id}`
-  )
+    `data.spaceById.${id}`,
+  );
 }
 
 /**
@@ -29,8 +29,8 @@ export function getGroupsBySpaceId(spaceId: string) {
       groupsAtom()
         .filter((g) => g.spaceId === spaceId)
         .sort((a, b) => a.order - b.order),
-    `data.groupsBySpace.${spaceId}`
-  )
+    `data.groupsBySpace.${spaceId}`,
+  );
 }
 
 /**
@@ -42,6 +42,6 @@ export function getBookmarksByGroupId(groupId: string) {
       bookmarksAtom()
         .filter((b) => b.groupId === groupId)
         .sort((a, b) => a.order - b.order),
-    `data.bookmarksByGroup.${groupId}`
-  )
+    `data.bookmarksByGroup.${groupId}`,
+  );
 }

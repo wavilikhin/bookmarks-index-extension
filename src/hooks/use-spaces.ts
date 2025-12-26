@@ -2,25 +2,25 @@
 // Note: These hooks are designed to be used inside reatomComponent wrappers
 // where atom calls are automatically tracked
 
-import { useWrap } from "@reatom/react"
-import { sortedSpacesAtom, getSpaceById } from "@/stores/data/computed"
-import { activeSpaceIdAtom } from "@/stores/ui/atoms"
-import { userAtom } from "@/stores/auth/atoms"
+import { useWrap } from "@reatom/react";
+import { sortedSpacesAtom, getSpaceById } from "@/stores/data/computed";
+import { activeSpaceIdAtom } from "@/stores/ui/atoms";
+import { userAtom } from "@/stores/auth/atoms";
 import {
   createSpace,
   updateSpace,
   deleteSpace,
   reorderSpaces,
-} from "@/stores/data/actions"
-import { setActiveSpace } from "@/stores/ui/actions"
-import type { CreateSpaceInput, UpdateSpaceInput } from "@/types"
+} from "@/stores/data/actions";
+import { setActiveSpace } from "@/stores/ui/actions";
+import type { CreateSpaceInput, UpdateSpaceInput } from "@/types";
 
 /**
  * useSpaces - Returns all non-archived spaces (sorted)
  * Must be called inside a reatomComponent
  */
 export function useSpaces() {
-  return sortedSpacesAtom()
+  return sortedSpacesAtom();
 }
 
 /**
@@ -28,9 +28,9 @@ export function useSpaces() {
  * Must be called inside a reatomComponent
  */
 export function useActiveSpace() {
-  const activeSpaceId = activeSpaceIdAtom()
-  if (!activeSpaceId) return undefined
-  return getSpaceById(activeSpaceId)()
+  const activeSpaceId = activeSpaceIdAtom();
+  if (!activeSpaceId) return undefined;
+  return getSpaceById(activeSpaceId)();
 }
 
 /**
@@ -38,30 +38,30 @@ export function useActiveSpace() {
  * Must be called inside a reatomComponent to preserve Reatom context
  */
 export function useSpaceActions() {
-  const user = userAtom()
-  
+  const user = userAtom();
+
   // Wrap actions to preserve Reatom context in event handlers
-  const wrappedCreateSpace = useWrap(createSpace)
-  const wrappedUpdateSpace = useWrap(updateSpace)
-  const wrappedDeleteSpace = useWrap(deleteSpace)
-  const wrappedReorderSpaces = useWrap(reorderSpaces)
+  const wrappedCreateSpace = useWrap(createSpace);
+  const wrappedUpdateSpace = useWrap(updateSpace);
+  const wrappedDeleteSpace = useWrap(deleteSpace);
+  const wrappedReorderSpaces = useWrap(reorderSpaces);
 
   return {
     createSpace: async (input: CreateSpaceInput) => {
-      if (!user) throw new Error("User not authenticated")
-      return wrappedCreateSpace(user.id, input)
+      if (!user) throw new Error("User not authenticated");
+      return wrappedCreateSpace(user.id, input);
     },
     updateSpace: async (id: string, input: UpdateSpaceInput) => {
-      return wrappedUpdateSpace(id, input)
+      return wrappedUpdateSpace(id, input);
     },
     deleteSpace: async (id: string, hard?: boolean) => {
-      if (!user) throw new Error("User not authenticated")
-      return wrappedDeleteSpace(user.id, id, hard)
+      if (!user) throw new Error("User not authenticated");
+      return wrappedDeleteSpace(user.id, id, hard);
     },
     reorderSpaces: async (orderedIds: string[]) => {
-      if (!user) throw new Error("User not authenticated")
-      return wrappedReorderSpaces(user.id, orderedIds)
+      if (!user) throw new Error("User not authenticated");
+      return wrappedReorderSpaces(user.id, orderedIds);
     },
     setActiveSpace: (spaceId: string | null) => setActiveSpace(spaceId),
-  }
+  };
 }

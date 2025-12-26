@@ -1,12 +1,12 @@
 // Sample data seeding for first-time users
-import { generateId, createTimestamps } from "@/lib/utils/entity"
-import type { Space, Group, Bookmark } from "@/types"
+import { generateId, createTimestamps } from "@/lib/utils/entity";
+import type { Space, Group, Bookmark } from "@/types";
 
 /**
  * Generate sample spaces for a new user
  */
 export function getSeedSpaces(userId: string): Space[] {
-  const timestamps = createTimestamps()
+  const timestamps = createTimestamps();
 
   return [
     {
@@ -36,19 +36,19 @@ export function getSeedSpaces(userId: string): Space[] {
       isArchived: false,
       ...timestamps,
     },
-  ]
+  ];
 }
 
 /**
  * Generate sample groups for seed spaces
  */
 export function getSeedGroups(userId: string, spaces: Space[]): Group[] {
-  const timestamps = createTimestamps()
-  const workSpace = spaces.find((s) => s.name === "Work")
-  const personalSpace = spaces.find((s) => s.name === "Personal")
-  const learningSpace = spaces.find((s) => s.name === "Learning")
+  const timestamps = createTimestamps();
+  const workSpace = spaces.find((s) => s.name === "Work");
+  const personalSpace = spaces.find((s) => s.name === "Personal");
+  const learningSpace = spaces.find((s) => s.name === "Learning");
 
-  const groups: Group[] = []
+  const groups: Group[] = [];
 
   if (workSpace) {
     groups.push(
@@ -78,8 +78,8 @@ export function getSeedGroups(userId: string, spaces: Space[]): Group[] {
         order: 2,
         isArchived: false,
         ...timestamps,
-      }
-    )
+      },
+    );
   }
 
   if (personalSpace) {
@@ -101,8 +101,8 @@ export function getSeedGroups(userId: string, spaces: Space[]): Group[] {
         order: 1,
         isArchived: false,
         ...timestamps,
-      }
-    )
+      },
+    );
   }
 
   if (learningSpace) {
@@ -124,11 +124,11 @@ export function getSeedGroups(userId: string, spaces: Space[]): Group[] {
         order: 1,
         isArchived: false,
         ...timestamps,
-      }
-    )
+      },
+    );
   }
 
-  return groups
+  return groups;
 }
 
 /**
@@ -137,22 +137,22 @@ export function getSeedGroups(userId: string, spaces: Space[]): Group[] {
 export function getSeedBookmarks(
   userId: string,
   spaces: Space[],
-  groups: Group[]
+  groups: Group[],
 ): Bookmark[] {
-  const timestamps = createTimestamps()
-  const bookmarks: Bookmark[] = []
+  const timestamps = createTimestamps();
+  const bookmarks: Bookmark[] = [];
 
   // Helper to find group and space
   const findGroup = (spaceFilter: string, groupFilter: string) => {
-    const space = spaces.find((s) => s.name === spaceFilter)
-    if (!space) return null
-    return groups.find((g) => g.spaceId === space.id && g.name === groupFilter)
-  }
+    const space = spaces.find((s) => s.name === spaceFilter);
+    if (!space) return null;
+    return groups.find((g) => g.spaceId === space.id && g.name === groupFilter);
+  };
 
   // Development bookmarks
-  const devGroup = findGroup("Work", "Development")
+  const devGroup = findGroup("Work", "Development");
   if (devGroup) {
-    const spaceId = devGroup.spaceId
+    const spaceId = devGroup.spaceId;
     bookmarks.push(
       {
         id: generateId("bookmark"),
@@ -202,14 +202,14 @@ export function getSeedBookmarks(
         isPinned: false,
         isArchived: false,
         ...timestamps,
-      }
-    )
+      },
+    );
   }
 
   // Design bookmarks
-  const designGroup = findGroup("Work", "Design")
+  const designGroup = findGroup("Work", "Design");
   if (designGroup) {
-    const spaceId = designGroup.spaceId
+    const spaceId = designGroup.spaceId;
     bookmarks.push(
       {
         id: generateId("bookmark"),
@@ -234,14 +234,14 @@ export function getSeedBookmarks(
         isPinned: false,
         isArchived: false,
         ...timestamps,
-      }
-    )
+      },
+    );
   }
 
   // Documentation bookmarks
-  const docsGroup = findGroup("Work", "Documentation")
+  const docsGroup = findGroup("Work", "Documentation");
   if (docsGroup) {
-    const spaceId = docsGroup.spaceId
+    const spaceId = docsGroup.spaceId;
     bookmarks.push({
       id: generateId("bookmark"),
       userId,
@@ -253,13 +253,13 @@ export function getSeedBookmarks(
       isPinned: false,
       isArchived: false,
       ...timestamps,
-    })
+    });
   }
 
   // Social bookmarks
-  const socialGroup = findGroup("Personal", "Social")
+  const socialGroup = findGroup("Personal", "Social");
   if (socialGroup) {
-    const spaceId = socialGroup.spaceId
+    const spaceId = socialGroup.spaceId;
     bookmarks.push(
       {
         id: generateId("bookmark"),
@@ -284,14 +284,14 @@ export function getSeedBookmarks(
         isPinned: false,
         isArchived: false,
         ...timestamps,
-      }
-    )
+      },
+    );
   }
 
   // Shopping bookmarks
-  const shoppingGroup = findGroup("Personal", "Shopping")
+  const shoppingGroup = findGroup("Personal", "Shopping");
   if (shoppingGroup) {
-    const spaceId = shoppingGroup.spaceId
+    const spaceId = shoppingGroup.spaceId;
     bookmarks.push({
       id: generateId("bookmark"),
       userId,
@@ -303,13 +303,13 @@ export function getSeedBookmarks(
       isPinned: false,
       isArchived: false,
       ...timestamps,
-    })
+    });
   }
 
   // Courses bookmarks
-  const coursesGroup = findGroup("Learning", "Courses")
+  const coursesGroup = findGroup("Learning", "Courses");
   if (coursesGroup) {
-    const spaceId = coursesGroup.spaceId
+    const spaceId = coursesGroup.spaceId;
     bookmarks.push(
       {
         id: generateId("bookmark"),
@@ -334,14 +334,14 @@ export function getSeedBookmarks(
         isPinned: false,
         isArchived: false,
         ...timestamps,
-      }
-    )
+      },
+    );
   }
 
   // Articles bookmarks
-  const articlesGroup = findGroup("Learning", "Articles")
+  const articlesGroup = findGroup("Learning", "Articles");
   if (articlesGroup) {
-    const spaceId = articlesGroup.spaceId
+    const spaceId = articlesGroup.spaceId;
     bookmarks.push(
       {
         id: generateId("bookmark"),
@@ -366,20 +366,20 @@ export function getSeedBookmarks(
         isPinned: false,
         isArchived: false,
         ...timestamps,
-      }
-    )
+      },
+    );
   }
 
-  return bookmarks
+  return bookmarks;
 }
 
 /**
  * Seed all user data (called on first login)
  */
 export function createSeedData(userId: string) {
-  const spaces = getSeedSpaces(userId)
-  const groups = getSeedGroups(userId, spaces)
-  const bookmarks = getSeedBookmarks(userId, spaces, groups)
+  const spaces = getSeedSpaces(userId);
+  const groups = getSeedGroups(userId, spaces);
+  const bookmarks = getSeedBookmarks(userId, spaces, groups);
 
-  return { spaces, groups, bookmarks }
+  return { spaces, groups, bookmarks };
 }
