@@ -172,18 +172,21 @@ export const MyComponent = reatomComponent(() => {
 
 #### Setup in main.tsx
 
+> **Note**: This project uses a simplified setup without React StrictMode or explicit context provider.
+
 ```typescript
-import { context, clearStack, connectLogger } from "@reatom/core"
-import { reatomContext } from "@reatom/react"
+// main.tsx - Minimal setup
+import { createRoot } from "react-dom/client"
+import App from "./App.tsx"
 
-clearStack() // Clear default context
-const rootFrame = context.start()
-
-// Wrap app with reatomContext.Provider
-<reatomContext.Provider value={rootFrame}>
-  <App />
-</reatomContext.Provider>
+// No StrictMode - it causes double-effects that break Reatom context
+// No reatomContext.Provider - Reatom's default context works with reatomComponent
+createRoot(document.getElementById("root")!).render(<App />)
 ```
+
+**Why no StrictMode?** React StrictMode double-invokes effects in development, which breaks Reatom's context tracking.
+
+**Why no Provider?** The explicit `reatomContext.Provider` was causing initialization issues. Reatom's default global context works reliably with `reatomComponent`.
 
 ### Storage Layer (IndexedDB)
 

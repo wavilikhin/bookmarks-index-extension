@@ -2,6 +2,44 @@
 
 A comprehensive guide for implementing Reatom in this project. This document covers all core concepts, patterns, and utilities needed to build features using Reatom.
 
+## Project-Specific Configuration
+
+> **Important**: This project uses a simplified Reatom setup that differs from the standard documentation.
+
+### Key Differences
+
+| Standard Setup | This Project |
+|----------------|--------------|
+| React StrictMode enabled | **No StrictMode** - causes double-effects |
+| Explicit `reatomContext.Provider` | **No provider** - uses default context |
+| `useAtom`, `useAction` hooks | **Direct atom calls** in `reatomComponent` |
+| `context.start()` + `clearStack()` | **Default context** - no explicit setup |
+
+### Why These Changes?
+
+1. **No StrictMode**: React's StrictMode double-invokes effects in development, which breaks Reatom's context tracking and causes async operations to behave unexpectedly.
+
+2. **No Context Provider**: The explicit `reatomContext.Provider` was causing initialization failures. Reatom's default global context works reliably with `reatomComponent`.
+
+3. **Direct Atom Calls**: Inside `reatomComponent`, calling `atomName()` directly auto-subscribes to changes. No need for `useAtom` or `useAction` hooks.
+
+### Project Pattern
+
+```tsx
+// main.tsx - Minimal, no wrappers
+createRoot(document.getElementById("root")!).render(<App />)
+
+// Components - Use reatomComponent, call atoms directly
+const MyComponent = reatomComponent(() => {
+  const user = userAtom()           // Auto-subscribes
+  const isLoading = isLoadingAtom() // Auto-subscribes
+  
+  return <button onClick={() => login("username")}>{user?.name}</button>
+}, "MyComponent")
+```
+
+---
+
 ## Table of Contents
 
 1. [Installation](#installation)
@@ -178,29 +216,44 @@ message.set('World')  // Cancels previous timeout, sets new one
 
 ### Setup
 
+**Important**: This project uses Reatom without explicit React context provider and without React StrictMode.
+
 ```tsx
-import { context, connectLogger, clearStack } from '@reatom/core'
-import { reatomContext } from '@reatom/react'
-import { Main } from './path/to/Main'
+// main.tsx - Minimal setup without context provider
+import { createRoot } from "react-dom/client"
+import App from "./App.tsx"
 
-// Optional: Disable default context for predictability
-clearStack()
+// No StrictMode - it causes double-mounting which interferes with Reatom's
+// effect system and context tracking
+// No reatomContext.Provider - Reatom works with its default global context
+createRoot(document.getElementById("root")!).render(<App />)
+```
 
-const rootFrame = context.start()
-if (import.meta.env.DEV) {
-  rootFrame.run(connectLogger)
-}
+**Why no StrictMode?**
+React StrictMode double-invokes effects in development, which conflicts with Reatom's context tracking. This causes issues where:
+- Effects run twice unexpectedly
+- Context can become desynchronized
+- Async operations may behave inconsistently
 
-export const App = () => (
-  <reatomContext.Provider value={rootFrame}>
-    <Main />
-  </reatomContext.Provider>
-)
+**Why no reatomContext.Provider?**
+Reatom has a built-in default context that works without explicit provider setup. The `reatomComponent` wrapper handles context tracking automatically. Using explicit context provider was causing initialization issues, so we rely on Reatom's default context instead.
+
+```tsx
+// App.tsx - Root component using reatomComponent
+import { reatomComponent } from "@reatom/react"
+
+const App = reatomComponent(() => {
+  return (
+    <AuthGuard>
+      <NewTabPage />
+    </AuthGuard>
+  )
+}, "App")
 ```
 
 ### reatomComponent
 
-The primary way to use Reatom in React. Components automatically track atom dependencies.
+The primary way to use Reatom in React. Components automatically track atom dependencies. **This is the preferred approach in this project** - we avoid React hooks like `useAtom` and `useAction` in favor of direct atom calls inside `reatomComponent`.
 
 ```tsx
 import { atom, computed } from '@reatom/core'
@@ -209,12 +262,13 @@ import { reatomComponent } from '@reatom/react'
 const counter = atom(0, 'counter')
 const doubled = computed(() => counter() * 2, 'doubled')
 
-// Automatic atom tracking
+// Automatic atom tracking - preferred pattern
 export const Counter = reatomComponent(() => {
-  // Reading atoms automatically subscribes
+  // Call atoms directly - they auto-subscribe inside reatomComponent
   const count = counter()
   const doubledValue = doubled()
 
+  // Call actions directly - no hooks needed
   return (
     <div>
       <p>Count: {count}</p>
@@ -224,12 +278,14 @@ export const Counter = reatomComponent(() => {
       </button>
     </div>
   )
-})
+}, "Counter") // Always provide component name for debugging
 ```
 
-### useAtom Hook
+### useAtom Hook (Not Recommended)
 
-For inline atom creation and two-way binding.
+> **Note**: In this project, we prefer using `reatomComponent` with direct atom calls instead of `useAtom`. The hooks below are documented for reference but are not the primary pattern.
+
+For inline atom creation and two-way binding (use sparingly):
 
 ```tsx
 import { useAtom, useAction } from '@reatom/react'
@@ -256,9 +312,11 @@ export const Greeting = ({ initialGreeting = '' }) => {
 }
 ```
 
-### useAction Hook
+### useAction Hook (Not Recommended)
 
-Bind actions to React context.
+> **Note**: Prefer calling actions directly inside `reatomComponent` instead.
+
+Bind actions to React context:
 
 ```typescript
 import { atom, action } from '@reatom/core'
@@ -1233,19 +1291,41 @@ return <UserProfile user={userResource.data()} />
 ### 7. Use reatomComponent Instead of Hooks
 
 ```tsx
-// GOOD: automatic dependency tracking
+// GOOD: automatic dependency tracking, call atoms directly
 const Counter = reatomComponent(() => {
-  return <div>{counter()}</div>
-})
+  const count = counter()  // Direct call, auto-subscribes
+  return <div>{count}</div>
+}, "Counter")
 
-// LESS IDEAL: manual hook usage
+// AVOID: useAtom hooks add unnecessary complexity
 const Counter = () => {
   const [count] = useAtom(counter)
   return <div>{count}</div>
 }
 ```
 
-### 8. Leverage Extensions for Cross-Cutting Concerns
+### 8. No React StrictMode or Context Provider
+
+```tsx
+// main.tsx - Current project setup
+createRoot(document.getElementById("root")!).render(<App />)
+
+// AVOID: StrictMode causes double-effects that break Reatom
+createRoot(document.getElementById("root")!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>
+)
+
+// AVOID: Explicit context provider (not needed with reatomComponent)
+createRoot(document.getElementById("root")!).render(
+  <reatomContext.Provider value={rootFrame}>
+    <App />
+  </reatomContext.Provider>
+)
+```
+
+### 9. Leverage Extensions for Cross-Cutting Concerns
 
 ```typescript
 // Apply logging, persistence, and URL sync declaratively
@@ -1296,7 +1376,7 @@ const decrement = action(() => count.set(prev => prev - 1), 'decrement')
 
 const Counter = reatomComponent(() => {
   return <button onClick={() => increment()}>{count()}</button>
-})
+}, "Counter")
 ```
 
 ---
@@ -1330,8 +1410,9 @@ import {
 // Forms
 import { reatomForm, reatomField } from '@reatom/core'
 
-// React
-import { reatomComponent, useAtom, useAction, useWrap, bindField, reatomContext } from '@reatom/react'
+// React (prefer reatomComponent over hooks)
+import { reatomComponent } from '@reatom/react'
+// Avoid unless necessary: useAtom, useAction, useWrap, reatomContext
 
 // Testing
 import { test, expect, subscribe } from '@reatom/core/test'
@@ -1355,10 +1436,11 @@ const doSomething = action(async (param) => {
   x.set(result)
 }, 'name')
 
-// React
+// React - always use reatomComponent with component name
 const Component = reatomComponent(() => {
-  return <div>{x()}</div>
-})
+  const value = x()  // Direct call auto-subscribes
+  return <div>{value}</div>
+}, "Component")
 
 // Persistence
 const persisted = atom(0).extend(withLocalStorage('key'))
