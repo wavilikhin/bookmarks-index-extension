@@ -21,10 +21,10 @@ This project uses **shadcn/ui** with the **Base-Lyra** style (built on `@base-ui
 
 ## Path Aliases
 
-- `@/components` - Components directory
-- `@/components/ui` - shadcn/ui components
-- `@/components/auth` - Authentication components
-- `@/components/new-tab` - Main application components
+- `@/shared/ui` - All UI components (shadcn base)
+- `@/shared/ui/kit` - shadcn/ui primitives (button, input, etc.)
+- `@/shared/ui/auth` - Authentication components
+- `@/shared/ui/new-tab` - Main application components
 - `@/lib` - Library utilities
 - `@/lib/storage` - IndexedDB storage layer
 - `@/lib/utils` - Entity and validation utilities
@@ -61,20 +61,38 @@ bunx shadcn@latest add <component>
 
 ```
 src/
-├── components/
-│   ├── auth/
-│   │   ├── auth-guard.tsx      # Auth wrapper, loading states, redirects
-│   │   └── login-form.tsx      # Username input form
-│   ├── new-tab/
-│   │   ├── index.tsx           # Main layout, orchestrates all components
-│   │   ├── spaces-sidebar.tsx  # Left sidebar with space navigation
-│   │   ├── group-tabs.tsx      # Horizontal tabs for groups
-│   │   ├── bookmark-grid.tsx   # Grid of bookmark items
-│   │   ├── bookmark-item.tsx   # Individual bookmark circle
-│   │   ├── user-menu.tsx       # Avatar dropdown with theme/logout
-│   │   ├── add-edit-modal.tsx  # CRUD modal for entities
-│   │   └── empty-state.tsx     # Empty state messages
-│   └── ui/                     # shadcn/ui components (13 installed)
+├── shared/
+│   └── ui/
+│       ├── auth/
+│       │   ├── auth-guard.tsx      # Auth wrapper, loading states, redirects
+│       │   ├── login-form.tsx      # Username input form
+│       │   └── index.ts            # Auth barrel export
+│       ├── new-tab/
+│       │   ├── index.tsx           # Main layout, orchestrates all components
+│       │   ├── spaces-sidebar.tsx  # Left sidebar with space navigation
+│       │   ├── group-tabs.tsx      # Horizontal tabs for groups
+│       │   ├── bookmark-grid.tsx   # Grid of bookmark items
+│       │   ├── bookmark-item.tsx   # Individual bookmark circle
+│       │   ├── user-menu.tsx       # Avatar dropdown with theme/logout
+│       │   ├── add-edit-modal.tsx  # CRUD modal for entities
+│       │   └── empty-state.tsx     # Empty state messages
+│       ├── kit/                    # shadcn/ui primitives (14 installed)
+│       │   ├── alert-dialog.tsx
+│       │   ├── badge.tsx
+│       │   ├── button.tsx
+│       │   ├── card.tsx
+│       │   ├── combobox.tsx
+│       │   ├── dropdown-menu.tsx
+│       │   ├── field.tsx
+│       │   ├── input.tsx
+│       │   ├── input-group.tsx
+│       │   ├── label.tsx
+│       │   ├── loading-screen.tsx
+│       │   ├── select.tsx
+│       │   ├── separator.tsx
+│       │   ├── textarea.tsx
+│       │   └── index.ts            # Kit barrel export
+│       └── index.ts                # UI barrel export
 ├── hooks/
 │   ├── use-spaces.ts           # Space selectors and actions
 │   ├── use-groups.ts           # Group selectors and actions
@@ -248,7 +266,7 @@ const { theme, setTheme } = useTheme()
 
 1. **Always use bun** - Not npm or yarn
 2. **Use shadcn CLI** - `bunx shadcn@latest add <component>`
-3. **Use path aliases** - `@/shared/uibutton` not relative paths
+3. **Use path aliases** - `@/shared/ui` not relative paths
 4. **Use hooks** - Don't access stores directly in components
 5. **Use cn()** - For conditional Tailwind classes
 6. **Follow Base-Lyra patterns** - `render` prop for composition
