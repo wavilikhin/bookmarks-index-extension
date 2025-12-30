@@ -7,6 +7,8 @@
 
 ## Commands
 
+### Extension (Frontend)
+
 ```bash
 bun dev                      # Start dev server (http://localhost:5173)
 bun run build                # Build for production
@@ -16,6 +18,26 @@ bun run lint:fix             # Fix lint errors
 bun run tsc                  # Type check (no emit)
 bun run format               # Format with Prettier
 bunx shadcn@latest add <c>   # Add shadcn component
+```
+
+### Server (Backend)
+
+```bash
+bun run dev:server           # Start server dev mode (http://localhost:3000)
+bun run dev:all              # Start both frontend and server
+bun run build:server         # Build server for production
+bun run build:all            # Build both frontend and server
+bun run server:start         # Start production server
+bun run tsc:server           # Type check server
+```
+
+### Database
+
+```bash
+bun run db:generate          # Generate Drizzle migrations
+bun run db:migrate           # Run migrations
+bun run db:push              # Push schema to database (dev)
+bun run db:studio            # Open Drizzle Studio
 ```
 
 ## Code Style
@@ -195,8 +217,85 @@ export { getSeedBookmarks } from './lib'
 | `@/lib/storage`   | IndexedDB layer   |
 | `@/stores`        | Reatom stores     |
 | `@/types`         | TypeScript types  |
+| `@/api`           | tRPC client       |
+
+## Server Structure
+
+The server lives in `/server` with its own package.json:
+
+```
+server/
+├── src/
+│   ├── db/
+│   │   ├── schema/          # Drizzle schema files
+│   │   │   ├── users.ts
+│   │   │   ├── spaces.ts
+│   │   │   ├── groups.ts
+│   │   │   ├── bookmarks.ts
+│   │   │   ├── relations.ts
+│   │   │   └── index.ts
+│   │   └── client.ts        # Database connection
+│   ├── routers/             # tRPC routers
+│   │   ├── spaces.ts
+│   │   ├── groups.ts
+│   │   ├── bookmarks.ts
+│   │   ├── sync.ts
+│   │   └── index.ts         # Root appRouter
+│   ├── lib/
+│   │   └── auth.ts          # Clerk JWT verification
+│   ├── context.ts           # tRPC context
+│   ├── trpc.ts              # tRPC initialization
+│   └── index.ts             # Hono server entry
+├── drizzle.config.ts
+├── Dockerfile
+└── package.json
+```
+
+### tRPC Router Pattern
+
+```typescript
+// server/src/routers/spaces.ts
+import { z } from 'zod'
+import { eq, and } from 'drizzle-orm'
+import { router, protectedProcedure } from '../trpc'
+import { spaces } from '../db/schema'
+
+export const spacesRouter = router({
+  list: protectedProcedure.query(async ({ ctx }) => {
+    return ctx.db.select().from(spaces).where(eq(spaces.userId, ctx.userId))
+  }),
+
+  create: protectedProcedure.input(z.object({ id: z.string(), name: z.string() })).mutation(async ({ ctx, input }) => {
+    const [space] = await ctx.db
+      .insert(spaces)
+      .values({ ...input, userId: ctx.userId })
+      .returning()
+    return space
+  })
+})
+```
+
+### API Client Usage (Frontend)
+
+```typescript
+// Import the typed client
+import { api } from '@/api'
+
+// In Reatom actions - use api directly
+export const loadSpaces = action(async () => {
+  const spaces = await api.spaces.list.query()
+  spacesAtom.set(spaces.map((s) => atom(s)))
+}, 'spaces.load')
+
+export const createSpace = action(async (input: CreateSpaceInput) => {
+  const space = await api.spaces.create.mutate(input)
+  // ... optimistic updates
+}, 'spaces.create')
+```
 
 ## Tech Stack
+
+### Extension (Frontend)
 
 | Item         | Value                  |
 | ------------ | ---------------------- |
@@ -206,6 +305,19 @@ export { getSeedBookmarks } from './lib'
 | Storage      | IndexedDB (idb-keyval) |
 | Styling      | Tailwind CSS v4        |
 | Icons        | Lucide React           |
+| API Client   | tRPC Client            |
+
+### Server (Backend)
+
+| Item       | Value                   |
+| ---------- | ----------------------- |
+| Runtime    | Bun                     |
+| Framework  | Hono                    |
+| API Layer  | tRPC                    |
+| Database   | PostgreSQL (Supabase)   |
+| ORM        | Drizzle ORM             |
+| Auth       | Clerk JWT Verification  |
+| Deployment | Docker (Coolify on VPS) |
 
 ## Entity IDs
 

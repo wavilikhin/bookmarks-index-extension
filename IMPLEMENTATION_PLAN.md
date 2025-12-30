@@ -827,9 +827,9 @@ Update root `package.json` with convenience scripts:
 
 ### Phase 6: Cleanup & Polish
 
-- [ ] Update root `package.json` scripts
-- [ ] Update `AGENTS.md` with new architecture
-- [ ] Add API URL to extension environment config
+- [x] Update root `package.json` scripts
+- [x] Update `AGENTS.md` with new architecture
+- [x] Add API URL to extension environment config
 - [ ] Test full flow (auth -> load -> CRUD -> sync)
 
 ---
