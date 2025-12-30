@@ -794,11 +794,11 @@ Update root `package.json` with convenience scripts:
 
 ### Phase 2: tRPC Routers
 
-- [ ] Implement spaces router (list, create, update, delete, reorder)
-- [ ] Implement groups router (list, bySpace, create, update, delete, reorder)
-- [ ] Implement bookmarks router (list, byGroup, create, update, delete, reorder, bulkCreate)
-- [ ] Implement sync router (pull, push, status)
-- [ ] Create root appRouter and export types
+- [x] Implement spaces router (list, create, update, delete, reorder)
+- [x] Implement groups router (list, bySpace, create, update, delete, reorder)
+- [x] Implement bookmarks router (list, byGroup, create, update, delete, reorder, bulkCreate)
+- [x] Implement sync router (pull, push, status)
+- [x] Create root appRouter and export types
 
 ### Phase 3: Client Integration
 

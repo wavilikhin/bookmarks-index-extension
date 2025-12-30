@@ -63,6 +63,14 @@
       "status": "completed",
       "createdAt": "2025-12-30T08:29:22.617Z",
       "updatedAt": "2025-12-30T08:32:25.536Z"
+    },
+    {
+      "id": "mjsc5w3lycw4lxlmtx",
+      "name": "Phase 2: tRPC Routers",
+      "description": "Implement tRPC routers for spaces, groups, bookmarks, and sync operations",
+      "status": "completed",
+      "createdAt": "2025-12-30T08:39:17.697Z",
+      "updatedAt": "2025-12-30T08:42:03.489Z"
     }
   ],
   "plans": [
@@ -518,6 +526,40 @@
       "status": "active",
       "createdAt": "2025-12-30T08:29:24.189Z",
       "updatedAt": "2025-12-30T08:32:06.923Z"
+    },
+    {
+      "id": "mjsc65mtnyz2wjd0ow",
+      "featureId": "mjsc5w3lycw4lxlmtx",
+      "steps": [
+        {
+          "id": "step-0",
+          "description": "Create spaces router with list, create, update, delete, reorder procedures",
+          "status": "completed"
+        },
+        {
+          "id": "step-1",
+          "description": "Create groups router with list, bySpace, create, update, delete, reorder procedures",
+          "status": "completed"
+        },
+        {
+          "id": "step-2",
+          "description": "Create bookmarks router with list, byGroup, bySpace, create, update, delete, reorder, bulkCreate procedures",
+          "status": "completed"
+        },
+        {
+          "id": "step-3",
+          "description": "Create sync router with pull, push, status procedures",
+          "status": "completed"
+        },
+        {
+          "id": "step-4",
+          "description": "Update root appRouter to combine all routers and export types",
+          "status": "completed"
+        }
+      ],
+      "status": "active",
+      "createdAt": "2025-12-30T08:39:30.053Z",
+      "updatedAt": "2025-12-30T08:41:46.896Z"
     }
   ],
   "logs": [
@@ -625,6 +667,20 @@
       "type": "decision",
       "content": "Phase 1 Server Foundation complete. Created: Hono server with tRPC, Drizzle schema for users/spaces/groups/bookmarks, Clerk JWT verification, and database client. Server starts and responds to health checks.",
       "timestamp": "2025-12-30T08:32:11.267Z"
+    },
+    {
+      "id": "mjsc9i3ti3m3gfar1vp",
+      "featureId": "mjsc5w3lycw4lxlmtx",
+      "type": "decision",
+      "content": "Phase 2 tRPC Routers implemented with all CRUD operations: spaces (list, getById, create, update, delete, reorder), groups (list, bySpace, getById, create, update, delete, reorder), bookmarks (list, byGroup, bySpace, getById, create, update, delete, bulkCreate, reorder, move), sync (pull, push, status, ensureUser). All routers use protectedProcedure for auth enforcement.",
+      "timestamp": "2025-12-30T08:42:06.185Z"
+    },
+    {
+      "id": "mjsce378ve5odj0arva",
+      "featureId": "mjsc5w3lycw4lxlmtx",
+      "type": "change",
+      "content": "Addressed code review findings: Added NOT_FOUND error handling to update/move mutations in all routers, replaced raw SQL count with drizzle count() helper for type safety.",
+      "timestamp": "2025-12-30T08:45:40.148Z"
     }
   ],
   "notes": [
@@ -652,5 +708,5 @@
       "createdAt": "2025-12-25T15:50:43.874Z"
     }
   ],
-  "activeFeatureId": "mjsbt4xlkhhk3ioyux"
+  "activeFeatureId": "mjsc5w3lycw4lxlmtx"
 }
