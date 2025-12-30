@@ -1,0 +1,16 @@
+services:
+  bookmarks-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks:
+      - lowoco8g0ow8okosoooogk4o
+    environment:
+      - NODE_ENV=production
+    expose:
+      - "3000"
+    restart: unless-stopped
+
+networks:
+  lowoco8g0ow8okosoooogk4o:
+    external: true
