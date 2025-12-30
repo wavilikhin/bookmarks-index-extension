@@ -1,23 +1,13 @@
 import * as React from 'react'
-import { Trash2 } from 'lucide-react'
-import { reatomComponent, useWrap } from '@reatom/react'
+import { reatomComponent } from '@reatom/react'
+import { MainLayout } from '@/app/layout/main-layout'
 import { SpacesSidebar } from './ui/spaces-sidebar'
 import { GroupTabs } from './ui/group-tabs'
 import { BookmarkGrid } from './ui/bookmark-grid'
 import { UserMenu } from './ui/user-menu'
 import { AddEditModal } from './ui/add-edit-modal'
 import { EmptyState } from './ui/empty-state'
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogMedia
-} from '@/shared/ui'
+import { DeleteConfirmationDialog } from './ui/delete-confirmation-dialog'
 import type { Space, Group, Bookmark, EntityType } from '@/types'
 
 // Reatom atoms and actions
@@ -41,15 +31,12 @@ interface DeleteState {
 }
 
 /**
- * NewTabPage - Main layout component for the bookmark manager
+ * MainScreen - Main entry point that composes all app components
  *
- * Architecture:
- * - Left sidebar: Spaces navigation
- * - Top: Group tabs + User menu
- * - Center: Bookmark grid
- *
- * State management uses Reatom stores with IndexedDB persistence.
- * Authentication is handled by Clerk (wrapped in AuthGuard).
+ * This component is responsible for:
+ * - Composing layout with sidebar, header, and content
+ * - Managing modal states (add/edit, delete confirmation)
+ * - Coordinating CRUD operations between UI and domain
  */
 export const MainScreen = reatomComponent(() => {
   // UI state from atoms
@@ -62,7 +49,7 @@ export const MainScreen = reatomComponent(() => {
 
   // Filter groups and bookmarks based on selection
   const groups = activeSpaceId ? allGroups.filter((g) => g().spaceId === activeSpaceId) : []
-  const bookmarks = selectedGroupId ? allBookmarks.filter((b) => b().groupId === selectedGroupId) : []
+  const bookmarks = selectedGroupId ? allBookmarks.filter((b) => b().groupId === selectedGroupId).map((b) => b()) : []
 
   // Modal states
   const [modalState, setModalState] = React.useState<ModalState>({
@@ -75,11 +62,9 @@ export const MainScreen = reatomComponent(() => {
     entityType: 'space'
   })
 
-  // 1. Set initial active space when spaces load
+  // Theme state (temporary until moved to global store)
+  const [theme, setTheme] = React.useState<'light' | 'dark' | 'system'>('system')
 
-  // 2. Set initial selected group when space changes or groups load
-
-  // 3. Reset selected group when space changes
   // Modal handlers
   const openCreateModal = (entityType: EntityType) => {
     setModalState({ isOpen: true, mode: 'create', entityType })
@@ -222,62 +207,62 @@ export const MainScreen = reatomComponent(() => {
 
   const emptyState = getEmptyState()
 
+  // Render sidebar slot
+  const sidebarSlot = (
+    <SpacesSidebar
+      spaces={allSpaces}
+      activeSpaceId={activeSpaceId}
+      onSelectSpace={setActiveSpace}
+      onAddSpace={() => openCreateModal('space')}
+      onEditSpace={(space) => openEditModal('space', space)}
+      onDeleteSpace={(space) => openDeleteDialog('space', space)}
+    />
+  )
+
+  // Render header slot
+  const headerSlot = (
+    <>
+      <div className="flex-1">
+        {activeSpaceId && (
+          <GroupTabs
+            groups={groups}
+            activeGroupId={selectedGroupId}
+            onSelectGroup={setSelectedGroup}
+            onAddGroup={() => openCreateModal('group')}
+            onEditGroup={(group) => openEditModal('group', group)}
+            onDeleteGroup={(group) => openDeleteDialog('group', group)}
+          />
+        )}
+      </div>
+      <div className="flex items-center gap-2 px-4 py-2">
+        <UserMenu onSettings={() => console.log('Open settings')} theme={theme} onThemeChange={setTheme} />
+      </div>
+    </>
+  )
+
+  // Render content
+
   return (
-    <div className="flex h-screen w-full bg-background">
-      {/* Left sidebar - Spaces */}
-      <SpacesSidebar
-        spaces={allSpaces}
-        activeSpaceId={activeSpaceId}
-        onSelectSpace={setActiveSpace}
-        onAddSpace={() => openCreateModal('space')}
-        onEditSpace={(space) => openEditModal('space', space)}
-        onDeleteSpace={(space) => openDeleteDialog('space', space)}
-      />
-
-      {/* Main content area */}
-      <main className="flex flex-1 flex-col overflow-hidden">
-        {/* Top bar - Groups tabs + User menu */}
-        <header className="flex items-center justify-between border-b border-border/50 bg-background">
-          <div className="flex-1">
-            {activeSpaceId && (
-              <GroupTabs
-                groups={groups}
-                activeGroupId={selectedGroupId}
-                onSelectGroup={setSelectedGroup}
-                onAddGroup={() => openCreateModal('group')}
-                onEditGroup={(group) => openEditModal('group', group)}
-                onDeleteGroup={(group) => openDeleteDialog('group', group)}
-              />
-            )}
-          </div>
-
-          {/* User menu */}
-          <div className="flex items-center gap-2 px-4 py-2">
-            <UserMenu onSettings={() => console.log('Open settings')} theme={theme} onThemeChange={setTheme} />
-          </div>
-        </header>
-
-        {/* Content area - Bookmark grid or empty state */}
-        <div className="flex flex-1 overflow-auto">
-          {emptyState ? (
-            <EmptyState
-              type={emptyState}
-              onAction={() => {
-                if (emptyState === 'no-spaces') openCreateModal('space')
-                else if (emptyState === 'no-groups') openCreateModal('group')
-                else openCreateModal('bookmark')
-              }}
-            />
-          ) : (
-            <BookmarkGrid
-              bookmarks={bookmarks}
-              onAddBookmark={() => openCreateModal('bookmark')}
-              onEditBookmark={(bookmark) => openEditModal('bookmark', bookmark)}
-              onDeleteBookmark={(bookmark) => openDeleteDialog('bookmark', bookmark)}
-            />
-          )}
-        </div>
-      </main>
+    <>
+      <MainLayout sidebar={sidebarSlot} header={headerSlot}>
+        {emptyState ? (
+          <EmptyState
+            type={emptyState}
+            onAction={() => {
+              if (emptyState === 'no-spaces') openCreateModal('space')
+              else if (emptyState === 'no-groups') openCreateModal('group')
+              else openCreateModal('bookmark')
+            }}
+          />
+        ) : (
+          <BookmarkGrid
+            bookmarks={bookmarks}
+            onAddBookmark={() => openCreateModal('bookmark')}
+            onEditBookmark={(bookmark) => openEditModal('bookmark', bookmark)}
+            onDeleteBookmark={(bookmark) => openDeleteDialog('bookmark', bookmark)}
+          />
+        )}
+      </MainLayout>
 
       {/* Add/Edit Modal */}
       <AddEditModal
@@ -290,39 +275,12 @@ export const MainScreen = reatomComponent(() => {
       />
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={deleteState.isOpen} onOpenChange={(open) => !open && closeDeleteDialog()}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogMedia className="bg-destructive/10">
-              <Trash2 className="size-5 text-destructive" />
-            </AlertDialogMedia>
-            <AlertDialogTitle>Delete {deleteState.entityType}?</AlertDialogTitle>
-            <AlertDialogDescription>
-              {deleteState.entityType === 'space' && (
-                <>
-                  This will permanently delete this space and all its groups and bookmarks. This action cannot be
-                  undone.
-                </>
-              )}
-              {deleteState.entityType === 'group' && (
-                <>This will permanently delete this group and all its bookmarks. This action cannot be undone.</>
-              )}
-              {deleteState.entityType === 'bookmark' && (
-                <>This will permanently delete this bookmark. This action cannot be undone.</>
-              )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
+      <DeleteConfirmationDialog
+        isOpen={deleteState.isOpen}
+        entityType={deleteState.entityType}
+        onClose={closeDeleteDialog}
+        onConfirm={handleDelete}
+      />
+    </>
   )
-}, 'NewTabPage')
+}, 'MainScreen')
