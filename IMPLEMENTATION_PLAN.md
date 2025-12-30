@@ -802,13 +802,13 @@ Update root `package.json` with convenience scripts:
 
 ### Phase 3: Client Integration
 
-- [ ] Add tRPC client dependencies to root package.json
-- [ ] Create `src/api/client.ts` with tRPC client setup
-- [ ] Update `src/domain/spaces/spaces.model.ts` with server sync
-- [ ] Update `src/domain/groups/groups.model.ts` with server sync
-- [ ] Update `src/domain/bookmarks/bookmarks.model.ts` with server sync
-- [ ] Add data loading action on auth completion
-- [ ] Add environment variable for API URL
+- [x] Add tRPC client dependencies to root package.json
+- [x] Create `src/api/client.ts` with tRPC client setup
+- [x] Update `src/domain/spaces/spaces.model.ts` with server sync
+- [x] Update `src/domain/groups/groups.model.ts` with server sync
+- [x] Update `src/domain/bookmarks/bookmarks.model.ts` with server sync
+- [x] Add data loading action on auth completion
+- [x] Add environment variable for API URL
 
 ### Phase 4: Migration & Sync
 

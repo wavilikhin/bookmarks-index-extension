@@ -58,16 +58,19 @@ export function SpacesSidebar({
 
       {/* Spaces list */}
       <nav className="flex flex-1 flex-col gap-1 px-2 md:w-full md:px-3">
-        {spaces.map((space) => (
-          <SpaceItem
-            key={space.id}
-            space={space}
-            isActive={space.id === activeSpaceId}
-            onSelect={() => onSelectSpace(space.id)}
-            onEdit={() => onEditSpace(space)}
-            onDelete={() => onDeleteSpace(space)}
-          />
-        ))}
+        {spaces.map((spaceAtom) => {
+          const space = spaceAtom()
+          return (
+            <SpaceItem
+              key={space.id}
+              space={space}
+              isActive={space.id === activeSpaceId}
+              onSelect={() => onSelectSpace(space.id)}
+              onEdit={() => onEditSpace(space)}
+              onDelete={() => onDeleteSpace(space)}
+            />
+          )
+        })}
       </nav>
 
       {/* Add space button */}

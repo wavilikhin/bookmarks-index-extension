@@ -92,22 +92,26 @@ export const MainScreen = reatomComponent(() => {
       if (modalState.mode === 'create') {
         switch (modalState.entityType) {
           case 'space': {
-            const newSpace = createSpace({
+            const newSpace = await createSpace({
               name: data.name,
               icon: data.icon || '📁',
               color: data.color
             })
-            setActiveSpace(newSpace.id)
+            if (newSpace) {
+              setActiveSpace(newSpace.id)
+            }
             break
           }
           case 'group': {
             if (activeSpaceId) {
-              const newGroupId = createGroup({
+              const newGroupId = await createGroup({
                 spaceId: activeSpaceId,
                 name: data.name,
                 icon: data.icon
               })
-              setSelectedGroup(newGroupId)
+              if (newGroupId) {
+                setSelectedGroup(newGroupId)
+              }
             }
             break
           }
@@ -115,7 +119,7 @@ export const MainScreen = reatomComponent(() => {
             if (selectedGroupId) {
               if (!activeSpaceId) return
 
-              createBookmark({
+              await createBookmark({
                 spaceId: activeSpaceId,
                 groupId: selectedGroupId,
                 title: data.title,
@@ -132,7 +136,7 @@ export const MainScreen = reatomComponent(() => {
 
         switch (modalState.entityType) {
           case 'space':
-            updateSpace(entity.id, {
+            await updateSpace(entity.id, {
               name: data.name,
               icon: data.icon,
               color: data.color
@@ -166,7 +170,7 @@ export const MainScreen = reatomComponent(() => {
     try {
       switch (deleteState.entityType) {
         case 'space': {
-          deleteSpace(entity.id)
+          await deleteSpace(entity.id)
           // Select another space if available
           const remainingSpaces = allSpaces.filter((s) => s().id !== entity.id)
           if (remainingSpaces.length > 0) {
@@ -177,7 +181,7 @@ export const MainScreen = reatomComponent(() => {
           break
         }
         case 'group': {
-          deleteGroup(entity.id)
+          await deleteGroup(entity.id)
           // Select another group if available
           const remainingGroups = groups.filter((g) => g()!.id !== entity.id)
           if (remainingGroups.length > 0) {

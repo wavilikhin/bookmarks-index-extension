@@ -91,16 +91,19 @@ export function GroupTabs({
         className="flex items-center gap-1 overflow-x-auto px-4 scrollbar-none"
         style={{ scrollbarWidth: 'none' }}
       >
-        {groups.map((group) => (
-          <GroupTab
-            key={group().id}
-            group={group}
-            isActive={group.id === activeGroupId}
-            onSelect={() => onSelectGroup(group.id)}
-            onEdit={() => onEditGroup(group)}
-            onDelete={() => onDeleteGroup(group)}
-          />
-        ))}
+        {groups.map((groupAtom) => {
+          const group = groupAtom()
+          return (
+            <GroupTab
+              key={group.id}
+              group={group}
+              isActive={group.id === activeGroupId}
+              onSelect={() => onSelectGroup(group.id)}
+              onEdit={() => onEditGroup(group)}
+              onDelete={() => onDeleteGroup(group)}
+            />
+          )
+        })}
 
         {/* Add group button */}
         <Button

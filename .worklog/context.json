@@ -71,6 +71,22 @@
       "status": "completed",
       "createdAt": "2025-12-30T08:39:17.697Z",
       "updatedAt": "2025-12-30T08:42:03.489Z"
+    },
+    {
+      "id": "mjscjugmvj22hu8dg3c",
+      "name": "Phase 3: Client Integration",
+      "description": "Integrate tRPC client into the Chrome extension frontend to connect with the backend server",
+      "status": "active",
+      "createdAt": "2025-12-30T08:50:08.758Z",
+      "updatedAt": "2025-12-30T08:50:08.758Z"
+    },
+    {
+      "id": "mjsczz3znbaje08s3vj",
+      "name": "Phase 4: Migration & Sync",
+      "description": "Create migration service for local IndexedDB to server migration, including migration dialog and integration into auth flow",
+      "status": "active",
+      "createdAt": "2025-12-30T09:02:41.279Z",
+      "updatedAt": "2025-12-30T09:02:41.279Z"
     }
   ],
   "plans": [
@@ -560,6 +576,51 @@
       "status": "active",
       "createdAt": "2025-12-30T08:39:30.053Z",
       "updatedAt": "2025-12-30T08:41:46.896Z"
+    },
+    {
+      "id": "mjscjv8cmd7cpqkal2i",
+      "featureId": "mjscjugmvj22hu8dg3c",
+      "steps": [
+        {
+          "id": "step-0",
+          "description": "Add tRPC client dependencies to root package.json",
+          "status": "completed"
+        },
+        {
+          "id": "step-1",
+          "description": "Create src/api/client.ts with tRPC client setup",
+          "status": "completed"
+        },
+        {
+          "id": "step-2",
+          "description": "Update src/domain/spaces/spaces.model.ts with server sync",
+          "status": "completed"
+        },
+        {
+          "id": "step-3",
+          "description": "Update src/domain/groups/groups.model.ts with server sync",
+          "status": "completed"
+        },
+        {
+          "id": "step-4",
+          "description": "Update src/domain/bookmarks/bookmarks.model.ts with server sync",
+          "status": "completed"
+        },
+        {
+          "id": "step-5",
+          "description": "Add data loading action on auth completion",
+          "status": "completed"
+        },
+        {
+          "id": "step-6",
+          "description": "Add environment variable for API URL",
+          "status": "completed",
+          "meta": "All Phase 3 tasks completed. Fixed export issue in src/app/auth/index.ts. TypeScript and lint pass."
+        }
+      ],
+      "status": "active",
+      "createdAt": "2025-12-30T08:50:09.756Z",
+      "updatedAt": "2025-12-30T09:02:36.869Z"
     }
   ],
   "logs": [
@@ -708,5 +769,5 @@
       "createdAt": "2025-12-25T15:50:43.874Z"
     }
   ],
-  "activeFeatureId": "mjsc5w3lycw4lxlmtx"
+  "activeFeatureId": "mjsczz3znbaje08s3vj"
 }
