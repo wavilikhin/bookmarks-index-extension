@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/bun'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { trpcServer } from '@hono/trpc-server'
@@ -44,6 +45,12 @@ async function runMigrations() {
 // Initialize app
 const app = new Hono()
 
+// Sentry error handler middleware - captures errors and re-throws them
+app.onError((err, c) => {
+  Sentry.captureException(err)
+  throw err
+})
+
 // CORS configuration - Chrome extension only in production
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',').filter(Boolean) || []
 const isDev = process.env.NODE_ENV !== 'production'
@@ -88,6 +95,36 @@ app.get('/health', (c) => {
   })
 })
 
+// Debug endpoints to verify Sentry integration (only in development)
+if (process.env.NODE_ENV !== 'production') {
+  // Test error capture
+  app.get('/debug-sentry', () => {
+    Sentry.logger.info('User triggered test error', {
+      action: 'test_error_endpoint'
+    })
+    throw new Error('My first Sentry error!')
+  })
+
+  // Test all log levels - doesn't throw, just logs
+  app.get('/debug-sentry-logs', (c) => {
+    const testId = crypto.randomUUID().slice(0, 8)
+
+    Sentry.logger.trace('Trace level log', { testId, level: 'trace' })
+    Sentry.logger.debug('Debug level log', { testId, level: 'debug' })
+    Sentry.logger.info('Info level log', { testId, level: 'info' })
+    Sentry.logger.warn('Warning level log', { testId, level: 'warn' })
+    Sentry.logger.error('Error level log', { testId, level: 'error' })
+    Sentry.logger.fatal('Fatal level log', { testId, level: 'fatal' })
+
+    return c.json({
+      success: true,
+      message: 'Sent 6 test logs to Sentry (trace, debug, info, warn, error, fatal)',
+      testId,
+      checkSentryDashboard: 'https://sentry.io → Logs'
+    })
+  })
+}
+
 // Readiness check endpoint (includes DB connectivity)
 app.get('/ready', async (c) => {
   try {
@@ -125,7 +162,6 @@ app.use(
 
 // Run migrations before starting server
 await runMigrations()
-
 const port = process.env.PORT || 3000
 serverLogger.info('Starting server', {
   port,

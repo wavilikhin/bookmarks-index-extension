@@ -11,7 +11,7 @@ on:
       skip_deploy:
         description: 'Skip deployment (build only)'
         required: false
-        default: 'false'
+        default: false
         type: boolean
 
 env:
@@ -68,6 +68,8 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            APP_VERSION=${{ steps.vars.outputs.short_sha }}
 
       - name: Output image info
         run: |
@@ -82,6 +84,45 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Digest:** \`${{ steps.build.outputs.digest }}\`" >> $GITHUB_STEP_SUMMARY
 
+  sentry-sourcemaps:
+    name: Upload Source Maps to Sentry
+    needs: build
+    runs-on: ubuntu-latest
+    if: ${{ vars.SENTRY_ORG != '' && vars.SENTRY_PROJECT != '' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install
+        working-directory: ./server
+
+      - name: Build with source maps
+        run: bun run build
+        working-directory: ./server
+        env:
+          APP_VERSION: ${{ needs.build.outputs.short_sha }}
+
+      - name: Upload source maps to Sentry
+        run: |
+          bunx sentry-cli sourcemaps inject ./dist
+          bunx sentry-cli sourcemaps upload --release=${{ needs.build.outputs.short_sha }} ./dist
+        working-directory: ./server
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
+
+      - name: Sentry Summary
+        run: |
+          echo "## Sentry Source Maps Uploaded" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Release:** \`${{ needs.build.outputs.short_sha }}\`" >> $GITHUB_STEP_SUMMARY
+
   deploy:
     name: Deploy to Coolify
     needs: build
@@ -94,10 +135,10 @@ jobs:
           response=$(curl -s -w "\n%{http_code}" "${{ secrets.COOLIFY_WEBHOOK_URL }}")
           http_code=$(echo "$response" | tail -n1)
           body=$(echo "$response" | sed '$d')
-          
+
           echo "Response: $body"
           echo "HTTP Code: $http_code"
-          
+
           if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
             echo "Deployment triggered successfully"
           else
