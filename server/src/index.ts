@@ -46,7 +46,7 @@ async function runMigrations() {
 const app = new Hono()
 
 // Sentry error handler middleware - captures errors and re-throws them
-app.onError((err, c) => {
+app.onError((err) => {
   Sentry.captureException(err)
   throw err
 })

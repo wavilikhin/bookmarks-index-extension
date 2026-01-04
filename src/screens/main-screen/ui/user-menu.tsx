@@ -1,5 +1,5 @@
 import { Settings, Moon, Sun, Monitor } from 'lucide-react'
-import { UserButton } from '@clerk/clerk-react'
+import { UserButton } from '@clerk/chrome-extension'
 import {
   Button,
   DropdownMenu,

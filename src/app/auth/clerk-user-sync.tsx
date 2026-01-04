@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useAuth, useUser } from '@clerk/clerk-react'
+import { useAuth, useUser } from '@clerk/chrome-extension'
 
 import { userIdAtom } from '@/stores'
 import { dataLoadingAtom, dataLoadedAtom, dataErrorAtom } from '@/stores/auth/data-atoms'
