@@ -20,26 +20,6 @@ bun run format               # Format with Prettier
 bunx shadcn@latest add <c>   # Add shadcn component
 ```
 
-### Server (Backend)
-
-```bash
-bun run dev:server           # Start server dev mode (http://localhost:3000)
-bun run dev:all              # Start both frontend and server
-bun run build:server         # Build server for production
-bun run build:all            # Build both frontend and server
-bun run server:start         # Start production server
-bun run tsc:server           # Type check server
-```
-
-### Database
-
-```bash
-bun run db:generate          # Generate Drizzle migrations
-bun run db:migrate           # Run migrations
-bun run db:push              # Push schema to database (dev)
-bun run db:studio            # Open Drizzle Studio
-```
-
 ## Code Style
 
 ### Formatting (Prettier)
@@ -174,9 +154,6 @@ Each domain entity lives in `src/domain/<entity>/` with a strict file structure:
 src/domain/<entity>/
 ├── <entity>.model.ts    # Atoms + Actions (all state & logic)
 ├── <entity>.types.ts    # Types + Input types
-├── lib/                 # Helper functions (seed data, utils)
-│   ├── getSeed<Entity>.ts
-│   └── index.ts         # Barrel export
 └── index.ts             # Consolidated public exports
 ```
 
@@ -185,9 +162,8 @@ src/domain/<entity>/
 1. **Unique file names** - Use `.model.ts` and `.types.ts` suffixes for easy file search
 2. **Single model file** - All atoms and actions for a domain go in one `.model.ts` file
 3. **Types separate** - Keep types in `.types.ts`, import with `import type`
-4. **Lib folder** - Helper functions (seed generators, validators) go in `/lib`
-5. **Barrel exports** - Each folder has `index.ts` that re-exports public API
-6. **No React hooks for atoms** - Use atoms directly in `reatomComponent()`, don't create wrapper hooks
+4. **Barrel exports** - Each folder has `index.ts` that re-exports public API
+5. **No React hooks for atoms** - Use atoms directly in `reatomComponent()`, don't create wrapper hooks
 
 ### Example: Bookmarks Domain
 
@@ -203,7 +179,6 @@ export const createBookmark = action((input: CreateBookmarkInput) => { ... }, 'b
 // index.ts
 export type { Bookmark, CreateBookmarkInput } from './bookmarks.types'
 export { bookmarksAtom, createBookmark } from './bookmarks.model'
-export { getSeedBookmarks } from './lib'
 ```
 
 ## Path Aliases
@@ -214,76 +189,11 @@ export { getSeedBookmarks } from './lib'
 | `@/shared/ui`     | UI components     |
 | `@/shared/ui/kit` | shadcn primitives |
 | `@/lib`           | Utilities         |
-| `@/lib/storage`   | IndexedDB layer   |
 | `@/stores`        | Reatom stores     |
 | `@/types`         | TypeScript types  |
 | `@/api`           | tRPC client       |
 
-## Server Structure
-
-The server lives in `/server` with its own package.json:
-
-```
-server/
-├── src/
-│   ├── db/
-│   │   ├── schema/          # Drizzle schema files
-│   │   │   ├── users.ts
-│   │   │   ├── spaces.ts
-│   │   │   ├── groups.ts
-│   │   │   ├── bookmarks.ts
-│   │   │   ├── relations.ts
-│   │   │   └── index.ts
-│   │   └── client.ts        # Database connection
-│   ├── routers/             # tRPC routers
-│   │   ├── spaces.ts
-│   │   ├── groups.ts
-│   │   ├── bookmarks.ts
-│   │   ├── sync.ts
-│   │   └── index.ts         # Root appRouter
-│   ├── lib/
-│   │   ├── auth.ts          # Clerk JWT verification + Hono auth middleware
-│   │   └── logger/          # Logging library
-│   │       ├── index.ts     # Logger singleton + exports
-│   │       ├── logger.ts    # Core Logger class
-│   │       ├── types.ts     # Type definitions
-│   │       ├── middleware.ts # Hono request logger
-│   │       └── transports/  # Output transports
-│   │           ├── console.ts # Pretty console output
-│   │           └── file.ts    # JSON file output
-│   ├── context.ts           # tRPC context
-│   ├── trpc.ts              # tRPC initialization
-│   └── index.ts             # Hono server entry
-├── drizzle.config.ts
-├── Dockerfile
-└── package.json
-```
-
-### tRPC Router Pattern
-
-```typescript
-// server/src/routers/spaces.ts
-import { z } from 'zod'
-import { eq, and } from 'drizzle-orm'
-import { router, protectedProcedure } from '../trpc'
-import { spaces } from '../db/schema'
-
-export const spacesRouter = router({
-  list: protectedProcedure.query(async ({ ctx }) => {
-    return ctx.db.select().from(spaces).where(eq(spaces.userId, ctx.userId))
-  }),
-
-  create: protectedProcedure.input(z.object({ id: z.string(), name: z.string() })).mutation(async ({ ctx, input }) => {
-    const [space] = await ctx.db
-      .insert(spaces)
-      .values({ ...input, userId: ctx.userId })
-      .returning()
-    return space
-  })
-})
-```
-
-### API Client Usage (Frontend)
+## API Client Usage
 
 ```typescript
 // Import the typed client
@@ -305,27 +215,14 @@ export const createSpace = action(async (input: CreateSpaceInput) => {
 
 ### Extension (Frontend)
 
-| Item         | Value                  |
-| ------------ | ---------------------- |
-| UI Framework | shadcn/ui (Base-Lyra)  |
-| State        | Reatom v1000           |
-| Auth         | Clerk                  |
-| Storage      | IndexedDB (idb-keyval) |
-| Styling      | Tailwind CSS v4        |
-| Icons        | Lucide React           |
-| API Client   | tRPC Client            |
-
-### Server (Backend)
-
-| Item       | Value                   |
-| ---------- | ----------------------- |
-| Runtime    | Bun                     |
-| Framework  | Hono                    |
-| API Layer  | tRPC                    |
-| Database   | PostgreSQL (Supabase)   |
-| ORM        | Drizzle ORM             |
-| Auth       | Clerk JWT Verification  |
-| Deployment | Docker (Coolify on VPS) |
+| Item         | Value                 |
+| ------------ | --------------------- |
+| UI Framework | shadcn/ui (Base-Lyra) |
+| State        | Reatom v1000          |
+| Auth         | Clerk                 |
+| Styling      | Tailwind CSS v4       |
+| Icons        | Lucide React          |
+| API Client   | tRPC Client           |
 
 ## Entity IDs
 

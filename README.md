@@ -6,15 +6,24 @@ A browser extension that replaces the new tab page with an elegant, hierarchical
 
 - **Hierarchical organization**: User → Spaces → Groups → Bookmarks
 - **Theme support**: Light, dark, and system preference
-- **Sample data**: First-time users get pre-populated bookmarks
 - **Full CRUD**: Create, edit, and delete spaces, groups, and bookmarks
+- **Cloud sync**: Data synced to server via tRPC API
+
+## Architecture
+
+This repository contains the Chrome extension (frontend) only. Related repositories:
+
+- **bookmarks-index-server** - Backend server (separate repository)
+- **bookmarks-shared-types** - Shared TypeScript types for tRPC
 
 ## Tech Stack
 
 - React 19 + TypeScript
 - Vite 7
 - Tailwind CSS v4 + shadcn/ui (Base-Lyra)
-- IndexedDB via idb-keyval (storage)
+- Reatom v1000 (state management)
+- Clerk (authentication)
+- tRPC Client (API communication)
 - nanoid (ID generation)
 - Zod (validation)
 
@@ -46,6 +55,15 @@ bun run build:extension
 # 5. Open a new tab - it will show Bookmarks Index
 ```
 
+## Environment Variables
+
+Create a `.env.local` file with:
+
+```env
+VITE_CLERK_PUBLISHABLE_KEY=your_clerk_key
+VITE_API_URL=https://your-server-url/trpc
+```
+
 ## Scripts
 
 | Command                   | Description              |
@@ -56,26 +74,29 @@ bun run build:extension
 | `bun run build:watch`     | Build with watch mode    |
 | `bun run preview`         | Preview production build |
 | `bun run lint`            | Run ESLint               |
+| `bun run tsc`             | Type check               |
 
 ## Project Structure
 
 ```
 src/
-├── components/
-│   ├── auth/           # Login form, auth guard
-│   ├── new-tab/        # Main app components
-│   └── ui/             # shadcn/ui components
-├── hooks/              # Custom React hooks
-├── lib/
-│   ├── storage/        # IndexedDB layer
-│   └── utils/          # Entity utilities, validators
-├── stores/             # Zustand state stores
+├── api/                # tRPC client setup
+├── app/                # App entry, auth guards
+├── components/         # Shared UI components
+├── domain/             # Domain entities (spaces, groups, bookmarks)
+│   ├── spaces/
+│   ├── groups/
+│   └── bookmarks/
+├── lib/                # Utilities
+├── screens/            # Main application screens
+├── shared/ui/          # shadcn/ui components
+├── stores/             # Reatom state stores
 └── types/              # TypeScript definitions
 ```
 
 ## Usage
 
-1. **Login**: Enter any username to get started (data is stored locally per username)
+1. **Login**: Sign in with Clerk authentication
 2. **Spaces**: Create workspaces like "Work", "Personal", "Learning"
 3. **Groups**: Organize bookmarks within spaces (e.g., "Development", "Design")
 4. **Bookmarks**: Add your favorite links with title, URL, and description

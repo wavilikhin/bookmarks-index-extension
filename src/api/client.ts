@@ -1,7 +1,7 @@
 // tRPC client setup for connecting to the backend server
 import { createTRPCClient, httpBatchLink, TRPCClientError } from '@trpc/client'
 
-import type { AppRouter } from '../../server/src/routers'
+import type { AppRouter } from '@bookmarks/shared-types'
 
 // Extend Window to include Clerk
 declare global {
