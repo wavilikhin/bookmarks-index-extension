@@ -1,4 +1,4 @@
-import { ClerkProvider } from '@clerk/clerk-react'
+import { ClerkProvider } from '@clerk/chrome-extension'
 
 import App from './app/App'
 
@@ -10,9 +10,17 @@ if (!PUBLISHABLE_KEY) {
   throw new Error('Missing Clerk Publishable Key. Add PLASMO_PUBLIC_CLERK_PUBLISHABLE_KEY to .env')
 }
 
+// Chrome Extension URL for navigation redirects (newtab page)
+const EXTENSION_URL = chrome.runtime.getURL('.')
+
 function NewTabPage() {
   return (
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
+    <ClerkProvider
+      publishableKey={PUBLISHABLE_KEY}
+      afterSignOutUrl={`${EXTENSION_URL}/newtab.html`}
+      signInFallbackRedirectUrl={`${EXTENSION_URL}/newtab.html`}
+      signUpFallbackRedirectUrl={`${EXTENSION_URL}/newtab.html`}
+    >
       <App />
     </ClerkProvider>
   )
