@@ -10,9 +10,13 @@
 ### Extension (Frontend)
 
 ```bash
-bun dev                      # Start dev server (http://localhost:5173)
-bun run build                # Build for production
-bun run build:extension      # Build for Chrome extension
+bun dev                      # Start dev server (Chrome)
+bun dev:firefox              # Start dev server (Firefox)
+bun run build                # Build for production (Chrome)
+bun run build:firefox        # Build for production (Firefox)
+bun run build:all            # Build for both browsers
+bun run package              # Package for Chrome Web Store
+bun run package:firefox      # Package for Firefox Add-ons
 bun run lint                 # Run ESLint
 bun run lint:fix             # Fix lint errors
 bun run tsc                  # Type check (no emit)
@@ -217,12 +221,14 @@ export const createSpace = action(async (input: CreateSpaceInput) => {
 
 | Item         | Value                 |
 | ------------ | --------------------- |
+| Build        | Plasmo Framework      |
 | UI Framework | shadcn/ui (Base-Lyra) |
 | State        | Reatom v1000          |
 | Auth         | Clerk                 |
-| Styling      | Tailwind CSS v4       |
+| Styling      | Tailwind CSS v3       |
 | Icons        | Lucide React          |
 | API Client   | tRPC Client           |
+| React        | React 18              |
 
 ## Entity IDs
 

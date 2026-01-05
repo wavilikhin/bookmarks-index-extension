@@ -1,7 +1,10 @@
 // tRPC client setup for connecting to the backend server
 import { createTRPCClient, httpBatchLink, TRPCClientError } from '@trpc/client'
 
-import type { AppRouter } from '@bookmarks/shared-types'
+// TODO: Import AppRouter from @bookmarks/shared-types when available
+// For now, we use a local type definition
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AppRouter = any
 
 // Extend Window to include Clerk
 declare global {
@@ -29,7 +32,7 @@ async function getAuthToken(): Promise<string | null> {
 export const api = createTRPCClient<AppRouter>({
   links: [
     httpBatchLink({
-      url: import.meta.env.VITE_API_URL || 'http://localhost:3000/trpc',
+      url: process.env.PLASMO_PUBLIC_API_URL || 'http://localhost:3000/trpc',
       async headers() {
         const token = await getAuthToken()
         return token ? { Authorization: `Bearer ${token}` } : {}
