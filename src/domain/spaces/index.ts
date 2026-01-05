@@ -10,4 +10,3 @@ export {
   deleteSpace,
   reorderSpaces
 } from './spaces.model'
-export { getSeedSpaces } from './lib'

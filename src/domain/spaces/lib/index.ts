@@ -1,1 +1,0 @@
-export { getSeedSpaces } from './getSeedSpaces'

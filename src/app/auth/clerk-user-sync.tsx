@@ -3,7 +3,6 @@ import { useAuth, useUser } from '@clerk/clerk-react'
 
 import { userIdAtom } from '@/stores'
 import { dataLoadingAtom, dataLoadedAtom, dataErrorAtom } from '@/stores/auth/data-atoms'
-import { checkMigration, migrationDialogOpenAtom } from '@/stores/migration'
 import { loadSpaces } from '@/domain/spaces'
 import { loadGroups } from '@/domain/groups'
 import { loadBookmarks } from '@/domain/bookmarks'
@@ -51,45 +50,10 @@ async function loadUserData(email?: string, name?: string, avatarUrl?: string) {
 }
 
 /**
- * Check for migration needs and handle accordingly
- */
-async function handleMigrationCheck(
-  userId: string,
-  email?: string,
-  name?: string,
-  avatarUrl?: string
-): Promise<boolean> {
-  try {
-    // First ensure user exists on server
-    await api.sync.ensureUser.mutate({
-      email: email,
-      name: name,
-      avatarUrl: avatarUrl
-    })
-
-    // Check if migration is needed
-    const result = await checkMigration(userId)
-
-    // If migration dialog is shown, don't load data yet
-    // Data will be loaded after migration completes
-    return result.shouldShowDialog
-  } catch (error) {
-    console.error('Failed to check migration:', error)
-    return false
-  }
-}
-
-/**
  * ClerkUserSync - Syncs Clerk authentication state to Reatom userIdAtom
  *
  * This component bridges Clerk's authentication with our Reatom data layer.
  * When a user signs in/out via Clerk, it updates userIdAtom and loads/clears data.
- *
- * Migration flow:
- * 1. User signs in
- * 2. Check if user has local IndexedDB data
- * 3. If yes, show migration dialog and wait for user choice
- * 4. After migration (or if no local data), load data from server
  */
 export function ClerkUserSync({ children }: { children: React.ReactNode }) {
   const { userId, isLoaded } = useAuth()
@@ -113,41 +77,14 @@ export function ClerkUserSync({ children }: { children: React.ReactNode }) {
       previousUserIdRef.current = userId
       userIdAtom.set(userId)
 
-      // Check for migration first, then load data
+      // Load user data
       const email = user?.primaryEmailAddress?.emailAddress
       const name = user?.fullName ?? undefined
       const avatarUrl = user?.imageUrl
 
-      handleMigrationCheck(userId, email, name, avatarUrl).then((showingMigration) => {
-        // If migration dialog is not shown, load data immediately
-        if (!showingMigration) {
-          loadUserData(email, name, avatarUrl)
-        }
-      })
+      loadUserData(email, name, avatarUrl)
     }
   }, [userId, isLoaded, user])
-
-  // Subscribe to migration dialog close to load data after migration
-  React.useEffect(() => {
-    // Create a simple subscription to watch for migration completion
-    const checkAndLoad = () => {
-      const dialogOpen = migrationDialogOpenAtom()
-      const currentUserId = userIdAtom()
-      const loaded = dataLoadedAtom()
-
-      // If dialog just closed and data isn't loaded yet, load it
-      if (!dialogOpen && currentUserId && !loaded) {
-        const email = user?.primaryEmailAddress?.emailAddress
-        const name = user?.fullName ?? undefined
-        const avatarUrl = user?.imageUrl
-        loadUserData(email, name, avatarUrl)
-      }
-    }
-
-    // Subscribe to dialog state changes
-    const unsubscribe = migrationDialogOpenAtom.subscribe(checkAndLoad)
-    return unsubscribe
-  }, [user])
 
   return <>{children}</>
 }

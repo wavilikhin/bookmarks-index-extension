@@ -10,4 +10,3 @@ export {
   reorderBookmarks,
   moveBookmark
 } from './bookmarks.model'
-export { getSeedBookmarks } from './lib'
