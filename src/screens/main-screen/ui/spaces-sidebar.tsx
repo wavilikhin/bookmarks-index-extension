@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Plus, MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
+import { Plus, MoreHorizontal, Pencil, Trash2, PanelLeftClose, PanelLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   Button,
@@ -9,16 +9,24 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator
 } from '@/shared/ui'
+import { InlineEditInput } from './inline-edit-input'
 import type { Space } from '@/types'
 import type { Atom } from '@reatom/core'
+import type { DraftSpace } from '@/stores'
 
 interface SpacesSidebarProps {
   spaces: Atom<Space>[]
+  draftSpace: DraftSpace | null
   activeSpaceId: string | null
+  isCollapsed: boolean
+  editingSpaceId: string | null
   onSelectSpace: (spaceId: string) => void
   onAddSpace: () => void
   onEditSpace: (space: Space) => void
   onDeleteSpace: (space: Space) => void
+  onToggleCollapse: () => void
+  onSpaceNameSave: (spaceId: string, name: string) => void
+  onSpaceNameCancel: (spaceId: string) => void
 }
 
 /**
@@ -26,21 +34,37 @@ interface SpacesSidebarProps {
  *
  * Design: Floating pill active state with subtle shadow depth.
  * The sidebar uses a narrow width to maximize main content area,
- * with icons + text that truncate elegantly.
+ * with icons + text that truncate elegantly. Supports collapse animation.
  */
 export function SpacesSidebar({
   spaces,
+  draftSpace,
   activeSpaceId,
+  isCollapsed,
+  editingSpaceId,
   onSelectSpace,
   onAddSpace,
   onEditSpace,
-  onDeleteSpace
+  onDeleteSpace,
+  onToggleCollapse,
+  onSpaceNameSave,
+  onSpaceNameCancel
 }: SpacesSidebarProps) {
   return (
-    <aside className="flex h-full w-16 flex-col items-center border-r border-border/50 bg-sidebar py-6 md:w-56">
+    <aside
+      className={cn(
+        'flex h-full flex-col border-r border-border bg-sidebar py-6 transition-all duration-300 ease-in-out',
+        isCollapsed ? 'w-16' : 'w-56'
+      )}
+    >
       {/* Logo / Brand area */}
-      <div className="mb-8 flex items-center gap-2 px-3">
-        <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+      <div
+        className={cn(
+          'mb-6 flex h-10 items-center transition-all duration-200',
+          isCollapsed ? 'justify-center px-0' : 'gap-3 px-3'
+        )}
+      >
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -48,16 +72,23 @@ export function SpacesSidebar({
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="size-4"
+            className="size-5"
           >
             <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
           </svg>
         </div>
-        <span className="hidden text-sm font-medium text-foreground md:block">Bookmarks</span>
+        <span
+          className={cn(
+            'text-sm font-semibold text-foreground transition-all duration-200',
+            isCollapsed ? 'w-0 opacity-0' : 'opacity-100'
+          )}
+        >
+          Bookmarks
+        </span>
       </div>
 
       {/* Spaces list */}
-      <nav className="flex flex-1 flex-col gap-1 px-2 md:w-full md:px-3">
+      <nav className={cn('flex flex-1 flex-col gap-1', isCollapsed ? 'px-0' : 'px-3')}>
         {spaces.map((spaceAtom) => {
           const space = spaceAtom()
           return (
@@ -65,24 +96,81 @@ export function SpacesSidebar({
               key={space.id}
               space={space}
               isActive={space.id === activeSpaceId}
+              isCollapsed={isCollapsed}
+              isEditing={space.id === editingSpaceId}
+              isDraft={false}
               onSelect={() => onSelectSpace(space.id)}
               onEdit={() => onEditSpace(space)}
               onDelete={() => onDeleteSpace(space)}
+              onSave={(name) => onSpaceNameSave(space.id, name)}
+              onCancel={() => onSpaceNameCancel(space.id)}
             />
           )
         })}
+        {/* Draft space - rendered at the end when creating */}
+        {draftSpace && (
+          <SpaceItem
+            key={draftSpace.id}
+            space={draftSpace as Space}
+            isActive={draftSpace.id === activeSpaceId}
+            isCollapsed={isCollapsed}
+            isEditing={draftSpace.id === editingSpaceId}
+            isDraft={true}
+            onSelect={() => {}}
+            onEdit={() => {}}
+            onDelete={() => {}}
+            onSave={(name) => onSpaceNameSave(draftSpace.id, name)}
+            onCancel={() => onSpaceNameCancel(draftSpace.id)}
+          />
+        )}
       </nav>
 
-      {/* Add space button */}
-      <div className="mt-auto px-2 md:w-full md:px-3">
+      {/* Bottom controls */}
+      <div className={cn('mt-auto flex flex-col gap-1', isCollapsed ? 'px-0' : 'px-3')}>
+        {/* Add space button */}
         <Button
           variant="ghost"
           size="sm"
           onClick={onAddSpace}
-          className="w-full justify-center gap-2 text-muted-foreground hover:text-foreground md:justify-start"
+          className={cn(
+            'h-10 w-full text-muted-foreground hover:text-foreground',
+            isCollapsed ? 'justify-center px-0' : 'justify-start gap-3 px-3'
+          )}
         >
-          <Plus className="size-4" />
-          <span className="hidden md:inline">Add Space</span>
+          <Plus className="size-5 shrink-0" />
+          <span
+            className={cn(
+              'transition-all duration-200',
+              isCollapsed ? 'w-0 opacity-0' : 'opacity-100'
+            )}
+          >
+            Add Space
+          </span>
+        </Button>
+
+        {/* Collapse toggle button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onToggleCollapse}
+          className={cn(
+            'h-10 w-full text-muted-foreground hover:text-foreground',
+            isCollapsed ? 'justify-center px-0' : 'justify-start gap-3 px-3'
+          )}
+        >
+          {isCollapsed ? (
+            <PanelLeft className="size-5 shrink-0" />
+          ) : (
+            <PanelLeftClose className="size-5 shrink-0" />
+          )}
+          <span
+            className={cn(
+              'transition-all duration-200',
+              isCollapsed ? 'w-0 opacity-0' : 'opacity-100'
+            )}
+          >
+            Collapse
+          </span>
         </Button>
       </div>
     </aside>
@@ -92,84 +180,110 @@ export function SpacesSidebar({
 interface SpaceItemProps {
   space: Space
   isActive: boolean
+  isCollapsed: boolean
+  isEditing: boolean
+  isDraft: boolean
   onSelect: () => void
   onEdit: () => void
   onDelete: () => void
+  onSave: (name: string) => void
+  onCancel: () => void
 }
 
-function SpaceItem({ space, isActive, onSelect, onEdit, onDelete }: SpaceItemProps) {
+function SpaceItem({ space, isActive, isCollapsed, isEditing, isDraft, onSelect, onEdit, onDelete, onSave, onCancel }: SpaceItemProps) {
   const [showMenu, setShowMenu] = React.useState(false)
 
   return (
     <div
       className={cn(
-        'group relative flex items-center gap-3 rounded-lg px-3 py-2 transition-all duration-200',
+        'group relative flex h-10 items-center rounded-lg transition-all duration-200',
         'cursor-pointer select-none',
+        isCollapsed ? 'justify-center px-0' : 'gap-3 px-3',
         isActive
-          ? 'bg-primary/10 text-primary shadow-sm shadow-primary/5'
+          ? 'bg-primary/15 text-primary'
           : 'text-muted-foreground hover:bg-muted hover:text-foreground'
       )}
-      onClick={onSelect}
+      onClick={isEditing ? undefined : onSelect}
       role="button"
-      tabIndex={0}
+      tabIndex={isEditing ? -1 : 0}
       onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
+        if (!isEditing && (e.key === 'Enter' || e.key === ' ')) {
           onSelect()
         }
       }}
     >
-      {/* Space icon */}
-      <span className="flex size-8 shrink-0 items-center justify-center text-lg md:size-6 md:text-base">
+      {/* Space icon - 40x40 to match sidebar width when collapsed */}
+      <span className="flex size-10 shrink-0 items-center justify-center text-xl">
         {space.icon}
       </span>
 
-      {/* Space name - hidden on mobile */}
-      <span className="hidden flex-1 truncate text-sm font-medium md:block">{space.name}</span>
-
-      {/* Context menu trigger */}
-      <DropdownMenu open={showMenu} onOpenChange={setShowMenu}>
-        <DropdownMenuTrigger
-          render={
-            <button
-              className={cn(
-                'hidden size-6 items-center justify-center rounded-md opacity-0 transition-opacity',
-                'hover:bg-foreground/10 focus:opacity-100 group-hover:opacity-100',
-                'md:flex',
-                showMenu && 'opacity-100'
-              )}
-              onClick={(e) => e.stopPropagation()}
-            />
-          }
+      {/* Space name - hidden when collapsed, editable when isEditing */}
+      {isEditing ? (
+        <InlineEditInput
+          defaultValue={space.name}
+          onSave={onSave}
+          onCancel={onCancel}
+          className={cn(
+            'flex-1 text-foreground',
+            isCollapsed ? 'w-0 opacity-0' : 'opacity-100'
+          )}
+        />
+      ) : (
+        <span
+          className={cn(
+            'flex-1 truncate text-sm font-medium transition-all duration-200',
+            isCollapsed ? 'w-0 opacity-0' : 'opacity-100'
+          )}
         >
-          <MoreHorizontal className="size-3.5" />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" sideOffset={4}>
-          <DropdownMenuItem
-            onClick={(e) => {
-              e.stopPropagation()
-              onEdit()
-            }}
+          {space.name}
+        </span>
+      )}
+
+      {/* Context menu trigger - hidden when collapsed, editing, or draft */}
+      {!isCollapsed && !isEditing && !isDraft && (
+        <DropdownMenu open={showMenu} onOpenChange={setShowMenu}>
+          <DropdownMenuTrigger
+            render={
+              <button
+                className={cn(
+                  'flex size-6 items-center justify-center rounded-md opacity-0 transition-opacity',
+                  'hover:bg-foreground/10 focus:opacity-100 group-hover:opacity-100',
+                  showMenu && 'opacity-100'
+                )}
+                onClick={(e) => e.stopPropagation()}
+              />
+            }
           >
-            <Pencil className="mr-2 size-3.5" />
-            Edit
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            variant="destructive"
-            onClick={(e) => {
-              e.stopPropagation()
-              onDelete()
-            }}
-          >
-            <Trash2 className="mr-2 size-3.5" />
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+            <MoreHorizontal className="size-3.5" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" sideOffset={4}>
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation()
+                onEdit()
+              }}
+            >
+              <Pencil className="mr-2 size-3.5" />
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={(e) => {
+                e.stopPropagation()
+                onDelete()
+              }}
+            >
+              <Trash2 className="mr-2 size-3.5" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
 
       {/* Active indicator pill */}
       {isActive && (
-        <div className="absolute -left-0.5 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-primary md:-left-3" />
+        <div className="absolute -left-3 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-primary" />
       )}
     </div>
   )

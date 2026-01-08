@@ -4,11 +4,55 @@ import type { ModalType, Space, Group, Bookmark } from '@/types'
 
 export type Theme = 'light' | 'dark' | 'system'
 
+// Icon presets for random selection
+export const SPACE_ICONS = ['📁', '🏠', '💼', '🎯', '📚', '🎨', '🔧', '🌟', '🎮', '📱']
+export const GROUP_ICONS = ['📂', '📌', '🔖', '📋', '🗂️']
+
+export function getRandomIcon(icons: string[]): string {
+  return icons[Math.floor(Math.random() * icons.length)]
+}
+
 const THEME_STORAGE_KEY = 'bookmarks-index-theme'
+const SIDEBAR_COLLAPSED_KEY = 'bookmarks-index-sidebar-collapsed'
 
 // Navigation state
 export const activeSpaceIdAtom = atom<string | null>(null, 'ui.activeSpaceId')
 export const selectedGroupIdAtom = atom<string | null>(null, 'ui.selectedGroupId')
+
+// Sidebar collapsed state
+const getInitialSidebarCollapsed = (): boolean => {
+  if (typeof window === 'undefined') return false
+  return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true'
+}
+
+export const sidebarCollapsedAtom = atom<boolean>(getInitialSidebarCollapsed(), 'ui.sidebarCollapsed')
+
+export function setSidebarCollapsed(collapsed: boolean) {
+  sidebarCollapsedAtom.set(collapsed)
+  localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(collapsed))
+}
+
+// Inline editing state - tracks which space/group is currently being edited
+export const editingSpaceIdAtom = atom<string | null>(null, 'ui.editingSpaceId')
+export const editingGroupIdAtom = atom<string | null>(null, 'ui.editingGroupId')
+
+// Draft state for optimistic creation (local only, not yet persisted)
+export interface DraftSpace {
+  id: string // temporary ID like "draft-space"
+  name: string
+  icon: string
+  color?: string
+}
+
+export interface DraftGroup {
+  id: string // temporary ID like "draft-group"
+  spaceId: string
+  name: string
+  icon?: string
+}
+
+export const draftSpaceAtom = atom<DraftSpace | null>(null, 'ui.draftSpace')
+export const draftGroupAtom = atom<DraftGroup | null>(null, 'ui.draftGroup')
 
 // Modal state
 export const modalTypeAtom = atom<ModalType>(null, 'ui.modalType')
