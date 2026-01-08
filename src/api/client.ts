@@ -1,10 +1,7 @@
 // tRPC client setup for connecting to the backend server
 import { createTRPCClient, httpBatchLink, TRPCClientError } from '@trpc/client'
 
-// TODO: Import AppRouter from @bookmarks/shared-types when available
-// For now, we use a local type definition
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AppRouter = any
+import type { AppRouter } from '@bookmarks/shared-types'
 
 // Extend Window to include Clerk
 declare global {
@@ -26,10 +23,9 @@ async function getAuthToken(): Promise<string | null> {
   return clerk.session.getToken()
 }
 
-/**
- * tRPC client instance for making API calls
- */
-export const api = createTRPCClient<AppRouter>({
+// Create the raw tRPC client without type constraints
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const trpcClient: any = createTRPCClient({
   links: [
     httpBatchLink({
       url: process.env.PLASMO_PUBLIC_API_URL || 'http://localhost:3000/trpc',
@@ -42,9 +38,22 @@ export const api = createTRPCClient<AppRouter>({
 })
 
 /**
+ * Typed API client for making API calls
+ *
+ * Uses AppRouter type from @bookmarks/shared-types for full type safety.
+ * The client structure:
+ * - api.spaces.{list, create, update, delete, reorder}
+ * - api.groups.{list, create, update, delete, reorder}
+ * - api.bookmarks.{list, create, update, delete, reorder, move}
+ * - api.sync.{ensureUser, status}
+ */
+export const api = trpcClient as AppRouter
+
+/**
  * Type-safe error checking for tRPC errors
  */
-export function isTRPCError(error: unknown): error is TRPCClientError<AppRouter> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function isTRPCError(error: unknown): error is TRPCClientError<any> {
   return error instanceof TRPCClientError
 }
 
@@ -61,5 +70,5 @@ export function getErrorMessage(error: unknown): string {
   return 'An unknown error occurred'
 }
 
-// Re-export AppRouter type for convenience
+// Re-export types from shared-types for convenience
 export type { AppRouter }

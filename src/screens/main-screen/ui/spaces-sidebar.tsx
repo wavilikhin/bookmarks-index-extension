@@ -138,12 +138,7 @@ export function SpacesSidebar({
           )}
         >
           <Plus className="size-5 shrink-0" />
-          <span
-            className={cn(
-              'transition-all duration-200',
-              isCollapsed ? 'w-0 opacity-0' : 'opacity-100'
-            )}
-          >
+          <span className={cn('transition-all duration-200', isCollapsed ? 'w-0 opacity-0' : 'opacity-100')}>
             Add Space
           </span>
         </Button>
@@ -158,17 +153,8 @@ export function SpacesSidebar({
             isCollapsed ? 'justify-center px-0' : 'justify-start gap-3 px-3'
           )}
         >
-          {isCollapsed ? (
-            <PanelLeft className="size-5 shrink-0" />
-          ) : (
-            <PanelLeftClose className="size-5 shrink-0" />
-          )}
-          <span
-            className={cn(
-              'transition-all duration-200',
-              isCollapsed ? 'w-0 opacity-0' : 'opacity-100'
-            )}
-          >
+          {isCollapsed ? <PanelLeft className="size-5 shrink-0" /> : <PanelLeftClose className="size-5 shrink-0" />}
+          <span className={cn('transition-all duration-200', isCollapsed ? 'w-0 opacity-0' : 'opacity-100')}>
             Collapse
           </span>
         </Button>
@@ -190,7 +176,18 @@ interface SpaceItemProps {
   onCancel: () => void
 }
 
-function SpaceItem({ space, isActive, isCollapsed, isEditing, isDraft, onSelect, onEdit, onDelete, onSave, onCancel }: SpaceItemProps) {
+function SpaceItem({
+  space,
+  isActive,
+  isCollapsed,
+  isEditing,
+  isDraft,
+  onSelect,
+  onEdit,
+  onDelete,
+  onSave,
+  onCancel
+}: SpaceItemProps) {
   const [showMenu, setShowMenu] = React.useState(false)
 
   return (
@@ -199,9 +196,7 @@ function SpaceItem({ space, isActive, isCollapsed, isEditing, isDraft, onSelect,
         'group relative flex h-10 items-center rounded-lg transition-all duration-200',
         'cursor-pointer select-none',
         isCollapsed ? 'justify-center px-0' : 'gap-3 px-3',
-        isActive
-          ? 'bg-primary/15 text-primary'
-          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+        isActive ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
       )}
       onClick={isEditing ? undefined : onSelect}
       role="button"
@@ -213,9 +208,7 @@ function SpaceItem({ space, isActive, isCollapsed, isEditing, isDraft, onSelect,
       }}
     >
       {/* Space icon - 40x40 to match sidebar width when collapsed */}
-      <span className="flex size-10 shrink-0 items-center justify-center text-xl">
-        {space.icon}
-      </span>
+      <span className="flex size-10 shrink-0 items-center justify-center text-xl">{space.icon}</span>
 
       {/* Space name - hidden when collapsed, editable when isEditing */}
       {isEditing ? (
@@ -223,10 +216,7 @@ function SpaceItem({ space, isActive, isCollapsed, isEditing, isDraft, onSelect,
           defaultValue={space.name}
           onSave={onSave}
           onCancel={onCancel}
-          className={cn(
-            'flex-1 text-foreground',
-            isCollapsed ? 'w-0 opacity-0' : 'opacity-100'
-          )}
+          className={cn('flex-1 text-foreground', isCollapsed ? 'w-0 opacity-0' : 'opacity-100')}
         />
       ) : (
         <span
@@ -282,9 +272,7 @@ function SpaceItem({ space, isActive, isCollapsed, isEditing, isDraft, onSelect,
       )}
 
       {/* Active indicator pill */}
-      {isActive && (
-        <div className="absolute -left-3 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-primary" />
-      )}
+      {isActive && <div className="absolute -left-3 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-primary" />}
     </div>
   )
 }
