@@ -13,6 +13,10 @@
       "environment": {
         "WORKSPACE_ROOT": "/Users/vladislavvavilihin/Dev/pets/bookmarks-index"
       }
+    },
+    "chrome-devtools": {
+      "type": "local",
+      "command": ["npx", "chrome-devtools-mcp@latest"]
     }
   }
 }

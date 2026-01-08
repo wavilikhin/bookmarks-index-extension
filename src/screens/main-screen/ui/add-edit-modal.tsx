@@ -153,7 +153,7 @@ export function AddEditModal({ isOpen, onClose, entityType, mode, entity, onSubm
         >
           <form onSubmit={handleSubmit}>
             {/* Header */}
-            <div className="flex items-center gap-3 border-b border-border/50 px-5 py-4">
+            <div className="flex items-center gap-3 px-5 py-4">
               <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10">
                 <Icon className="size-4 text-primary" />
               </div>

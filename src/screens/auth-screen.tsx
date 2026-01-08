@@ -1,5 +1,5 @@
 import { Button } from '@/shared/ui'
-import { SignInButton, SignUpButton } from '@clerk/clerk-react'
+import { SignInButton, SignUpButton } from '@clerk/chrome-extension'
 import { Bookmark } from 'lucide-react'
 
 export const AuthScreen = () => {

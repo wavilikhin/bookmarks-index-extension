@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { SignedIn, SignedOut } from '@clerk/clerk-react'
+import { SignedIn, SignedOut } from '@clerk/chrome-extension'
 import { ClerkUserSync } from './clerk-user-sync'
 import { AuthScreen } from '@/screens'
 

@@ -53,8 +53,8 @@ export function BookmarkItem({ bookmark, onEdit, onDelete }: BookmarkItemProps) 
         onClick={handleClick}
         className={cn(
           'relative flex size-14 items-center justify-center rounded-full transition-all duration-200',
-          'bg-muted/70 ring-1 ring-border/50',
-          'group-hover:shadow-md group-hover:shadow-foreground/5 group-hover:ring-border'
+          'bg-muted ring-1 ring-border',
+          'group-hover:shadow-md group-hover:shadow-foreground/10 group-hover:ring-border'
         )}
       >
         {/* Loading skeleton */}
@@ -105,7 +105,7 @@ export function BookmarkItem({ bookmark, onEdit, onDelete }: BookmarkItemProps) 
           render={
             <button
               className={cn(
-                'absolute right-1 top-1 flex size-6 items-center justify-center rounded-md bg-background/80 opacity-0 shadow-sm ring-1 ring-border/50 backdrop-blur-sm transition-opacity',
+                'absolute right-1 top-1 flex size-6 items-center justify-center rounded-md bg-background opacity-0 shadow-sm ring-1 ring-border backdrop-blur-sm transition-opacity',
                 'hover:bg-muted focus:opacity-100 group-hover:opacity-100',
                 showMenu && 'opacity-100'
               )}

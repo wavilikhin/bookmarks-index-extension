@@ -9,16 +9,22 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator
 } from '@/shared/ui'
+import { InlineEditInput } from './inline-edit-input'
 import type { Group } from '@/types'
 import type { Atom } from '@reatom/core'
+import type { DraftGroup } from '@/stores'
 
 interface GroupTabsProps {
   groups: Atom<Group>[]
+  draftGroup: DraftGroup | null
   activeGroupId: string | null
+  editingGroupId: string | null
   onSelectGroup: (groupId: string) => void
   onAddGroup: () => void
   onEditGroup: (group: Group) => void
   onDeleteGroup: (group: Group) => void
+  onGroupNameSave: (groupId: string, name: string) => void
+  onGroupNameCancel: (groupId: string) => void
 }
 
 /**
@@ -30,11 +36,15 @@ interface GroupTabsProps {
  */
 export function GroupTabs({
   groups,
+  draftGroup,
   activeGroupId,
+  editingGroupId,
   onSelectGroup,
   onAddGroup,
   onEditGroup,
-  onDeleteGroup
+  onDeleteGroup,
+  onGroupNameSave,
+  onGroupNameCancel
 }: GroupTabsProps) {
   const tabsRef = React.useRef<HTMLDivElement>(null)
   const [showLeftFade, setShowLeftFade] = React.useState(false)
@@ -59,11 +69,12 @@ export function GroupTabs({
       if (el) el.removeEventListener('scroll', checkOverflow)
       window.removeEventListener('resize', checkOverflow)
     }
-  }, [checkOverflow, groups])
+  }, [checkOverflow, groups, draftGroup])
 
-  if (groups.length === 0) {
+  // Show empty state only if no groups AND no draft
+  if (groups.length === 0 && !draftGroup) {
     return (
-      <div className="flex items-center justify-between border-b border-border/50 px-6 py-3">
+      <div className="flex items-center justify-between px-6 py-3">
         <span className="text-sm text-muted-foreground">No groups yet</span>
         <Button
           variant="ghost"
@@ -79,7 +90,7 @@ export function GroupTabs({
   }
 
   return (
-    <div className="relative border-b border-border/50">
+    <div className="relative">
       {/* Left fade indicator */}
       {showLeftFade && (
         <div className="pointer-events-none absolute bottom-0 left-0 top-0 z-10 w-8 bg-gradient-to-r from-background to-transparent" />
@@ -98,12 +109,31 @@ export function GroupTabs({
               key={group.id}
               group={group}
               isActive={group.id === activeGroupId}
+              isEditing={group.id === editingGroupId}
+              isDraft={false}
               onSelect={() => onSelectGroup(group.id)}
               onEdit={() => onEditGroup(group)}
               onDelete={() => onDeleteGroup(group)}
+              onSave={(name) => onGroupNameSave(group.id, name)}
+              onCancel={() => onGroupNameCancel(group.id)}
             />
           )
         })}
+        {/* Draft group - rendered at the end when creating */}
+        {draftGroup && (
+          <GroupTab
+            key={draftGroup.id}
+            group={draftGroup as Group}
+            isActive={draftGroup.id === activeGroupId}
+            isEditing={draftGroup.id === editingGroupId}
+            isDraft={true}
+            onSelect={() => {}}
+            onEdit={() => {}}
+            onDelete={() => {}}
+            onSave={(name) => onGroupNameSave(draftGroup.id, name)}
+            onCancel={() => onGroupNameCancel(draftGroup.id)}
+          />
+        )}
 
         {/* Add group button */}
         <Button
@@ -127,12 +157,16 @@ export function GroupTabs({
 interface GroupTabProps {
   group: Group
   isActive: boolean
+  isEditing: boolean
+  isDraft: boolean
   onSelect: () => void
   onEdit: () => void
   onDelete: () => void
+  onSave: (name: string) => void
+  onCancel: () => void
 }
 
-function GroupTab({ group, isActive, onSelect, onEdit, onDelete }: GroupTabProps) {
+function GroupTab({ group, isActive, isEditing, isDraft, onSelect, onEdit, onDelete, onSave, onCancel }: GroupTabProps) {
   const [showMenu, setShowMenu] = React.useState(false)
 
   return (
@@ -142,66 +176,79 @@ function GroupTab({ group, isActive, onSelect, onEdit, onDelete }: GroupTabProps
         'cursor-pointer select-none',
         isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
       )}
-      onClick={onSelect}
+      onClick={isEditing ? undefined : onSelect}
       role="tab"
-      tabIndex={0}
+      tabIndex={isEditing ? -1 : 0}
       aria-selected={isActive}
       onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
+        if (!isEditing && (e.key === 'Enter' || e.key === ' ')) {
           onSelect()
         }
       }}
     >
-      {/* Drag handle - visible on hover for future drag implementation */}
-      <GripVertical
-        className={cn(
-          'size-3 shrink-0 text-muted-foreground/50 opacity-0 transition-opacity',
-          'group-hover:opacity-100'
-        )}
-      />
+      {/* Drag handle - hidden when editing or draft */}
+      {!isEditing && !isDraft && (
+        <GripVertical
+          className={cn(
+            'size-3 shrink-0 text-muted-foreground/50 opacity-0 transition-opacity',
+            'group-hover:opacity-100'
+          )}
+        />
+      )}
 
-      {/* Group name */}
-      <span className={cn('text-sm transition-all', isActive ? 'font-medium' : 'font-normal')}>{group.name}</span>
+      {/* Group name - editable when isEditing */}
+      {isEditing ? (
+        <InlineEditInput
+          defaultValue={group.name}
+          onSave={onSave}
+          onCancel={onCancel}
+          className="min-w-20 text-foreground"
+        />
+      ) : (
+        <span className={cn('text-sm transition-all', isActive ? 'font-medium' : 'font-normal')}>{group.name}</span>
+      )}
 
-      {/* Context menu */}
-      <DropdownMenu open={showMenu} onOpenChange={setShowMenu}>
-        <DropdownMenuTrigger
-          render={
-            <button
-              className={cn(
-                'flex size-5 items-center justify-center rounded opacity-0 transition-opacity',
-                'hover:bg-foreground/10 focus:opacity-100 group-hover:opacity-100',
-                showMenu && 'opacity-100'
-              )}
-              onClick={(e) => e.stopPropagation()}
-            />
-          }
-        >
-          <MoreHorizontal className="size-3" />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" sideOffset={4}>
-          <DropdownMenuItem
-            onClick={(e) => {
-              e.stopPropagation()
-              onEdit()
-            }}
+      {/* Context menu - hidden when editing or draft */}
+      {!isEditing && !isDraft && (
+        <DropdownMenu open={showMenu} onOpenChange={setShowMenu}>
+          <DropdownMenuTrigger
+            render={
+              <button
+                className={cn(
+                  'flex size-5 items-center justify-center rounded opacity-0 transition-opacity',
+                  'hover:bg-foreground/10 focus:opacity-100 group-hover:opacity-100',
+                  showMenu && 'opacity-100'
+                )}
+                onClick={(e) => e.stopPropagation()}
+              />
+            }
           >
-            <Pencil className="mr-2 size-3.5" />
-            Edit
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            variant="destructive"
-            onClick={(e) => {
-              e.stopPropagation()
-              onDelete()
-            }}
-          >
-            <Trash2 className="mr-2 size-3.5" />
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+            <MoreHorizontal className="size-3" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" sideOffset={4}>
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation()
+                onEdit()
+              }}
+            >
+              <Pencil className="mr-2 size-3.5" />
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={(e) => {
+                e.stopPropagation()
+                onDelete()
+              }}
+            >
+              <Trash2 className="mr-2 size-3.5" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
 
       {/* Active indicator underline */}
       {isActive && <div className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-primary" />}
