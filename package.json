@@ -27,7 +27,8 @@
     ],
     "host_permissions": [
       "$PLASMO_PUBLIC_API_URL/*",
-      "$CLERK_FRONTEND_API/*"
+      "$CLERK_FRONTEND_API/*",
+      "$PLASMO_PUBLIC_CLERK_SYNC_HOST/*"
     ],
     "content_security_policy": {
       "extension_pages": "script-src 'self'; object-src 'self'"
@@ -43,7 +44,6 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.562.0",
-    "nanoid": "^5.1.6",
     "plasmo": "^0.90.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

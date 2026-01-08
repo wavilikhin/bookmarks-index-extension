@@ -13,11 +13,12 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem
 } from '@/shared/ui'
+import type { Theme } from '@/stores'
 
 interface UserMenuProps {
   onSettings: () => void
-  theme: 'light' | 'dark' | 'system'
-  onThemeChange: (theme: 'light' | 'dark' | 'system') => void
+  theme: Theme
+  onThemeChange: (theme: Theme) => void
 }
 
 /**

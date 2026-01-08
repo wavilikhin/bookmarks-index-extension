@@ -1,9 +1,8 @@
 // UI actions for navigation, modal, and theme operations
 import { action } from '@reatom/core'
-import { activeSpaceIdAtom, selectedGroupIdAtom, modalTypeAtom, modalEntityAtom, themeAtom } from './atoms'
+import { activeSpaceIdAtom, selectedGroupIdAtom, modalTypeAtom, modalEntityAtom, themeAtom, applyTheme } from './atoms'
 import type { ModalType, Space, Group, Bookmark } from '@/types'
-
-type Theme = 'light' | 'dark' | 'system'
+import type { Theme } from './atoms'
 
 // Navigation actions
 export const setActiveSpace = action((spaceId: string | null) => {
@@ -29,4 +28,5 @@ export const closeModal = action(() => {
 // Theme actions
 export const setTheme = action((theme: Theme) => {
   themeAtom.set(theme)
+  applyTheme(theme)
 }, 'ui.setTheme')

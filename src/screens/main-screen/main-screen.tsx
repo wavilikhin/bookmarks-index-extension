@@ -11,11 +11,11 @@ import { DeleteConfirmationDialog } from './ui/delete-confirmation-dialog'
 import type { Space, Group, Bookmark, EntityType } from '@/types'
 
 // Reatom atoms and actions
-import { activeSpaceIdAtom, selectedGroupIdAtom } from '@/stores/ui/atoms'
+import { activeSpaceIdAtom, selectedGroupIdAtom, themeAtom } from '@/stores/ui/atoms'
 import { createSpace, updateSpace, deleteSpace, spacesAtom } from '@/domain/spaces'
 import { groupsAtom, createGroup, updateGroup, deleteGroup } from '@/domain/groups'
 import { bookmarksAtom, createBookmark, deleteBookmark, updateBookmark } from '@/domain/bookmarks'
-import { setActiveSpace, setSelectedGroup } from '@/stores'
+import { setActiveSpace, setSelectedGroup, setTheme } from '@/stores'
 
 interface ModalState {
   isOpen: boolean
@@ -42,6 +42,7 @@ export const MainScreen = reatomComponent(() => {
   // UI state from atoms
   const activeSpaceId = activeSpaceIdAtom()
   const selectedGroupId = selectedGroupIdAtom()
+  const theme = themeAtom()
 
   const allSpaces = spacesAtom()
   const allGroups = groupsAtom()
@@ -61,9 +62,6 @@ export const MainScreen = reatomComponent(() => {
     isOpen: false,
     entityType: 'space'
   })
-
-  // Theme state (temporary until moved to global store)
-  const [theme, setTheme] = React.useState<'light' | 'dark' | 'system'>('system')
 
   // Modal handlers
   const openCreateModal = (entityType: EntityType) => {

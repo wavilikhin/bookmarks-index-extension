@@ -14,5 +14,6 @@ export { userIdAtom, isAuthenticatedAtom } from './auth/atoms'
 // UI Module
 // ============================================
 export { activeSpaceIdAtom, selectedGroupIdAtom, modalTypeAtom, modalEntityAtom, themeAtom } from './ui/atoms'
+export type { Theme } from './ui/atoms'
 
 export { setActiveSpace, setSelectedGroup, openModal, closeModal, setTheme } from './ui/actions'

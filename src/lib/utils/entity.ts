@@ -1,8 +1,21 @@
 // Entity utility functions
-import { nanoid } from 'nanoid'
 import { IdPrefixes } from '@/lib/storage/keys'
 
 type EntityPrefix = keyof typeof IdPrefixes
+
+// Custom nanoid implementation for browser extension environment
+// Uses crypto.getRandomValues for secure random generation
+const ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+
+function generateRandomId(size: number): string {
+  const bytes = new Uint8Array(size)
+  crypto.getRandomValues(bytes)
+  let id = ''
+  for (let i = 0; i < size; i++) {
+    id += ALPHABET[bytes[i] % ALPHABET.length]
+  }
+  return id
+}
 
 /**
  * Generate a unique ID with an entity-type prefix
@@ -10,7 +23,7 @@ type EntityPrefix = keyof typeof IdPrefixes
  * @returns A prefixed nanoid (e.g., "space_abc123xyz")
  */
 export function generateId(prefix: EntityPrefix): string {
-  return `${IdPrefixes[prefix]}${nanoid(10)}`
+  return `${IdPrefixes[prefix]}${generateRandomId(10)}`
 }
 
 /**
