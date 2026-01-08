@@ -21,6 +21,7 @@ bun run lint                 # Run ESLint
 bun run lint:fix             # Fix lint errors
 bun run tsc                  # Type check (no emit)
 bun run format               # Format with Prettier
+bun run format:check         # Check formatting (CI)
 bunx shadcn@latest add <c>   # Add shadcn component
 ```
 
