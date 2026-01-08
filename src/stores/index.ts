@@ -13,7 +13,35 @@ export { userIdAtom, isAuthenticatedAtom } from './auth/atoms'
 // ============================================
 // UI Module
 // ============================================
-export { activeSpaceIdAtom, selectedGroupIdAtom, modalTypeAtom, modalEntityAtom, themeAtom, sidebarCollapsedAtom, editingSpaceIdAtom, editingGroupIdAtom, draftSpaceAtom, draftGroupAtom, SPACE_ICONS, GROUP_ICONS, getRandomIcon } from './ui/atoms'
+export {
+  activeSpaceIdAtom,
+  selectedGroupIdAtom,
+  modalTypeAtom,
+  modalEntityAtom,
+  themeAtom,
+  sidebarCollapsedAtom,
+  editingSpaceIdAtom,
+  editingGroupIdAtom,
+  draftSpaceAtom,
+  draftGroupAtom,
+  SPACE_ICONS,
+  GROUP_ICONS,
+  getRandomIcon
+} from './ui/atoms'
 export type { Theme, DraftSpace, DraftGroup } from './ui/atoms'
 
-export { setActiveSpace, setSelectedGroup, openModal, closeModal, setTheme, toggleSidebar, setSidebarCollapsed, setEditingSpaceId, setEditingGroupId, setDraftSpace, clearDraftSpace, setDraftGroup, clearDraftGroup } from './ui/actions'
+export {
+  setActiveSpace,
+  setSelectedGroup,
+  openModal,
+  closeModal,
+  setTheme,
+  toggleSidebar,
+  setSidebarCollapsed,
+  setEditingSpaceId,
+  setEditingGroupId,
+  setDraftSpace,
+  clearDraftSpace,
+  setDraftGroup,
+  clearDraftGroup
+} from './ui/actions'

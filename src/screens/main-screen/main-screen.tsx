@@ -11,11 +11,33 @@ import { DeleteConfirmationDialog } from './ui/delete-confirmation-dialog'
 import type { Space, Group, Bookmark, EntityType } from '@/types'
 
 // Reatom atoms and actions
-import { activeSpaceIdAtom, selectedGroupIdAtom, themeAtom, sidebarCollapsedAtom, editingSpaceIdAtom, editingGroupIdAtom, draftSpaceAtom, draftGroupAtom, SPACE_ICONS, GROUP_ICONS, getRandomIcon } from '@/stores/ui/atoms'
+import {
+  activeSpaceIdAtom,
+  selectedGroupIdAtom,
+  themeAtom,
+  sidebarCollapsedAtom,
+  editingSpaceIdAtom,
+  editingGroupIdAtom,
+  draftSpaceAtom,
+  draftGroupAtom,
+  SPACE_ICONS,
+  GROUP_ICONS,
+  getRandomIcon
+} from '@/stores/ui/atoms'
 import { createSpace, updateSpace, deleteSpace, spacesAtom } from '@/domain/spaces'
 import { groupsAtom, createGroup, updateGroup, deleteGroup } from '@/domain/groups'
 import { bookmarksAtom, createBookmark, deleteBookmark, updateBookmark } from '@/domain/bookmarks'
-import { setActiveSpace, setSelectedGroup, setTheme, toggleSidebar, setSidebarCollapsed, setDraftSpace, clearDraftSpace, setDraftGroup, clearDraftGroup } from '@/stores'
+import {
+  setActiveSpace,
+  setSelectedGroup,
+  setTheme,
+  toggleSidebar,
+  setSidebarCollapsed,
+  setDraftSpace,
+  clearDraftSpace,
+  setDraftGroup,
+  clearDraftGroup
+} from '@/stores'
 
 interface ModalState {
   isOpen: boolean
