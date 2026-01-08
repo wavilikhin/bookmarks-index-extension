@@ -28,7 +28,8 @@
     ],
     "host_permissions": [
       "$PLASMO_PUBLIC_API_URL/*",
-      "$CLERK_FRONTEND_API/*"
+      "$CLERK_FRONTEND_API/*",
+      "$PLASMO_PUBLIC_CLERK_SYNC_HOST/*"
     ],
     "content_security_policy": {
       "extension_pages": "script-src 'self'; object-src 'self'"
