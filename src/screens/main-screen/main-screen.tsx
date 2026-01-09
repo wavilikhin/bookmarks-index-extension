@@ -358,7 +358,8 @@ export const MainScreen = reatomComponent(() => {
     }
   }
 
-  // Determine empty state
+  // Determine empty state - only for spaces and groups, not bookmarks
+  // (empty bookmarks shows regular grid with add button)
   const getEmptyState = () => {
     // No spaces at all (excluding draft)
     if (allSpaces.length === 0 && !draftSpace) return 'no-spaces'
@@ -368,8 +369,6 @@ export const MainScreen = reatomComponent(() => {
     if (!activeSpaceId && allSpaces.length > 0) return null
     // Real space selected but has no groups
     if (isRealSpace && groups.length === 0) return 'no-groups'
-    // Group selected but has no bookmarks
-    if (selectedGroupId && selectedGroupId !== 'draft-group' && bookmarks.length === 0) return 'no-bookmarks'
     return null
   }
 
