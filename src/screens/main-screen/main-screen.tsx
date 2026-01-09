@@ -182,6 +182,15 @@ export const MainScreen = reatomComponent(() => {
         })
         if (newSpace) {
           setActiveSpace(newSpace.id)
+          // Auto-create default "Group 1" for new spaces
+          const newGroupId = await createGroup({
+            spaceId: newSpace.id,
+            name: 'Group 1',
+            icon: getRandomIcon(GROUP_ICONS)
+          })
+          if (newGroupId) {
+            setSelectedGroup(newGroupId)
+          }
         }
       }
     } else {
@@ -358,17 +367,10 @@ export const MainScreen = reatomComponent(() => {
     }
   }
 
-  // Determine empty state - only for spaces and groups, not bookmarks
-  // (empty bookmarks shows regular grid with add button)
-  const getEmptyState = () => {
+  // Determine empty state - only for no spaces (groups auto-created with spaces)
+  const getEmptyState = (): 'no-spaces' | null => {
     // No spaces at all (excluding draft)
     if (allSpaces.length === 0 && !draftSpace) return 'no-spaces'
-    // Currently on a draft space - don't show "no groups" until space is saved
-    if (activeSpaceId === 'draft-space') return null
-    // No space selected but spaces exist
-    if (!activeSpaceId && allSpaces.length > 0) return null
-    // Real space selected but has no groups
-    if (isRealSpace && groups.length === 0) return 'no-groups'
     return null
   }
 
@@ -436,17 +438,13 @@ export const MainScreen = reatomComponent(() => {
                   className="mb-4"
                 />
               )}
-              {/* Show empty state for no groups, or bookmark grid otherwise */}
-              {emptyState === 'no-groups' ? (
-                <EmptyState type={emptyState} onAction={handleAddGroup} />
-              ) : (
-                <BookmarkGrid
-                  bookmarks={bookmarks}
-                  onAddBookmark={() => openCreateModal('bookmark')}
-                  onEditBookmark={(bookmark) => openEditModal('bookmark', bookmark)}
-                  onDeleteBookmark={(bookmark) => openDeleteDialog('bookmark', bookmark)}
-                />
-              )}
+              {/* Bookmark grid */}
+              <BookmarkGrid
+                bookmarks={bookmarks}
+                onAddBookmark={() => openCreateModal('bookmark')}
+                onEditBookmark={(bookmark) => openEditModal('bookmark', bookmark)}
+                onDeleteBookmark={(bookmark) => openDeleteDialog('bookmark', bookmark)}
+              />
             </div>
           )}
         </ContentState>
