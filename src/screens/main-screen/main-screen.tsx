@@ -420,24 +420,22 @@ export const MainScreen = reatomComponent(() => {
             <div className="flex flex-1 items-center justify-center">
               <EmptyState type={emptyState} onAction={handleAddSpace} />
             </div>
-          ) : (
+          ) : isRealSpace ? (
             <div className="flex w-full flex-1 flex-col items-center pt-[25vh]">
-              {/* Always show GroupTabs when there's a real space */}
-              {isRealSpace && (
-                <GroupTabs
-                  groups={groups}
-                  draftGroup={draftGroup}
-                  activeGroupId={selectedGroupId}
-                  editingGroupId={editingGroupId}
-                  onSelectGroup={setSelectedGroup}
-                  onAddGroup={handleAddGroup}
-                  onEditGroup={(group) => startEditingGroup(group)}
-                  onDeleteGroup={(group) => openDeleteDialog('group', group)}
-                  onGroupNameSave={handleGroupNameSave}
-                  onGroupNameCancel={handleGroupCancel}
-                  className="mb-4"
-                />
-              )}
+              {/* GroupTabs for the space */}
+              <GroupTabs
+                groups={groups}
+                draftGroup={draftGroup}
+                activeGroupId={selectedGroupId}
+                editingGroupId={editingGroupId}
+                onSelectGroup={setSelectedGroup}
+                onAddGroup={handleAddGroup}
+                onEditGroup={(group) => startEditingGroup(group)}
+                onDeleteGroup={(group) => openDeleteDialog('group', group)}
+                onGroupNameSave={handleGroupNameSave}
+                onGroupNameCancel={handleGroupCancel}
+                className="mb-4"
+              />
               {/* Bookmark grid */}
               <BookmarkGrid
                 bookmarks={bookmarks}
@@ -446,7 +444,7 @@ export const MainScreen = reatomComponent(() => {
                 onDeleteBookmark={(bookmark) => openDeleteDialog('bookmark', bookmark)}
               />
             </div>
-          )}
+          ) : null}
         </ContentState>
       </MainLayout>
 
