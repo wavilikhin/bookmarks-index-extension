@@ -13,9 +13,7 @@ if (!PUBLISHABLE_KEY) {
 
 // Warn if sync host is not configured (OAuth won't work without it)
 if (!SYNC_HOST) {
-  console.warn(
-    '[Clerk] PLASMO_PUBLIC_CLERK_SYNC_HOST not configured. OAuth providers (GitHub, Google) will not work.'
-  )
+  console.warn('[Clerk] PLASMO_PUBLIC_CLERK_SYNC_HOST not configured. OAuth providers (GitHub, Google) will not work.')
 }
 
 // Chrome Extension URL for navigation redirects (newtab page)

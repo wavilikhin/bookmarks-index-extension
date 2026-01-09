@@ -3,12 +3,14 @@
 ## Overview
 
 **Goal:** Remove server code and create a clean extension-only repo that:
+
 - Uses a shared types package (`@bookmarks/shared-types`) for tRPC type safety
 - Keeps Clerk auth (client-side only)
 - Removes all migration logic and seed data
 - Server URL comes from environment variable
 
 **Related Repos:**
+
 - `bookmarks-index-extension` - This repo (extension only after split)
 - `bookmarks-index-server` - Server repo (separate)
 - `bookmarks-shared-types` - Shared types package (new)
@@ -48,9 +50,7 @@ bookmarks-shared-types/
     }
   },
   "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "bun run build"
@@ -259,7 +259,7 @@ export type { AppRouter, RouterInputs, RouterOutputs, Space, Group, Bookmark } f
 
 #### `README.md`
 
-```markdown
+````markdown
 # @bookmarks/shared-types
 
 Shared TypeScript types for Bookmarks Index extension and server.
@@ -269,6 +269,7 @@ Shared TypeScript types for Bookmarks Index extension and server.
 ```bash
 bun add @bookmarks/shared-types@github:yourorg/bookmarks-shared-types
 ```
+````
 
 ## Usage
 
@@ -282,7 +283,8 @@ import type { AppRouter, Space, Group, Bookmark } from '@bookmarks/shared-types'
 bun install
 bun run build
 ```
-```
+
+````
 
 ### Publishing
 
@@ -294,7 +296,7 @@ bun add @bookmarks/shared-types@github:yourorg/bookmarks-shared-types
 
 # Or with specific branch/tag
 bun add @bookmarks/shared-types@github:yourorg/bookmarks-shared-types#v0.1.0
-```
+````
 
 ---
 
@@ -307,6 +309,7 @@ rm -rf server/
 ```
 
 **Files removed:**
+
 - `server/drizzle/` - Database migrations
 - `server/scripts/` - DB setup scripts
 - `server/src/` - All server source code
@@ -344,6 +347,7 @@ rm -rf src/components/migration/
 ```
 
 **Files removed:**
+
 - `src/lib/storage/migration.ts` - IndexedDB to server migration logic
 - `src/lib/storage/seed.ts` - Seed data orchestration
 - `src/stores/migration/atoms.ts` - Migration state atoms
@@ -363,6 +367,7 @@ rm -rf src/domain/bookmarks/lib/
 ```
 
 **Files removed:**
+
 - `src/domain/spaces/lib/getSeedSpaces.ts`
 - `src/domain/spaces/lib/index.ts`
 - `src/domain/groups/lib/getSeedGroups.ts`
@@ -377,11 +382,13 @@ rm -rf src/domain/bookmarks/lib/
 **Action:** Modify `src/api/client.ts` to use shared types package
 
 **Before:**
+
 ```typescript
 import type { AppRouter } from '../../server/src/routers'
 ```
 
 **After:**
+
 ```typescript
 import type { AppRouter } from '@bookmarks/shared-types'
 ```
@@ -460,6 +467,7 @@ export type { AppRouter }
 **Action:** Modify `src/api/index.ts`
 
 **Content:**
+
 ```typescript
 // API client exports
 export { api, isTRPCError, getErrorMessage } from './client'
@@ -527,6 +535,7 @@ export {
 **Action:** Modify `src/stores/index.ts` to remove migration exports
 
 **Content:**
+
 ```typescript
 // Consolidated exports for Reatom stores
 // This file provides a single import point for all store functionality
@@ -555,6 +564,7 @@ export { setActiveSpace, setSelectedGroup, openModal, closeModal, setTheme } fro
 **Action:** Modify `src/app/App.tsx` to remove MigrationDialog
 
 **Content:**
+
 ```typescript
 import { MainScreen } from '@/screens'
 import { AuthGuard } from './auth'
@@ -575,6 +585,7 @@ export default function App() {
 **Action:** Simplify `src/app/auth/clerk-user-sync.tsx` to remove migration logic
 
 **Content:**
+
 ```typescript
 import * as React from 'react'
 import { useAuth, useUser } from '@clerk/clerk-react'
@@ -675,6 +686,7 @@ export function ClerkUserSync({ children }: { children: React.ReactNode }) {
 **Action:** Simplify `src/lib/storage/keys.ts` to only keep IdPrefixes
 
 **Content:**
+
 ```typescript
 // ID prefixes for different entity types
 export const IdPrefixes = {
@@ -712,6 +724,7 @@ export const IdPrefixes = {
    - `@bookmarks/shared-types` (from GitHub)
 
 **Final package.json:**
+
 ```json
 {
   "name": "bookmarks-index",
@@ -779,12 +792,14 @@ export const IdPrefixes = {
 **Action:** Remove server reference from `.gitignore`
 
 **Before:**
+
 ```
 .env
 server/.env
 ```
 
 **After:**
+
 ```
 .env
 ```
@@ -796,6 +811,7 @@ server/.env
 **Action:** Remove all server-related documentation
 
 **Sections to remove:**
+
 - Server (Backend) commands under "Commands"
 - Database commands
 - "Server Structure" section
@@ -804,6 +820,7 @@ server/.env
 - "API Client Usage (Frontend)" can stay but update context
 
 **Updated content structure:**
+
 - Keep: Extension (Frontend) commands
 - Keep: Code Style section
 - Keep: Domain Structure section
@@ -820,6 +837,7 @@ server/.env
 **Action:** Update to reflect extension-only repo
 
 **Key changes:**
+
 - Remove any server references
 - Update tech stack (remove server items like Hono, Drizzle, PostgreSQL)
 - Keep extension build instructions
@@ -850,30 +868,30 @@ bun run build
 
 ## Summary of Changes
 
-| Action | Files/Folders |
-|--------|---------------|
-| **DELETE** | `server/` (entire folder) |
+| Action     | Files/Folders                         |
+| ---------- | ------------------------------------- |
+| **DELETE** | `server/` (entire folder)             |
 | **DELETE** | `.github/workflows/deploy-server.yml` |
-| **DELETE** | `src/lib/storage/migration.ts` |
-| **DELETE** | `src/lib/storage/seed.ts` |
-| **DELETE** | `src/stores/migration/` (folder) |
-| **DELETE** | `src/components/migration/` (folder) |
-| **DELETE** | `src/domain/spaces/lib/` (folder) |
-| **DELETE** | `src/domain/groups/lib/` (folder) |
-| **DELETE** | `src/domain/bookmarks/lib/` (folder) |
-| **MODIFY** | `src/api/client.ts` |
-| **MODIFY** | `src/api/index.ts` |
-| **MODIFY** | `src/app/App.tsx` |
-| **MODIFY** | `src/app/auth/clerk-user-sync.tsx` |
-| **MODIFY** | `src/stores/index.ts` |
-| **MODIFY** | `src/domain/spaces/index.ts` |
-| **MODIFY** | `src/domain/groups/index.ts` |
-| **MODIFY** | `src/domain/bookmarks/index.ts` |
-| **MODIFY** | `src/lib/storage/keys.ts` |
-| **MODIFY** | `package.json` |
-| **MODIFY** | `.gitignore` |
-| **MODIFY** | `AGENTS.md` |
-| **MODIFY** | `README.md` |
+| **DELETE** | `src/lib/storage/migration.ts`        |
+| **DELETE** | `src/lib/storage/seed.ts`             |
+| **DELETE** | `src/stores/migration/` (folder)      |
+| **DELETE** | `src/components/migration/` (folder)  |
+| **DELETE** | `src/domain/spaces/lib/` (folder)     |
+| **DELETE** | `src/domain/groups/lib/` (folder)     |
+| **DELETE** | `src/domain/bookmarks/lib/` (folder)  |
+| **MODIFY** | `src/api/client.ts`                   |
+| **MODIFY** | `src/api/index.ts`                    |
+| **MODIFY** | `src/app/App.tsx`                     |
+| **MODIFY** | `src/app/auth/clerk-user-sync.tsx`    |
+| **MODIFY** | `src/stores/index.ts`                 |
+| **MODIFY** | `src/domain/spaces/index.ts`          |
+| **MODIFY** | `src/domain/groups/index.ts`          |
+| **MODIFY** | `src/domain/bookmarks/index.ts`       |
+| **MODIFY** | `src/lib/storage/keys.ts`             |
+| **MODIFY** | `package.json`                        |
+| **MODIFY** | `.gitignore`                          |
+| **MODIFY** | `AGENTS.md`                           |
+| **MODIFY** | `README.md`                           |
 
 ---
 

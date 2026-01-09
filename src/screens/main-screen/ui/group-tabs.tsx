@@ -166,7 +166,17 @@ interface GroupTabProps {
   onCancel: () => void
 }
 
-function GroupTab({ group, isActive, isEditing, isDraft, onSelect, onEdit, onDelete, onSave, onCancel }: GroupTabProps) {
+function GroupTab({
+  group,
+  isActive,
+  isEditing,
+  isDraft,
+  onSelect,
+  onEdit,
+  onDelete,
+  onSave,
+  onCancel
+}: GroupTabProps) {
   const [showMenu, setShowMenu] = React.useState(false)
 
   return (

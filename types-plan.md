@@ -7,11 +7,13 @@ This guide walks you through creating a shared TypeScript types package that pro
 ## Overview
 
 **What this package does:**
+
 - Exports the `AppRouter` type for tRPC client/server type inference
 - Exports entity types (`Space`, `Group`, `Bookmark`) shared between repos
 - Enables type-safe API calls without direct server code dependency
 
 **Prerequisites:**
+
 - GitHub account with access to create repositories
 - Bun installed locally
 - TypeScript knowledge
@@ -48,9 +50,7 @@ Create `package.json` with the following content:
     }
   },
   "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "bun run build"
@@ -282,14 +282,7 @@ Create the public exports file `src/index.ts`:
 
 ```typescript
 // Public exports
-export type {
-  AppRouter,
-  RouterInputs,
-  RouterOutputs,
-  Space,
-  Group,
-  Bookmark
-} from './router'
+export type { AppRouter, RouterInputs, RouterOutputs, Space, Group, Bookmark } from './router'
 ```
 
 ---
@@ -321,10 +314,13 @@ Shared TypeScript types for Bookmarks Index extension and server.
 ### From GitHub
 
 \`\`\`bash
+
 # Using bun
+
 bun add @bookmarks/shared-types@github:wavilikhin/bookmarks-shared-types
 
 # Using npm
+
 npm install @bookmarks/shared-types@github:wavilikhin/bookmarks-shared-types
 \`\`\`
 
@@ -343,7 +339,7 @@ import type { AppRouter } from '@bookmarks/shared-types'
 import { createTRPCClient } from '@trpc/client'
 
 const api = createTRPCClient<AppRouter>({
-  // ... config
+// ... config
 })
 
 // Type-safe API calls
@@ -356,20 +352,24 @@ const spaces = await api.spaces.list.query()
 import type { Space, Group, Bookmark } from '@bookmarks/shared-types'
 
 function displaySpace(space: Space) {
-  console.log(space.name)
+console.log(space.name)
 }
 \`\`\`
 
 ## Development
 
 \`\`\`bash
+
 # Install dependencies
+
 bun install
 
 # Build
+
 bun run build
 
 # The dist/ folder will contain the compiled types
+
 \`\`\`
 
 ## Updating Types
@@ -395,6 +395,7 @@ bun run build
 ```
 
 Verify the `dist/` folder was created with:
+
 - `dist/index.js`
 - `dist/index.d.ts`
 - `dist/router.js`

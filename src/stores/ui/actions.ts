@@ -1,6 +1,19 @@
 // UI actions for navigation, modal, and theme operations
 import { action } from '@reatom/core'
-import { activeSpaceIdAtom, selectedGroupIdAtom, modalTypeAtom, modalEntityAtom, themeAtom, applyTheme, sidebarCollapsedAtom, setSidebarCollapsed as persistSidebarCollapsed, editingSpaceIdAtom, editingGroupIdAtom, draftSpaceAtom, draftGroupAtom } from './atoms'
+import {
+  activeSpaceIdAtom,
+  selectedGroupIdAtom,
+  modalTypeAtom,
+  modalEntityAtom,
+  themeAtom,
+  applyTheme,
+  sidebarCollapsedAtom,
+  setSidebarCollapsed as persistSidebarCollapsed,
+  editingSpaceIdAtom,
+  editingGroupIdAtom,
+  draftSpaceAtom,
+  draftGroupAtom
+} from './atoms'
 import type { ModalType, Space, Group, Bookmark } from '@/types'
 import type { Theme, DraftSpace, DraftGroup } from './atoms'
 
