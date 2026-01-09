@@ -11,14 +11,21 @@ interface SpaceItemSkeletonProps {
 
 export function SpaceItemSkeleton({ isCollapsed = false }: SpaceItemSkeletonProps) {
   return (
-    <div className={cn('flex h-10 items-center rounded-lg', isCollapsed ? 'justify-center px-0' : 'gap-3 px-3')}>
+    <div
+      className={cn(
+        'flex h-10 items-center rounded-lg transition-all duration-300',
+        isCollapsed ? 'justify-center px-1' : 'gap-3 px-3'
+      )}
+    >
       {/* Emoji icon placeholder - matches size-10 flex container */}
       <div className="flex size-10 shrink-0 items-center justify-center">
         <Skeleton className="size-6 rounded" />
       </div>
 
-      {/* Text placeholder - hidden when collapsed */}
-      {!isCollapsed && <Skeleton className="h-4 w-24 rounded" />}
+      {/* Text placeholder - CSS hidden when collapsed */}
+      <Skeleton
+        className={cn('h-4 rounded transition-all duration-300', isCollapsed ? 'w-0 opacity-0' : 'w-24 opacity-100')}
+      />
     </div>
   )
 }
@@ -65,7 +72,7 @@ interface GroupTabSkeletonListProps {
 
 export function GroupTabSkeletonList({ count = 3 }: GroupTabSkeletonListProps) {
   return (
-    <div className="flex items-center gap-1 px-4">
+    <div className="flex items-center gap-1">
       {Array.from({ length: count }).map((_, i) => (
         <GroupTabSkeleton key={i} />
       ))}
@@ -94,7 +101,7 @@ export function BookmarkItemSkeleton() {
 
 /**
  * BookmarkSkeletonGrid - Matches BookmarkGrid layout exactly
- * Real component: centered flex container with responsive grid
+ * Real component: centered grid with responsive columns
  */
 interface BookmarkSkeletonGridProps {
   count?: number
@@ -102,7 +109,17 @@ interface BookmarkSkeletonGridProps {
 
 export function BookmarkSkeletonGrid({ count = 6 }: BookmarkSkeletonGridProps) {
   return (
-    <div className="flex w-full justify-center px-4 pt-[25vh] pb-8 md:px-8">
+    <div className="flex w-full flex-col items-center pt-[25vh]">
+      {/* Group tabs skeleton - matches GroupTabs width */}
+      <div
+        className={cn(
+          'mb-4 flex items-center justify-between',
+          'w-[304px] sm:w-[408px] md:w-[512px] lg:w-[616px] xl:w-[824px]'
+        )}
+      >
+        <GroupTabSkeletonList count={3} />
+      </div>
+      {/* Bookmark grid skeleton */}
       <div className={cn('grid gap-2', 'grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8')}>
         {Array.from({ length: count }).map((_, i) => (
           <BookmarkItemSkeleton key={i} />
@@ -142,11 +159,18 @@ interface SidebarButtonSkeletonProps {
 
 export function SidebarButtonSkeleton({ isCollapsed = false }: SidebarButtonSkeletonProps) {
   return (
-    <div className={cn('flex h-10 items-center rounded-lg', isCollapsed ? 'justify-center px-0' : 'gap-3 px-3')}>
+    <div
+      className={cn(
+        'flex h-10 items-center rounded-lg transition-all duration-300',
+        isCollapsed ? 'justify-center px-1' : 'gap-3 px-3'
+      )}
+    >
       <div className="flex size-10 shrink-0 items-center justify-center">
         <Skeleton className="size-5 rounded" />
       </div>
-      {!isCollapsed && <Skeleton className="h-3.5 w-16 rounded" />}
+      <Skeleton
+        className={cn('h-3.5 rounded transition-all duration-300', isCollapsed ? 'w-0 opacity-0' : 'w-16 opacity-100')}
+      />
     </div>
   )
 }
@@ -161,11 +185,16 @@ interface SidebarLogoSkeletonProps {
 
 export function SidebarLogoSkeleton({ isCollapsed = false }: SidebarLogoSkeletonProps) {
   return (
-    <div className={cn('flex h-10 items-center', isCollapsed ? 'justify-center px-0' : 'gap-3 px-3')}>
+    <div className="flex h-10 items-center px-3 overflow-hidden">
       {/* Logo icon container */}
       <Skeleton className="size-10 shrink-0 rounded-lg" />
       {/* "Bookmarks" text */}
-      {!isCollapsed && <Skeleton className="h-4 w-20 rounded" />}
+      <Skeleton
+        className={cn(
+          'h-4 w-20 rounded transition-all duration-300',
+          isCollapsed ? 'ml-0 opacity-0' : 'ml-3 opacity-100'
+        )}
+      />
     </div>
   )
 }

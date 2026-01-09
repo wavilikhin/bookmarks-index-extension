@@ -41,27 +41,40 @@ const emptyStateConfig = {
  *
  * Design: Centered, minimal illustration with clear call-to-action.
  * Uses muted colors to feel gentle rather than error-like.
+ * Subtle dashed border container for visual distinction.
  */
 export function EmptyState({ type, onAction }: EmptyStateProps) {
   const config = emptyStateConfig[type]
   const Icon = config.icon
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center px-4 py-16">
+    <div className="flex flex-col items-center px-4 py-8">
+      {/* Subtle container with dashed border */}
       <div
-        className={cn('mb-6 flex size-16 items-center justify-center rounded-2xl', 'bg-muted/50 ring-1 ring-border/50')}
+        className={cn(
+          'flex flex-col items-center rounded-2xl px-16 py-9',
+          'bg-muted/30 border border-dashed border-border/40',
+          'backdrop-blur-[1px]'
+        )}
       >
-        <Icon className="size-7 text-muted-foreground" />
+        <div
+          className={cn(
+            'mb-6 flex size-16 items-center justify-center rounded-2xl',
+            'bg-background/80 ring-1 ring-border/50 shadow-sm'
+          )}
+        >
+          <Icon className="size-7 text-muted-foreground" />
+        </div>
+
+        <h2 className="mb-2 text-center text-base font-medium text-foreground">{config.title}</h2>
+
+        <p className="mb-6 max-w-xs text-center text-sm text-muted-foreground">{config.description}</p>
+
+        <Button onClick={onAction} className="gap-2">
+          <Plus className="size-4" />
+          {config.action}
+        </Button>
       </div>
-
-      <h2 className="mb-2 text-center text-base font-medium text-foreground">{config.title}</h2>
-
-      <p className="mb-6 max-w-xs text-center text-sm text-muted-foreground">{config.description}</p>
-
-      <Button onClick={onAction} className="gap-2">
-        <Plus className="size-4" />
-        {config.action}
-      </Button>
     </div>
   )
 }

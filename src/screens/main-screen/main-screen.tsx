@@ -91,8 +91,18 @@ export const MainScreen = reatomComponent(() => {
   const allBookmarks = bookmarksAtom()
 
   // Filter groups and bookmarks based on selection
-  const groups = activeSpaceId ? allGroups.filter((g) => g().spaceId === activeSpaceId) : []
+  // Don't filter by draft space ID - it's not a real space
+  const isRealSpace = activeSpaceId && activeSpaceId !== 'draft-space'
+  const groups = isRealSpace ? allGroups.filter((g) => g().spaceId === activeSpaceId) : []
   const bookmarks = selectedGroupId ? allBookmarks.filter((b) => b().groupId === selectedGroupId).map((b) => b()) : []
+
+  // Auto-select first group when space changes and has groups but no group selected
+  const firstGroupId = groups.length > 0 ? groups[0]().id : null
+  React.useEffect(() => {
+    if (isRealSpace && firstGroupId && !selectedGroupId) {
+      setSelectedGroup(firstGroupId)
+    }
+  }, [activeSpaceId, firstGroupId, selectedGroupId, isRealSpace])
 
   // Modal states
   const [modalState, setModalState] = React.useState<ModalState>({
@@ -145,7 +155,8 @@ export const MainScreen = reatomComponent(() => {
   }
 
   const handleAddGroup = () => {
-    if (!activeSpaceId) return
+    // Can't add group without a real space (not draft)
+    if (!activeSpaceId || activeSpaceId === 'draft-space') return
     const count = groups.length + 1
     const draft = {
       id: 'draft-group',
@@ -171,6 +182,15 @@ export const MainScreen = reatomComponent(() => {
         })
         if (newSpace) {
           setActiveSpace(newSpace.id)
+          // Auto-create default "Group 1" for new spaces
+          const newGroupId = await createGroup({
+            spaceId: newSpace.id,
+            name: 'Group 1',
+            icon: getRandomIcon(GROUP_ICONS)
+          })
+          if (newGroupId) {
+            setSelectedGroup(newGroupId)
+          }
         }
       }
     } else {
@@ -347,11 +367,10 @@ export const MainScreen = reatomComponent(() => {
     }
   }
 
-  // Determine empty state
-  const getEmptyState = () => {
-    if (allSpaces.length === 0) return 'no-spaces'
-    if (groups.length === 0) return 'no-groups'
-    if (bookmarks.length === 0) return 'no-bookmarks'
+  // Determine empty state - only for no spaces (groups auto-created with spaces)
+  const getEmptyState = (): 'no-spaces' | null => {
+    // No spaces at all (excluding draft)
+    if (allSpaces.length === 0 && !draftSpace) return 'no-spaces'
     return null
   }
 
@@ -381,27 +400,9 @@ export const MainScreen = reatomComponent(() => {
 
   // Render header slot
   const headerSlot = (
-    <>
-      <div className="flex-1">
-        {activeSpaceId && (
-          <GroupTabs
-            groups={groups}
-            draftGroup={draftGroup}
-            activeGroupId={selectedGroupId}
-            editingGroupId={editingGroupId}
-            onSelectGroup={setSelectedGroup}
-            onAddGroup={handleAddGroup}
-            onEditGroup={(group) => startEditingGroup(group)}
-            onDeleteGroup={(group) => openDeleteDialog('group', group)}
-            onGroupNameSave={handleGroupNameSave}
-            onGroupNameCancel={handleGroupCancel}
-          />
-        )}
-      </div>
-      <div className="flex items-center gap-2 px-4 py-2">
-        <UserMenu onSettings={() => console.log('Open settings')} theme={theme} onThemeChange={setTheme} />
-      </div>
-    </>
+    <div className="flex items-center gap-2 px-4 py-2">
+      <UserMenu onSettings={() => console.log('Open settings')} theme={theme} onThemeChange={setTheme} />
+    </div>
   )
 
   // Render content
@@ -415,23 +416,35 @@ export const MainScreen = reatomComponent(() => {
           onRetry={() => loadBookmarks()}
           skeleton={<BookmarkSkeletonGrid count={8} />}
         >
-          {emptyState ? (
-            <EmptyState
-              type={emptyState}
-              onAction={() => {
-                if (emptyState === 'no-spaces') handleAddSpace()
-                else if (emptyState === 'no-groups') handleAddGroup()
-                else openCreateModal('bookmark')
-              }}
-            />
-          ) : (
-            <BookmarkGrid
-              bookmarks={bookmarks}
-              onAddBookmark={() => openCreateModal('bookmark')}
-              onEditBookmark={(bookmark) => openEditModal('bookmark', bookmark)}
-              onDeleteBookmark={(bookmark) => openDeleteDialog('bookmark', bookmark)}
-            />
-          )}
+          {emptyState === 'no-spaces' ? (
+            <div className="flex flex-1 items-center justify-center">
+              <EmptyState type={emptyState} onAction={handleAddSpace} />
+            </div>
+          ) : isRealSpace ? (
+            <div className="flex w-full flex-1 flex-col items-center pt-[25vh]">
+              {/* GroupTabs for the space */}
+              <GroupTabs
+                groups={groups}
+                draftGroup={draftGroup}
+                activeGroupId={selectedGroupId}
+                editingGroupId={editingGroupId}
+                onSelectGroup={setSelectedGroup}
+                onAddGroup={handleAddGroup}
+                onEditGroup={(group) => startEditingGroup(group)}
+                onDeleteGroup={(group) => openDeleteDialog('group', group)}
+                onGroupNameSave={handleGroupNameSave}
+                onGroupNameCancel={handleGroupCancel}
+                className="mb-4"
+              />
+              {/* Bookmark grid */}
+              <BookmarkGrid
+                bookmarks={bookmarks}
+                onAddBookmark={() => openCreateModal('bookmark')}
+                onEditBookmark={(bookmark) => openEditModal('bookmark', bookmark)}
+                onDeleteBookmark={(bookmark) => openDeleteDialog('bookmark', bookmark)}
+              />
+            </div>
+          ) : null}
         </ContentState>
       </MainLayout>
 

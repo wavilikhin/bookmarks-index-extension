@@ -28,6 +28,7 @@ interface GroupTabsProps {
   onDeleteGroup: (group: Group) => void
   onGroupNameSave: (groupId: string, name: string) => void
   onGroupNameCancel: (groupId: string) => void
+  className?: string
 }
 
 /**
@@ -47,7 +48,8 @@ export function GroupTabs({
   onEditGroup,
   onDeleteGroup,
   onGroupNameSave,
-  onGroupNameCancel
+  onGroupNameCancel,
+  className
 }: GroupTabsProps) {
   const tabsRef = React.useRef<HTMLDivElement>(null)
   const [showLeftFade, setShowLeftFade] = React.useState(false)
@@ -77,17 +79,20 @@ export function GroupTabs({
   const loading = groupsLoadingAtom()
   const error = groupsErrorAtom()
 
+  // Shared width classes to match BookmarkGrid
+  const widthClasses = 'w-[304px] sm:w-[408px] md:w-[512px] lg:w-[616px] xl:w-[824px]'
+
   // Show skeleton loading state
   if (loading) {
     return (
-      <div className="flex items-center justify-between">
+      <div className={cn('flex items-center justify-between', widthClasses, className)}>
         <GroupTabSkeletonList count={3} />
         <Button
           variant="ghost"
           size="sm"
           onClick={onAddGroup}
           disabled={true}
-          className="mr-4 gap-1.5 text-muted-foreground hover:text-foreground"
+          className="gap-1.5 text-muted-foreground hover:text-foreground"
         >
           <Plus className="size-3.5" />
           Add Group
@@ -99,7 +104,7 @@ export function GroupTabs({
   // Show error state
   if (error) {
     return (
-      <div className="flex items-center justify-between px-6 py-3">
+      <div className={cn('flex items-center justify-between py-3', widthClasses, className)}>
         <InlineError message={error} onRetry={() => loadGroups()} />
         <Button
           variant="ghost"
@@ -115,26 +120,15 @@ export function GroupTabs({
     )
   }
 
-  // Show empty state only if no groups AND no draft
-  if (groups.length === 0 && !draftGroup) {
-    return (
-      <div className="flex items-center justify-between px-6 py-3">
-        <span className="text-sm text-muted-foreground">No groups yet</span>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onAddGroup}
-          className="gap-1.5 text-muted-foreground hover:text-foreground"
-        >
-          <Plus className="size-3.5" />
-          Add Group
-        </Button>
-      </div>
-    )
-  }
-
   return (
-    <div className="relative">
+    <div
+      className={cn(
+        'relative',
+        // Match BookmarkGrid responsive width: (cols * 96px) + ((cols-1) * 8px gap)
+        'w-[304px] sm:w-[408px] md:w-[512px] lg:w-[616px] xl:w-[824px]',
+        className
+      )}
+    >
       {/* Left fade indicator */}
       {showLeftFade && (
         <div className="pointer-events-none absolute bottom-0 left-0 top-0 z-10 w-8 bg-gradient-to-r from-background to-transparent" />
@@ -143,7 +137,7 @@ export function GroupTabs({
       {/* Tabs container */}
       <div
         ref={tabsRef}
-        className="flex items-center gap-1 overflow-x-auto px-4 scrollbar-none"
+        className="flex items-center gap-1 overflow-x-auto scrollbar-none"
         style={{ scrollbarWidth: 'none' }}
       >
         {groups.map((groupAtom) => {
@@ -281,7 +275,7 @@ function GroupTab({
 
       {/* Group name - editable when isEditing */}
       {isEditing ? (
-        <div className="relative flex items-center">
+        <div className="flex items-center gap-1">
           <InlineEditInput
             value={name}
             onChange={setName}
@@ -289,13 +283,11 @@ function GroupTab({
             onCancel={handleCancel}
             className="min-w-20 text-foreground"
           />
-          {/* Action buttons - positioned below, high z-index to stay on top */}
+          {/* Action buttons - inline, subtle styling */}
           <div
-            className="absolute -bottom-7 right-0 z-50 flex items-center gap-1"
+            className="flex shrink-0 items-center gap-0.5"
             onMouseDown={(e) => e.stopPropagation()}
             onMouseUp={(e) => e.stopPropagation()}
-            onMouseEnter={(e) => e.stopPropagation()}
-            onMouseLeave={(e) => e.stopPropagation()}
           >
             <button
               type="button"
@@ -306,8 +298,8 @@ function GroupTab({
               }}
               className={cn(
                 'flex size-5 items-center justify-center rounded',
-                'bg-primary text-primary-foreground hover:bg-primary/90',
-                'transition-colors cursor-pointer shadow-md'
+                'text-muted-foreground hover:text-primary hover:bg-primary/10',
+                'transition-colors cursor-pointer'
               )}
               title="Save (Enter)"
             >
@@ -322,8 +314,8 @@ function GroupTab({
               }}
               className={cn(
                 'flex size-5 items-center justify-center rounded',
-                'bg-muted text-muted-foreground hover:bg-destructive hover:text-destructive-foreground',
-                'transition-colors cursor-pointer shadow-md'
+                'text-muted-foreground hover:text-destructive hover:bg-destructive/10',
+                'transition-colors cursor-pointer'
               )}
               title="Cancel (Escape)"
             >
