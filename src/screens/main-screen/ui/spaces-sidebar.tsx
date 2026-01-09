@@ -86,7 +86,12 @@ export function SpacesSidebar({
       </div>
 
       {/* Spaces list - centered vertically */}
-      <nav className={cn('flex flex-1 flex-col justify-center gap-1 overflow-y-auto transition-all duration-300', isCollapsed ? 'px-2' : 'px-3')}>
+      <nav
+        className={cn(
+          'flex flex-1 flex-col justify-center gap-1 overflow-y-auto transition-all duration-300',
+          isCollapsed ? 'px-2' : 'px-3'
+        )}
+      >
         <ContentState
           loading={spacesLoadingAtom()}
           error={spacesErrorAtom()}

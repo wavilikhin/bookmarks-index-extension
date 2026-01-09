@@ -26,15 +26,15 @@ export function BookmarkGrid({ bookmarks, onAddBookmark, onEditBookmark, onDelet
         'grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8'
       )}
     >
-        {/* Bookmark items */}
-        {bookmarks.map((bookmark) => (
-          <BookmarkItem
-            key={bookmark.id}
-            bookmark={bookmark}
-            onEdit={() => onEditBookmark(bookmark)}
-            onDelete={() => onDeleteBookmark(bookmark)}
-          />
-        ))}
+      {/* Bookmark items */}
+      {bookmarks.map((bookmark) => (
+        <BookmarkItem
+          key={bookmark.id}
+          bookmark={bookmark}
+          onEdit={() => onEditBookmark(bookmark)}
+          onDelete={() => onDeleteBookmark(bookmark)}
+        />
+      ))}
 
       {/* Add bookmark button */}
       <AddBookmarkButton onClick={onAddBookmark} />
