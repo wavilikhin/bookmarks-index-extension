@@ -36,7 +36,13 @@ import {
   setDraftSpace,
   clearDraftSpace,
   setDraftGroup,
-  clearDraftGroup
+  clearDraftGroup,
+  startEditingSpace,
+  cancelEditingSpace,
+  finishEditingSpace,
+  startEditingGroup,
+  cancelEditingGroup,
+  finishEditingGroup
 } from '@/stores'
 
 interface ModalState {
@@ -143,27 +149,27 @@ export const MainScreen = reatomComponent(() => {
   }
 
   // Inline edit save handlers - now actually create via API
-  const handleSpaceNameSave = async (spaceId: string, name: string) => {
+  const handleSpaceSave = async (spaceId: string, name: string, icon: string) => {
     const trimmed = name.trim()
     if (spaceId === 'draft-space' && draftSpace) {
       // Creating new space from draft - clear draft first to avoid duplication
-      const draft = { ...draftSpace }
       clearDraftSpace()
       if (trimmed) {
         const newSpace = await createSpace({
           name: trimmed,
-          icon: draft.icon,
-          color: draft.color
+          icon: icon,
+          color: draftSpace.color
         })
         if (newSpace) {
           setActiveSpace(newSpace.id)
         }
       }
     } else {
-      // Editing existing space
+      // Editing existing space - save both name and icon
       if (trimmed) {
-        await updateSpace(spaceId, { name: trimmed })
+        await updateSpace(spaceId, { name: trimmed, icon })
       }
+      finishEditingSpace()
     }
   }
 
@@ -188,35 +194,32 @@ export const MainScreen = reatomComponent(() => {
       if (trimmed) {
         await updateGroup(groupId, { name: trimmed })
       }
+      finishEditingGroup()
     }
   }
 
-  // Inline edit cancel handlers - just clear draft (no API call needed)
-  const handleSpaceNameCancel = async (spaceId: string) => {
+  // Inline edit cancel handlers
+  const handleSpaceCancel = (spaceId: string) => {
     if (spaceId === 'draft-space') {
       // Cancel draft - just clear it
       clearDraftSpace()
       // Select another space if available
       setActiveSpace(allSpaces.length > 0 ? allSpaces[0]().id : null)
     } else {
-      // Cancel edit of existing space - delete it
-      await deleteSpace(spaceId)
-      const remaining = allSpaces.filter((s) => s().id !== spaceId)
-      setActiveSpace(remaining.length > 0 ? remaining[0]().id : null)
+      // Cancel edit of existing space - just exit edit mode (do NOT delete)
+      cancelEditingSpace()
     }
   }
 
-  const handleGroupNameCancel = async (groupId: string) => {
+  const handleGroupCancel = (groupId: string) => {
     if (groupId === 'draft-group') {
       // Cancel draft - just clear it
       clearDraftGroup()
       // Select another group if available
       setSelectedGroup(groups.length > 0 ? groups[0]().id : null)
     } else {
-      // Cancel edit of existing group - delete it
-      await deleteGroup(groupId)
-      const remaining = groups.filter((g) => g().id !== groupId)
-      setSelectedGroup(remaining.length > 0 ? remaining[0]().id : null)
+      // Cancel edit of existing group - just exit edit mode (do NOT delete)
+      cancelEditingGroup()
     }
   }
 
@@ -355,11 +358,11 @@ export const MainScreen = reatomComponent(() => {
       editingSpaceId={editingSpaceId}
       onSelectSpace={setActiveSpace}
       onAddSpace={handleAddSpace}
-      onEditSpace={(space) => openEditModal('space', space)}
+      onEditSpace={(space) => startEditingSpace(space)}
       onDeleteSpace={(space) => openDeleteDialog('space', space)}
       onToggleCollapse={toggleSidebar}
-      onSpaceNameSave={handleSpaceNameSave}
-      onSpaceNameCancel={handleSpaceNameCancel}
+      onSpaceSave={handleSpaceSave}
+      onSpaceCancel={handleSpaceCancel}
     />
   )
 
@@ -375,10 +378,10 @@ export const MainScreen = reatomComponent(() => {
             editingGroupId={editingGroupId}
             onSelectGroup={setSelectedGroup}
             onAddGroup={handleAddGroup}
-            onEditGroup={(group) => openEditModal('group', group)}
+            onEditGroup={(group) => startEditingGroup(group)}
             onDeleteGroup={(group) => openDeleteDialog('group', group)}
             onGroupNameSave={handleGroupNameSave}
-            onGroupNameCancel={handleGroupNameCancel}
+            onGroupNameCancel={handleGroupCancel}
           />
         )}
       </div>

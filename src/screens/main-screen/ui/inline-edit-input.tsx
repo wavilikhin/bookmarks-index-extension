@@ -2,8 +2,9 @@ import * as React from 'react'
 import { cn } from '@/lib/utils'
 
 interface InlineEditInputProps {
-  defaultValue: string
-  onSave: (value: string) => void
+  value: string
+  onChange: (value: string) => void
+  onSave: () => void
   onCancel: () => void
   className?: string
 }
@@ -13,15 +14,13 @@ interface InlineEditInputProps {
  *
  * Features:
  * - Auto-focus and select all text on mount
- * - Enter key saves and exits
- * - Escape key cancels (triggers delete in creation flow)
- * - Blur saves the value
+ * - Enter key triggers save
+ * - Escape key triggers cancel
  * - Click propagation stopped to prevent parent handlers
+ * - Controlled component - parent manages state
  */
-export function InlineEditInput({ defaultValue, onSave, onCancel, className }: InlineEditInputProps) {
+export function InlineEditInput({ value, onChange, onSave, onCancel, className }: InlineEditInputProps) {
   const inputRef = React.useRef<HTMLInputElement>(null)
-  const [value, setValue] = React.useState(defaultValue)
-  const hasBlurredRef = React.useRef(false)
 
   React.useEffect(() => {
     // Auto-focus and select all text on mount
@@ -32,31 +31,14 @@ export function InlineEditInput({ defaultValue, onSave, onCancel, className }: I
     }
   }, [])
 
-  const handleSave = () => {
-    if (hasBlurredRef.current) return
-    hasBlurredRef.current = true
-    onSave(value)
-  }
-
-  const handleCancel = () => {
-    if (hasBlurredRef.current) return
-    hasBlurredRef.current = true
-    onCancel()
-  }
-
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault()
-      handleSave()
-      inputRef.current?.blur()
+      onSave()
     } else if (e.key === 'Escape') {
       e.preventDefault()
-      handleCancel()
+      onCancel()
     }
-  }
-
-  const handleBlur = () => {
-    handleSave()
   }
 
   return (
@@ -64,9 +46,8 @@ export function InlineEditInput({ defaultValue, onSave, onCancel, className }: I
       ref={inputRef}
       type="text"
       value={value}
-      onChange={(e) => setValue(e.target.value)}
+      onChange={(e) => onChange(e.target.value)}
       onKeyDown={handleKeyDown}
-      onBlur={handleBlur}
       onClick={(e) => e.stopPropagation()}
       className={cn(
         'w-full bg-transparent text-sm font-medium outline-none',

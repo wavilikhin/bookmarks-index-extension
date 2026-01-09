@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Plus, MoreHorizontal, Pencil, Trash2, GripVertical } from 'lucide-react'
+import { Plus, MoreHorizontal, Pencil, Trash2, GripVertical, Check, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   Button,
@@ -178,6 +178,34 @@ function GroupTab({
   onCancel
 }: GroupTabProps) {
   const [showMenu, setShowMenu] = React.useState(false)
+  const [name, setName] = React.useState(group.name)
+  const hasSavedRef = React.useRef(false)
+
+  // Reset state when entering edit mode
+  React.useEffect(() => {
+    if (isEditing) {
+      setName(group.name)
+      hasSavedRef.current = false
+    }
+  }, [isEditing, group.name])
+
+  const handleDoubleClick = () => {
+    if (!isDraft && !isEditing) {
+      onEdit()
+    }
+  }
+
+  const handleSave = () => {
+    if (hasSavedRef.current) return
+    hasSavedRef.current = true
+    onSave(name)
+  }
+
+  const handleCancel = () => {
+    if (hasSavedRef.current) return
+    hasSavedRef.current = true
+    onCancel()
+  }
 
   return (
     <div
@@ -187,6 +215,7 @@ function GroupTab({
         isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
       )}
       onClick={isEditing ? undefined : onSelect}
+      onDoubleClick={handleDoubleClick}
       role="tab"
       tabIndex={isEditing ? -1 : 0}
       aria-selected={isActive}
@@ -208,12 +237,56 @@ function GroupTab({
 
       {/* Group name - editable when isEditing */}
       {isEditing ? (
-        <InlineEditInput
-          defaultValue={group.name}
-          onSave={onSave}
-          onCancel={onCancel}
-          className="min-w-20 text-foreground"
-        />
+        <div className="relative flex items-center">
+          <InlineEditInput
+            value={name}
+            onChange={setName}
+            onSave={handleSave}
+            onCancel={handleCancel}
+            className="min-w-20 text-foreground"
+          />
+          {/* Action buttons - positioned below, high z-index to stay on top */}
+          <div
+            className="absolute -bottom-7 right-0 z-50 flex items-center gap-1"
+            onMouseDown={(e) => e.stopPropagation()}
+            onMouseUp={(e) => e.stopPropagation()}
+            onMouseEnter={(e) => e.stopPropagation()}
+            onMouseLeave={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                handleSave()
+              }}
+              className={cn(
+                'flex size-5 items-center justify-center rounded',
+                'bg-primary text-primary-foreground hover:bg-primary/90',
+                'transition-colors cursor-pointer shadow-md'
+              )}
+              title="Save (Enter)"
+            >
+              <Check className="size-3" />
+            </button>
+            <button
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                handleCancel()
+              }}
+              className={cn(
+                'flex size-5 items-center justify-center rounded',
+                'bg-muted text-muted-foreground hover:bg-destructive hover:text-destructive-foreground',
+                'transition-colors cursor-pointer shadow-md'
+              )}
+              title="Cancel (Escape)"
+            >
+              <X className="size-3" />
+            </button>
+          </div>
+        </div>
       ) : (
         <span className={cn('text-sm transition-all', isActive ? 'font-medium' : 'font-normal')}>{group.name}</span>
       )}

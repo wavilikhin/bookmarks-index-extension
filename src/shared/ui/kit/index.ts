@@ -92,3 +92,5 @@ export {
 export { Separator } from './separator'
 
 export { Textarea } from './textarea'
+
+export { EmojiPickerPopover } from './emoji-picker-popover'
