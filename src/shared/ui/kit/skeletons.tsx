@@ -11,12 +11,7 @@ interface SpaceItemSkeletonProps {
 
 export function SpaceItemSkeleton({ isCollapsed = false }: SpaceItemSkeletonProps) {
   return (
-    <div
-      className={cn(
-        'flex h-10 items-center rounded-lg',
-        isCollapsed ? 'justify-center px-0' : 'gap-3 px-3'
-      )}
-    >
+    <div className={cn('flex h-10 items-center rounded-lg', isCollapsed ? 'justify-center px-0' : 'gap-3 px-3')}>
       {/* Emoji icon placeholder - matches size-10 flex container */}
       <div className="flex size-10 shrink-0 items-center justify-center">
         <Skeleton className="size-6 rounded" />
@@ -108,12 +103,7 @@ interface BookmarkSkeletonGridProps {
 export function BookmarkSkeletonGrid({ count = 6 }: BookmarkSkeletonGridProps) {
   return (
     <div className="flex w-full justify-center px-4 pt-[25vh] pb-8 md:px-8">
-      <div
-        className={cn(
-          'grid gap-2',
-          'grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8'
-        )}
-      >
+      <div className={cn('grid gap-2', 'grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8')}>
         {Array.from({ length: count }).map((_, i) => (
           <BookmarkItemSkeleton key={i} />
         ))}
@@ -152,12 +142,7 @@ interface SidebarButtonSkeletonProps {
 
 export function SidebarButtonSkeleton({ isCollapsed = false }: SidebarButtonSkeletonProps) {
   return (
-    <div
-      className={cn(
-        'flex h-10 items-center rounded-lg',
-        isCollapsed ? 'justify-center px-0' : 'gap-3 px-3'
-      )}
-    >
+    <div className={cn('flex h-10 items-center rounded-lg', isCollapsed ? 'justify-center px-0' : 'gap-3 px-3')}>
       <div className="flex size-10 shrink-0 items-center justify-center">
         <Skeleton className="size-5 rounded" />
       </div>
@@ -176,12 +161,7 @@ interface SidebarLogoSkeletonProps {
 
 export function SidebarLogoSkeleton({ isCollapsed = false }: SidebarLogoSkeletonProps) {
   return (
-    <div
-      className={cn(
-        'flex h-10 items-center',
-        isCollapsed ? 'justify-center px-0' : 'gap-3 px-3'
-      )}
-    >
+    <div className={cn('flex h-10 items-center', isCollapsed ? 'justify-center px-0' : 'gap-3 px-3')}>
       {/* Logo icon container */}
       <Skeleton className="size-10 shrink-0 rounded-lg" />
       {/* "Bookmarks" text */}

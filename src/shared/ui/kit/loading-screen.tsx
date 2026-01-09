@@ -43,9 +43,7 @@ const LOADING_PHRASES = [
  * Phrases rotate every 2.5 seconds to keep users entertained.
  */
 export function GenericLoadingScreen() {
-  const [phraseIndex, setPhraseIndex] = React.useState(() =>
-    Math.floor(Math.random() * LOADING_PHRASES.length)
-  )
+  const [phraseIndex, setPhraseIndex] = React.useState(() => Math.floor(Math.random() * LOADING_PHRASES.length))
   const [isTransitioning, setIsTransitioning] = React.useState(false)
 
   React.useEffect(() => {
