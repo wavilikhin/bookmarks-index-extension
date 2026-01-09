@@ -54,6 +54,16 @@ export interface DraftGroup {
 export const draftSpaceAtom = atom<DraftSpace | null>(null, 'ui.draftSpace')
 export const draftGroupAtom = atom<DraftGroup | null>(null, 'ui.draftGroup')
 
+// Editing state for tracking original values during inline edit (for revert on cancel)
+export interface EditingEntityState {
+  id: string
+  originalName: string
+  originalIcon: string
+}
+
+export const editingSpaceStateAtom = atom<EditingEntityState | null>(null, 'ui.editingSpaceState')
+export const editingGroupStateAtom = atom<EditingEntityState | null>(null, 'ui.editingGroupState')
+
 // Modal state
 export const modalTypeAtom = atom<ModalType>(null, 'ui.modalType')
 export const modalEntityAtom = atom<Space | Group | Bookmark | null>(null, 'ui.modalEntity')

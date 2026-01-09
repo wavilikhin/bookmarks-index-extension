@@ -24,11 +24,13 @@ export {
   editingGroupIdAtom,
   draftSpaceAtom,
   draftGroupAtom,
+  editingSpaceStateAtom,
+  editingGroupStateAtom,
   SPACE_ICONS,
   GROUP_ICONS,
   getRandomIcon
 } from './ui/atoms'
-export type { Theme, DraftSpace, DraftGroup } from './ui/atoms'
+export type { Theme, DraftSpace, DraftGroup, EditingEntityState } from './ui/atoms'
 
 export {
   setActiveSpace,
@@ -43,5 +45,11 @@ export {
   setDraftSpace,
   clearDraftSpace,
   setDraftGroup,
-  clearDraftGroup
+  clearDraftGroup,
+  startEditingSpace,
+  cancelEditingSpace,
+  finishEditingSpace,
+  startEditingGroup,
+  cancelEditingGroup,
+  finishEditingGroup
 } from './ui/actions'

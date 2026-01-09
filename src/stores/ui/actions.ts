@@ -12,7 +12,9 @@ import {
   editingSpaceIdAtom,
   editingGroupIdAtom,
   draftSpaceAtom,
-  draftGroupAtom
+  draftGroupAtom,
+  editingSpaceStateAtom,
+  editingGroupStateAtom
 } from './atoms'
 import type { ModalType, Space, Group, Bookmark } from '@/types'
 import type { Theme, DraftSpace, DraftGroup } from './atoms'
@@ -89,3 +91,42 @@ export const clearDraftGroup = action(() => {
   draftGroupAtom.set(null)
   editingGroupIdAtom.set(null)
 }, 'ui.clearDraftGroup')
+
+// Inline editing actions for existing entities (stores original values for revert)
+export const startEditingSpace = action((space: Space) => {
+  editingSpaceIdAtom.set(space.id)
+  editingSpaceStateAtom.set({
+    id: space.id,
+    originalName: space.name,
+    originalIcon: space.icon
+  })
+}, 'ui.startEditingSpace')
+
+export const cancelEditingSpace = action(() => {
+  editingSpaceIdAtom.set(null)
+  editingSpaceStateAtom.set(null)
+}, 'ui.cancelEditingSpace')
+
+export const finishEditingSpace = action(() => {
+  editingSpaceIdAtom.set(null)
+  editingSpaceStateAtom.set(null)
+}, 'ui.finishEditingSpace')
+
+export const startEditingGroup = action((group: Group) => {
+  editingGroupIdAtom.set(group.id)
+  editingGroupStateAtom.set({
+    id: group.id,
+    originalName: group.name,
+    originalIcon: group.icon || ''
+  })
+}, 'ui.startEditingGroup')
+
+export const cancelEditingGroup = action(() => {
+  editingGroupIdAtom.set(null)
+  editingGroupStateAtom.set(null)
+}, 'ui.cancelEditingGroup')
+
+export const finishEditingGroup = action(() => {
+  editingGroupIdAtom.set(null)
+  editingGroupStateAtom.set(null)
+}, 'ui.finishEditingGroup')

@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator
 } from '@/shared/ui'
-import { InlineEditInput } from './inline-edit-input'
+import { InlineEditRow } from './inline-edit-row'
 import type { Space } from '@/types'
 import type { Atom } from '@reatom/core'
 import type { DraftSpace } from '@/stores'
@@ -25,8 +25,8 @@ interface SpacesSidebarProps {
   onEditSpace: (space: Space) => void
   onDeleteSpace: (space: Space) => void
   onToggleCollapse: () => void
-  onSpaceNameSave: (spaceId: string, name: string) => void
-  onSpaceNameCancel: (spaceId: string) => void
+  onSpaceSave: (spaceId: string, name: string, icon: string) => void
+  onSpaceCancel: (spaceId: string) => void
 }
 
 /**
@@ -47,8 +47,8 @@ export function SpacesSidebar({
   onEditSpace,
   onDeleteSpace,
   onToggleCollapse,
-  onSpaceNameSave,
-  onSpaceNameCancel
+  onSpaceSave,
+  onSpaceCancel
 }: SpacesSidebarProps) {
   return (
     <aside
@@ -102,8 +102,8 @@ export function SpacesSidebar({
               onSelect={() => onSelectSpace(space.id)}
               onEdit={() => onEditSpace(space)}
               onDelete={() => onDeleteSpace(space)}
-              onSave={(name) => onSpaceNameSave(space.id, name)}
-              onCancel={() => onSpaceNameCancel(space.id)}
+              onSave={(name, icon) => onSpaceSave(space.id, name, icon)}
+              onCancel={() => onSpaceCancel(space.id)}
             />
           )
         })}
@@ -119,8 +119,8 @@ export function SpacesSidebar({
             onSelect={() => {}}
             onEdit={() => {}}
             onDelete={() => {}}
-            onSave={(name) => onSpaceNameSave(draftSpace.id, name)}
-            onCancel={() => onSpaceNameCancel(draftSpace.id)}
+            onSave={(name, icon) => onSpaceSave(draftSpace.id, name, icon)}
+            onCancel={() => onSpaceCancel(draftSpace.id)}
           />
         )}
       </nav>
@@ -172,7 +172,7 @@ interface SpaceItemProps {
   onSelect: () => void
   onEdit: () => void
   onDelete: () => void
-  onSave: (name: string) => void
+  onSave: (name: string, icon: string) => void
   onCancel: () => void
 }
 
@@ -190,6 +190,12 @@ function SpaceItem({
 }: SpaceItemProps) {
   const [showMenu, setShowMenu] = React.useState(false)
 
+  const handleDoubleClick = () => {
+    if (!isDraft && !isEditing) {
+      onEdit()
+    }
+  }
+
   return (
     <div
       className={cn(
@@ -199,6 +205,7 @@ function SpaceItem({
         isActive ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
       )}
       onClick={isEditing ? undefined : onSelect}
+      onDoubleClick={handleDoubleClick}
       role="button"
       tabIndex={isEditing ? -1 : 0}
       onKeyDown={(e) => {
@@ -207,26 +214,31 @@ function SpaceItem({
         }
       }}
     >
-      {/* Space icon - 40x40 to match sidebar width when collapsed */}
-      <span className="flex size-10 shrink-0 items-center justify-center text-xl">{space.icon}</span>
-
-      {/* Space name - hidden when collapsed, editable when isEditing */}
+      {/* When editing, show InlineEditRow with icon picker + name input */}
       {isEditing ? (
-        <InlineEditInput
-          defaultValue={space.name}
-          onSave={onSave}
+        <InlineEditRow
+          defaultName={space.name}
+          defaultIcon={space.icon}
+          onSave={({ name, icon }) => onSave(name, icon)}
           onCancel={onCancel}
-          className={cn('flex-1 text-foreground', isCollapsed ? 'w-0 opacity-0' : 'opacity-100')}
+          showIcon={!isCollapsed}
+          className={cn('flex-1', isCollapsed ? 'w-0 opacity-0' : 'opacity-100')}
         />
       ) : (
-        <span
-          className={cn(
-            'flex-1 truncate text-sm font-medium transition-all duration-200',
-            isCollapsed ? 'w-0 opacity-0' : 'opacity-100'
-          )}
-        >
-          {space.name}
-        </span>
+        <>
+          {/* Space icon - 40x40 to match sidebar width when collapsed */}
+          <span className="flex size-10 shrink-0 items-center justify-center text-xl">{space.icon}</span>
+
+          {/* Space name - hidden when collapsed */}
+          <span
+            className={cn(
+              'flex-1 truncate text-sm font-medium transition-all duration-200',
+              isCollapsed ? 'w-0 opacity-0' : 'opacity-100'
+            )}
+          >
+            {space.name}
+          </span>
+        </>
       )}
 
       {/* Context menu trigger - hidden when collapsed, editing, or draft */}
