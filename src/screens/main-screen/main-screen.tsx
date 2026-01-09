@@ -414,18 +414,12 @@ export const MainScreen = reatomComponent(() => {
           onRetry={() => loadBookmarks()}
           skeleton={<BookmarkSkeletonGrid count={8} />}
         >
-          {emptyState ? (
-            <EmptyState
-              type={emptyState}
-              onAction={() => {
-                if (emptyState === 'no-spaces') handleAddSpace()
-                else if (emptyState === 'no-groups') handleAddGroup()
-                else openCreateModal('bookmark')
-              }}
-            />
+          {emptyState === 'no-spaces' ? (
+            <EmptyState type={emptyState} onAction={handleAddSpace} />
           ) : (
             <div className="flex w-full flex-1 flex-col items-center pt-[25vh]">
-              {activeSpaceId && (
+              {/* Always show GroupTabs when there's a real space */}
+              {isRealSpace && (
                 <GroupTabs
                   groups={groups}
                   draftGroup={draftGroup}
@@ -440,12 +434,17 @@ export const MainScreen = reatomComponent(() => {
                   className="mb-4"
                 />
               )}
-              <BookmarkGrid
-                bookmarks={bookmarks}
-                onAddBookmark={() => openCreateModal('bookmark')}
-                onEditBookmark={(bookmark) => openEditModal('bookmark', bookmark)}
-                onDeleteBookmark={(bookmark) => openDeleteDialog('bookmark', bookmark)}
-              />
+              {/* Show empty state for no groups, or bookmark grid otherwise */}
+              {emptyState === 'no-groups' ? (
+                <EmptyState type={emptyState} onAction={handleAddGroup} />
+              ) : (
+                <BookmarkGrid
+                  bookmarks={bookmarks}
+                  onAddBookmark={() => openCreateModal('bookmark')}
+                  onEditBookmark={(bookmark) => openEditModal('bookmark', bookmark)}
+                  onDeleteBookmark={(bookmark) => openDeleteDialog('bookmark', bookmark)}
+                />
+              )}
             </div>
           )}
         </ContentState>
