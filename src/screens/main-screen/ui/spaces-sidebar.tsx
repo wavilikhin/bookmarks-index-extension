@@ -61,12 +61,7 @@ export function SpacesSidebar({
       )}
     >
       {/* Logo / Brand area */}
-      <div
-        className={cn(
-          'mb-6 flex h-10 items-center transition-all duration-200',
-          isCollapsed ? 'justify-center px-0' : 'gap-3 px-3'
-        )}
-      >
+      <div className="mb-6 flex h-10 items-center px-3 overflow-hidden">
         <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
           <svg
             viewBox="0 0 24 24"
@@ -82,8 +77,8 @@ export function SpacesSidebar({
         </div>
         <span
           className={cn(
-            'text-sm font-semibold text-foreground transition-all duration-200',
-            isCollapsed ? 'w-0 opacity-0' : 'opacity-100'
+            'whitespace-nowrap text-sm font-semibold text-foreground transition-all duration-300',
+            isCollapsed ? 'ml-0 opacity-0' : 'ml-3 opacity-100'
           )}
         >
           Bookmarks
@@ -91,7 +86,7 @@ export function SpacesSidebar({
       </div>
 
       {/* Spaces list */}
-      <nav className={cn('flex flex-1 flex-col gap-1 overflow-y-auto', isCollapsed ? 'px-0' : 'px-3')}>
+      <nav className={cn('flex flex-1 flex-col gap-1 overflow-y-auto transition-all duration-300', isCollapsed ? 'px-2' : 'px-3')}>
         <ContentState
           loading={spacesLoadingAtom()}
           error={spacesErrorAtom()}
@@ -136,19 +131,19 @@ export function SpacesSidebar({
       </nav>
 
       {/* Bottom controls */}
-      <div className={cn('mt-auto flex flex-col gap-1', isCollapsed ? 'px-0' : 'px-3')}>
+      <div className={cn('mt-auto flex flex-col gap-1 transition-all duration-300', isCollapsed ? 'px-2' : 'px-3')}>
         {/* Add space button */}
         <Button
           variant="ghost"
           size="sm"
           onClick={onAddSpace}
           className={cn(
-            'h-10 w-full text-muted-foreground hover:text-foreground',
-            isCollapsed ? 'justify-center px-0' : 'justify-start gap-3 px-3'
+            'h-10 w-full text-muted-foreground hover:text-foreground transition-all duration-300',
+            isCollapsed ? 'justify-center px-1' : 'justify-start gap-3 px-3'
           )}
         >
           <Plus className="size-5 shrink-0" />
-          <span className={cn('transition-all duration-200', isCollapsed ? 'w-0 opacity-0' : 'opacity-100')}>
+          <span className={cn('transition-all duration-300', isCollapsed ? 'w-0 opacity-0' : 'opacity-100')}>
             Add Space
           </span>
         </Button>
@@ -159,12 +154,12 @@ export function SpacesSidebar({
           size="sm"
           onClick={onToggleCollapse}
           className={cn(
-            'h-10 w-full text-muted-foreground hover:text-foreground',
-            isCollapsed ? 'justify-center px-0' : 'justify-start gap-3 px-3'
+            'h-10 w-full text-muted-foreground hover:text-foreground transition-all duration-300',
+            isCollapsed ? 'justify-center px-1' : 'justify-start gap-3 px-3'
           )}
         >
           {isCollapsed ? <PanelLeft className="size-5 shrink-0" /> : <PanelLeftClose className="size-5 shrink-0" />}
-          <span className={cn('transition-all duration-200', isCollapsed ? 'w-0 opacity-0' : 'opacity-100')}>
+          <span className={cn('transition-all duration-300', isCollapsed ? 'w-0 opacity-0' : 'opacity-100')}>
             Collapse
           </span>
         </Button>
@@ -209,9 +204,9 @@ function SpaceItem({
   return (
     <div
       className={cn(
-        'group relative flex h-10 items-center rounded-lg transition-all duration-200',
+        'group relative flex h-10 items-center rounded-lg transition-all duration-300',
         'cursor-pointer select-none',
-        isCollapsed ? 'justify-center px-0' : 'gap-3 px-3',
+        isCollapsed ? 'justify-center px-1' : 'gap-3 px-3',
         isActive ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
       )}
       onClick={isEditing ? undefined : onSelect}
@@ -242,7 +237,7 @@ function SpaceItem({
           {/* Space name - hidden when collapsed */}
           <span
             className={cn(
-              'flex-1 truncate text-sm font-medium transition-all duration-200',
+              'flex-1 truncate text-sm font-medium transition-all duration-300',
               isCollapsed ? 'w-0 opacity-0' : 'opacity-100'
             )}
           >
@@ -252,7 +247,12 @@ function SpaceItem({
       )}
 
       {/* Context menu trigger - hidden when collapsed, editing, or draft */}
-      {!isCollapsed && !isEditing && !isDraft && (
+      <div
+        className={cn(
+          'transition-all duration-300 overflow-hidden',
+          isCollapsed || isEditing || isDraft ? 'w-0 opacity-0' : 'w-6 opacity-100'
+        )}
+      >
         <DropdownMenu open={showMenu} onOpenChange={setShowMenu}>
           <DropdownMenuTrigger
             render={
@@ -263,6 +263,7 @@ function SpaceItem({
                   showMenu && 'opacity-100'
                 )}
                 onClick={(e) => e.stopPropagation()}
+                disabled={isCollapsed || isEditing || isDraft}
               />
             }
           >
@@ -291,10 +292,17 @@ function SpaceItem({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      )}
+      </div>
 
       {/* Active indicator pill */}
-      {isActive && <div className="absolute -left-3 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-primary" />}
+      {isActive && (
+        <div
+          className={cn(
+            'absolute top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-primary transition-all duration-300',
+            isCollapsed ? '-left-1' : '-left-3'
+          )}
+        />
+      )}
     </div>
   )
 }

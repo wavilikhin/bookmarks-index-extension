@@ -19,14 +19,13 @@ interface BookmarkGridProps {
  */
 export function BookmarkGrid({ bookmarks, onAddBookmark, onEditBookmark, onDeleteBookmark }: BookmarkGridProps) {
   return (
-    <div className="flex w-full justify-center px-4 pt-[25vh] pb-8 md:px-8">
-      <div
-        className={cn(
-          'grid gap-2',
-          // Responsive grid columns based on viewport
-          'grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8'
-        )}
-      >
+    <div
+      className={cn(
+        'grid gap-2',
+        // Responsive grid columns based on viewport
+        'grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8'
+      )}
+    >
         {/* Bookmark items */}
         {bookmarks.map((bookmark) => (
           <BookmarkItem
@@ -37,9 +36,8 @@ export function BookmarkGrid({ bookmarks, onAddBookmark, onEditBookmark, onDelet
           />
         ))}
 
-        {/* Add bookmark button */}
-        <AddBookmarkButton onClick={onAddBookmark} />
-      </div>
+      {/* Add bookmark button */}
+      <AddBookmarkButton onClick={onAddBookmark} />
     </div>
   )
 }

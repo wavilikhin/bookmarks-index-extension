@@ -381,27 +381,9 @@ export const MainScreen = reatomComponent(() => {
 
   // Render header slot
   const headerSlot = (
-    <>
-      <div className="flex-1">
-        {activeSpaceId && (
-          <GroupTabs
-            groups={groups}
-            draftGroup={draftGroup}
-            activeGroupId={selectedGroupId}
-            editingGroupId={editingGroupId}
-            onSelectGroup={setSelectedGroup}
-            onAddGroup={handleAddGroup}
-            onEditGroup={(group) => startEditingGroup(group)}
-            onDeleteGroup={(group) => openDeleteDialog('group', group)}
-            onGroupNameSave={handleGroupNameSave}
-            onGroupNameCancel={handleGroupCancel}
-          />
-        )}
-      </div>
-      <div className="flex items-center gap-2 px-4 py-2">
-        <UserMenu onSettings={() => console.log('Open settings')} theme={theme} onThemeChange={setTheme} />
-      </div>
-    </>
+    <div className="flex items-center gap-2 px-4 py-2">
+      <UserMenu onSettings={() => console.log('Open settings')} theme={theme} onThemeChange={setTheme} />
+    </div>
   )
 
   // Render content
@@ -425,12 +407,29 @@ export const MainScreen = reatomComponent(() => {
               }}
             />
           ) : (
-            <BookmarkGrid
-              bookmarks={bookmarks}
-              onAddBookmark={() => openCreateModal('bookmark')}
-              onEditBookmark={(bookmark) => openEditModal('bookmark', bookmark)}
-              onDeleteBookmark={(bookmark) => openDeleteDialog('bookmark', bookmark)}
-            />
+            <div className="flex w-full flex-col items-center pt-[25vh]">
+              {activeSpaceId && (
+                <GroupTabs
+                  groups={groups}
+                  draftGroup={draftGroup}
+                  activeGroupId={selectedGroupId}
+                  editingGroupId={editingGroupId}
+                  onSelectGroup={setSelectedGroup}
+                  onAddGroup={handleAddGroup}
+                  onEditGroup={(group) => startEditingGroup(group)}
+                  onDeleteGroup={(group) => openDeleteDialog('group', group)}
+                  onGroupNameSave={handleGroupNameSave}
+                  onGroupNameCancel={handleGroupCancel}
+                  className="mb-4"
+                />
+              )}
+              <BookmarkGrid
+                bookmarks={bookmarks}
+                onAddBookmark={() => openCreateModal('bookmark')}
+                onEditBookmark={(bookmark) => openEditModal('bookmark', bookmark)}
+                onDeleteBookmark={(bookmark) => openDeleteDialog('bookmark', bookmark)}
+              />
+            </div>
           )}
         </ContentState>
       </MainLayout>
