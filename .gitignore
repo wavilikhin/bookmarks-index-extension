@@ -35,3 +35,4 @@ plans/
 .env.development
 .env.production
 keys/
+tsconfig.tsbuildinfo
