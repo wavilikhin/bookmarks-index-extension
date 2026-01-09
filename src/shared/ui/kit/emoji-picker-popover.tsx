@@ -58,10 +58,7 @@ export function EmojiPickerPopover({ value, onChange, onOpenChange, disabled, cl
               'data-closed:zoom-out-95 data-open:zoom-in-95'
             )}
           >
-            <EmojiPicker.Root
-              onEmojiSelect={handleEmojiSelect}
-              className="flex h-80 w-fit flex-col"
-            >
+            <EmojiPicker.Root onEmojiSelect={handleEmojiSelect} className="flex h-80 w-fit flex-col">
               <EmojiPicker.Search
                 className={cn(
                   'm-2 rounded-md border border-border bg-background px-3 py-2 text-sm',

@@ -56,20 +56,8 @@ export function InlineEditRow({
 
   return (
     <div className={cn('relative flex items-center gap-1', className)}>
-      {showIcon && (
-        <EmojiPickerPopover
-          value={icon}
-          onChange={setIcon}
-          className="size-10"
-        />
-      )}
-      <InlineEditInput
-        value={name}
-        onChange={setName}
-        onSave={handleSave}
-        onCancel={handleCancel}
-        className="flex-1"
-      />
+      {showIcon && <EmojiPickerPopover value={icon} onChange={setIcon} className="size-10" />}
+      <InlineEditInput value={name} onChange={setName} onSave={handleSave} onCancel={handleCancel} className="flex-1" />
       {/* Action buttons - positioned below on the right, high z-index to stay on top */}
       <div
         className="absolute -bottom-7 right-0 z-50 flex items-center gap-1"
