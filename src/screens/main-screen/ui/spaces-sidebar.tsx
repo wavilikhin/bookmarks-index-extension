@@ -8,7 +8,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  ContentState
+  ContentState,
+  SpaceSkeletonList
 } from '@/shared/ui'
 import { spacesLoadingAtom, spacesErrorAtom, loadSpaces } from '@/domain/spaces'
 import { InlineEditRow } from './inline-edit-row'
@@ -95,7 +96,7 @@ export function SpacesSidebar({
           loading={spacesLoadingAtom()}
           error={spacesErrorAtom()}
           onRetry={() => loadSpaces()}
-          loadingMessage={isCollapsed ? undefined : 'Loading spaces...'}
+          skeleton={<SpaceSkeletonList count={3} isCollapsed={isCollapsed} />}
         >
           {spaces.map((spaceAtom) => {
             const space = spaceAtom()

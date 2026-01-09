@@ -12,7 +12,7 @@ import {
   loadUserDataWithRetry,
   retryLoadUserData
 } from '@/stores/auth/data-atoms'
-import { InlineError, Spinner } from '@/shared/ui'
+import { InlineError } from '@/shared/ui'
 
 /**
  * ClerkUserSync - Syncs Clerk authentication state to Reatom userIdAtom
@@ -60,17 +60,16 @@ export function ClerkUserSync({ children }: { children: React.ReactNode }) {
 }
 
 /**
- * DataSyncStateHandler - Handles data loading/error states after auth
+ * DataSyncStateHandler - Handles data error states after auth
  *
- * Shows appropriate UI based on data sync state:
- * - Loading: Shows spinner during initial data load
+ * The skeleton UI in AppShellLoading handles loading feedback,
+ * so this component only needs to handle:
  * - Error: Shows error message with retry button after max retries
- * - Success: Renders children
+ * - Success: Renders children (which include skeleton states for individual sections)
  */
 const DataSyncStateHandler = reatomComponent<{ children: React.ReactNode }>(({ children }) => {
   const dataError = dataErrorAtom()
   const dataLoading = dataLoadingAtom()
-  const dataLoaded = dataLoadedAtom()
 
   // Show error state with retry if data sync failed after max retries
   if (dataError && !dataLoading) {
@@ -83,14 +82,6 @@ const DataSyncStateHandler = reatomComponent<{ children: React.ReactNode }>(({ c
     )
   }
 
-  // Show loading state during initial data load (before any data is loaded)
-  if (dataLoading && !dataLoaded) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center bg-background">
-        <Spinner size="lg" message="Loading your data..." />
-      </div>
-    )
-  }
-
+  // No fullscreen loading - skeleton UI handles loading states
   return <>{children}</>
 }, 'DataSyncStateHandler')

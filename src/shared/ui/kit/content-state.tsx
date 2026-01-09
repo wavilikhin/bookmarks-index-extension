@@ -10,6 +10,7 @@ interface ContentStateProps {
   onRetry?: () => void
   retrying?: boolean
   loadingMessage?: string
+  skeleton?: React.ReactNode
   children: React.ReactNode
   className?: string
 }
@@ -18,7 +19,7 @@ interface ContentStateProps {
  * ContentState - Utility component handling loading/error/content states
  *
  * Renders appropriate UI based on current state:
- * - Loading: Shows centered spinner with optional message
+ * - Loading: Shows skeleton if provided, otherwise centered spinner
  * - Error: Shows inline error with retry button
  * - Content: Renders children
  */
@@ -28,10 +29,15 @@ export function ContentState({
   onRetry,
   retrying,
   loadingMessage,
+  skeleton,
   children,
   className
 }: ContentStateProps) {
   if (loading) {
+    // Prefer skeleton over spinner for smoother loading experience
+    if (skeleton) {
+      return <>{skeleton}</>
+    }
     return (
       <div className={cn('flex flex-1 items-center justify-center', className)}>
         <Spinner message={loadingMessage} />

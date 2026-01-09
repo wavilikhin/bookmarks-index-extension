@@ -35,7 +35,7 @@ import {
   deleteBookmark,
   updateBookmark
 } from '@/domain/bookmarks'
-import { ContentState } from '@/shared/ui'
+import { ContentState, BookmarkSkeletonGrid } from '@/shared/ui'
 import {
   setActiveSpace,
   setSelectedGroup,
@@ -413,7 +413,7 @@ export const MainScreen = reatomComponent(() => {
           loading={bookmarksLoading}
           error={bookmarksError}
           onRetry={() => loadBookmarks()}
-          loadingMessage="Loading bookmarks..."
+          skeleton={<BookmarkSkeletonGrid count={8} />}
         >
           {emptyState ? (
             <EmptyState

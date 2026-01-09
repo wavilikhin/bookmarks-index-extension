@@ -100,3 +100,17 @@ export { Spinner } from './spinner'
 export { InlineError } from './inline-error'
 
 export { ContentState } from './content-state'
+
+export { Skeleton } from './skeleton'
+
+export {
+  SpaceItemSkeleton,
+  SpaceSkeletonList,
+  GroupTabSkeleton,
+  GroupTabSkeletonList,
+  BookmarkItemSkeleton,
+  BookmarkSkeletonGrid,
+  UserMenuSkeleton,
+  SidebarButtonSkeleton,
+  SidebarLogoSkeleton
+} from './skeletons'
