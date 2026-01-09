@@ -74,7 +74,7 @@ export { Input } from './input'
 
 export { Label } from './label'
 
-export { LoadingScreen } from './loading-screen'
+export { LoadingScreen, GenericLoadingScreen } from './loading-screen'
 
 export {
   Select,

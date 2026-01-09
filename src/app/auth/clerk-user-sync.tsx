@@ -62,8 +62,8 @@ export function ClerkUserSync({ children }: { children: React.ReactNode }) {
 /**
  * DataSyncStateHandler - Handles data error states after auth
  *
- * The skeleton UI in AppShellLoading handles loading feedback,
- * so this component only needs to handle:
+ * Each component (SpacesSidebar, GroupTabs, BookmarkGrid) handles its own
+ * loading state with skeleton UI, so this component only needs to handle:
  * - Error: Shows error message with retry button after max retries
  * - Success: Renders children (which include skeleton states for individual sections)
  */
