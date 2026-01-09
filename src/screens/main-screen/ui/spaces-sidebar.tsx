@@ -85,8 +85,8 @@ export function SpacesSidebar({
         </span>
       </div>
 
-      {/* Spaces list */}
-      <nav className={cn('flex flex-1 flex-col gap-1 overflow-y-auto transition-all duration-300', isCollapsed ? 'px-2' : 'px-3')}>
+      {/* Spaces list - centered vertically */}
+      <nav className={cn('flex flex-1 flex-col justify-center gap-1 overflow-y-auto transition-all duration-300', isCollapsed ? 'px-2' : 'px-3')}>
         <ContentState
           loading={spacesLoadingAtom()}
           error={spacesErrorAtom()}
@@ -231,8 +231,15 @@ function SpaceItem({
         />
       ) : (
         <>
-          {/* Space icon - 40x40 to match sidebar width when collapsed */}
-          <span className="flex size-10 shrink-0 items-center justify-center text-xl">{space.icon}</span>
+          {/* Space icon - 40x40 with subtle background for emoji visibility */}
+          <span
+            className={cn(
+              'flex size-10 shrink-0 items-center justify-center rounded-lg text-xl',
+              'bg-foreground/[0.04] dark:bg-transparent'
+            )}
+          >
+            {space.icon}
+          </span>
 
           {/* Space name - hidden when collapsed */}
           <span
