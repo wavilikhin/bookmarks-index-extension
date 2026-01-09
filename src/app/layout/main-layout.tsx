@@ -26,7 +26,7 @@ export function MainLayout({ sidebar, header, children }: MainLayoutProps) {
         <header className="flex items-center justify-between bg-background">{header}</header>
 
         {/* Content area */}
-        <div className="flex flex-1 overflow-auto">{children}</div>
+        <div className="flex flex-1 items-start overflow-auto">{children}</div>
       </main>
     </div>
   )

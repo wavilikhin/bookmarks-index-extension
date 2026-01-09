@@ -14,6 +14,9 @@ export const groupsAtom = atom<Atom<Group>[]>([], 'groups.atom')
 // Loading state for groups
 export const groupsLoadingAtom = atom(false, 'groups.loading')
 
+// Error state for groups
+export const groupsErrorAtom = atom<string | null>(null, 'groups.error')
+
 /**
  * Helper to normalize server timestamps to ISO strings
  */
@@ -22,10 +25,19 @@ function normalizeTimestamp(timestamp: string | Date): string {
 }
 
 /**
+ * Helper to extract error message from unknown error
+ */
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message
+  return 'An unexpected error occurred'
+}
+
+/**
  * Load all groups from server
  */
 export const loadGroups = action(async () => {
   groupsLoadingAtom.set(true)
+  groupsErrorAtom.set(null)
   try {
     const serverGroups = await api.groups.list.query()
     const sortedGroups = [...serverGroups].sort((a, b) => a.order - b.order)
@@ -39,6 +51,9 @@ export const loadGroups = action(async () => {
       )
     )
     return sortedGroups
+  } catch (error) {
+    groupsErrorAtom.set(getErrorMessage(error))
+    throw error
   } finally {
     groupsLoadingAtom.set(false)
   }

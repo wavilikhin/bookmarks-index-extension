@@ -1,59 +1,25 @@
 import * as React from 'react'
 import { useAuth, useUser } from '@clerk/chrome-extension'
+import { reatomComponent } from '@reatom/react'
 
 import { userIdAtom } from '@/stores'
-import { dataLoadingAtom, dataLoadedAtom, dataErrorAtom } from '@/stores/auth/data-atoms'
-import { loadSpaces } from '@/domain/spaces'
-import { loadGroups } from '@/domain/groups'
-import { loadBookmarks } from '@/domain/bookmarks'
-import { api } from '@/api'
-import { setActiveSpace, setSelectedGroup } from '@/stores'
-
-/**
- * Load all user data from server
- */
-async function loadUserData(email?: string, name?: string, avatarUrl?: string) {
-  dataLoadingAtom.set(true)
-  dataErrorAtom.set(null)
-
-  try {
-    // Ensure user exists on server
-    await api.sync.ensureUser.mutate({
-      email: email,
-      name: name,
-      avatarUrl: avatarUrl
-    })
-
-    // Load all data in parallel
-    const [spaces, groups] = await Promise.all([loadSpaces(), loadGroups(), loadBookmarks()])
-
-    // Set active space and group if we have data
-    if (spaces && spaces.length > 0) {
-      setActiveSpace(spaces[0].id)
-
-      // Find first group in active space
-      if (groups && groups.length > 0) {
-        const firstGroup = groups.find((g) => g.spaceId === spaces[0].id)
-        if (firstGroup) {
-          setSelectedGroup(firstGroup.id)
-        }
-      }
-    }
-
-    dataLoadedAtom.set(true)
-  } catch (error) {
-    console.error('Failed to load user data:', error)
-    dataErrorAtom.set(error instanceof Error ? error.message : 'Failed to load data')
-  } finally {
-    dataLoadingAtom.set(false)
-  }
-}
+import {
+  dataLoadedAtom,
+  dataLoadingAtom,
+  dataErrorAtom,
+  retryCountAtom,
+  userCredentialsAtom,
+  loadUserDataWithRetry,
+  retryLoadUserData
+} from '@/stores/auth/data-atoms'
+import { InlineError } from '@/shared/ui'
 
 /**
  * ClerkUserSync - Syncs Clerk authentication state to Reatom userIdAtom
  *
  * This component bridges Clerk's authentication with our Reatom data layer.
  * When a user signs in/out via Clerk, it updates userIdAtom and loads/clears data.
+ * Implements auto-retry with exponential backoff on failures.
  */
 export function ClerkUserSync({ children }: { children: React.ReactNode }) {
   const { userId, isLoaded } = useAuth()
@@ -68,7 +34,9 @@ export function ClerkUserSync({ children }: { children: React.ReactNode }) {
       userIdAtom.set(null)
       dataLoadedAtom.set(false)
       dataErrorAtom.set(null)
+      retryCountAtom.set(0)
       previousUserIdRef.current = null
+      userCredentialsAtom.set({})
       return
     }
 
@@ -77,14 +45,43 @@ export function ClerkUserSync({ children }: { children: React.ReactNode }) {
       previousUserIdRef.current = userId
       userIdAtom.set(userId)
 
-      // Load user data
+      // Store credentials for potential retry
       const email = user?.primaryEmailAddress?.emailAddress
       const name = user?.fullName ?? undefined
       const avatarUrl = user?.imageUrl
+      userCredentialsAtom.set({ email, name, avatarUrl })
 
-      loadUserData(email, name, avatarUrl)
+      // Load user data with auto-retry
+      loadUserDataWithRetry(email, name, avatarUrl)
     }
   }, [userId, isLoaded, user])
 
-  return <>{children}</>
+  return <DataSyncStateHandler>{children}</DataSyncStateHandler>
 }
+
+/**
+ * DataSyncStateHandler - Handles data error states after auth
+ *
+ * Each component (SpacesSidebar, GroupTabs, BookmarkGrid) handles its own
+ * loading state with skeleton UI, so this component only needs to handle:
+ * - Error: Shows error message with retry button after max retries
+ * - Success: Renders children (which include skeleton states for individual sections)
+ */
+const DataSyncStateHandler = reatomComponent<{ children: React.ReactNode }>(({ children }) => {
+  const dataError = dataErrorAtom()
+  const dataLoading = dataLoadingAtom()
+
+  // Show error state with retry if data sync failed after max retries
+  if (dataError && !dataLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <InlineError message={dataError} onRetry={retryLoadUserData} />
+        </div>
+      </div>
+    )
+  }
+
+  // No fullscreen loading - skeleton UI handles loading states
+  return <>{children}</>
+}, 'DataSyncStateHandler')

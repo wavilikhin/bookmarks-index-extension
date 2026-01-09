@@ -13,6 +13,9 @@ export const bookmarksAtom = atom<Atom<Bookmark>[]>([], 'bookmarks.atom')
 // Loading state for bookmarks
 export const bookmarksLoadingAtom = atom(false, 'bookmarks.loading')
 
+// Error state for bookmarks
+export const bookmarksErrorAtom = atom<string | null>(null, 'bookmarks.error')
+
 /**
  * Helper to normalize server timestamps to ISO strings
  */
@@ -21,10 +24,19 @@ function normalizeTimestamp(timestamp: string | Date): string {
 }
 
 /**
+ * Helper to extract error message from unknown error
+ */
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message
+  return 'An unexpected error occurred'
+}
+
+/**
  * Load all bookmarks from server
  */
 export const loadBookmarks = action(async () => {
   bookmarksLoadingAtom.set(true)
+  bookmarksErrorAtom.set(null)
   try {
     const serverBookmarks = await api.bookmarks.list.query()
     const sortedBookmarks = [...serverBookmarks].sort((a, b) => a.order - b.order)
@@ -38,6 +50,9 @@ export const loadBookmarks = action(async () => {
       )
     )
     return sortedBookmarks
+  } catch (error) {
+    bookmarksErrorAtom.set(getErrorMessage(error))
+    throw error
   } finally {
     bookmarksLoadingAtom.set(false)
   }

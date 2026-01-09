@@ -3,6 +3,7 @@ export type { Group, CreateGroupInput, UpdateGroupInput } from './group.types'
 export {
   groupsAtom,
   groupsLoadingAtom,
+  groupsErrorAtom,
   loadGroups,
   createGroup,
   updateGroup,

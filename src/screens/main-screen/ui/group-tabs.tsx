@@ -7,9 +7,12 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator
+  DropdownMenuSeparator,
+  GroupTabSkeletonList
 } from '@/shared/ui'
+import { groupsLoadingAtom, groupsErrorAtom, loadGroups } from '@/domain/groups'
 import { InlineEditInput } from './inline-edit-input'
+import { InlineError } from '@/shared/ui'
 import type { Group } from '@/types'
 import type { Atom } from '@reatom/core'
 import type { DraftGroup } from '@/stores'
@@ -70,6 +73,47 @@ export function GroupTabs({
       window.removeEventListener('resize', checkOverflow)
     }
   }, [checkOverflow, groups, draftGroup])
+
+  const loading = groupsLoadingAtom()
+  const error = groupsErrorAtom()
+
+  // Show skeleton loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-between">
+        <GroupTabSkeletonList count={3} />
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onAddGroup}
+          disabled={true}
+          className="mr-4 gap-1.5 text-muted-foreground hover:text-foreground"
+        >
+          <Plus className="size-3.5" />
+          Add Group
+        </Button>
+      </div>
+    )
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="flex items-center justify-between px-6 py-3">
+        <InlineError message={error} onRetry={() => loadGroups()} />
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onAddGroup}
+          disabled={true}
+          className="gap-1.5 text-muted-foreground hover:text-foreground"
+        >
+          <Plus className="size-3.5" />
+          Add Group
+        </Button>
+      </div>
+    )
+  }
 
   // Show empty state only if no groups AND no draft
   if (groups.length === 0 && !draftGroup) {

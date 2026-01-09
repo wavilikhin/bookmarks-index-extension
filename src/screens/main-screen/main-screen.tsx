@@ -26,7 +26,16 @@ import {
 } from '@/stores/ui/atoms'
 import { createSpace, updateSpace, deleteSpace, spacesAtom } from '@/domain/spaces'
 import { groupsAtom, createGroup, updateGroup, deleteGroup } from '@/domain/groups'
-import { bookmarksAtom, createBookmark, deleteBookmark, updateBookmark } from '@/domain/bookmarks'
+import {
+  bookmarksAtom,
+  bookmarksLoadingAtom,
+  bookmarksErrorAtom,
+  loadBookmarks,
+  createBookmark,
+  deleteBookmark,
+  updateBookmark
+} from '@/domain/bookmarks'
+import { ContentState, BookmarkSkeletonGrid } from '@/shared/ui'
 import {
   setActiveSpace,
   setSelectedGroup,
@@ -348,6 +357,10 @@ export const MainScreen = reatomComponent(() => {
 
   const emptyState = getEmptyState()
 
+  // Bookmarks loading/error state
+  const bookmarksLoading = bookmarksLoadingAtom()
+  const bookmarksError = bookmarksErrorAtom()
+
   // Render sidebar slot
   const sidebarSlot = (
     <SpacesSidebar
@@ -396,23 +409,30 @@ export const MainScreen = reatomComponent(() => {
   return (
     <>
       <MainLayout sidebar={sidebarSlot} header={headerSlot}>
-        {emptyState ? (
-          <EmptyState
-            type={emptyState}
-            onAction={() => {
-              if (emptyState === 'no-spaces') handleAddSpace()
-              else if (emptyState === 'no-groups') handleAddGroup()
-              else openCreateModal('bookmark')
-            }}
-          />
-        ) : (
-          <BookmarkGrid
-            bookmarks={bookmarks}
-            onAddBookmark={() => openCreateModal('bookmark')}
-            onEditBookmark={(bookmark) => openEditModal('bookmark', bookmark)}
-            onDeleteBookmark={(bookmark) => openDeleteDialog('bookmark', bookmark)}
-          />
-        )}
+        <ContentState
+          loading={bookmarksLoading}
+          error={bookmarksError}
+          onRetry={() => loadBookmarks()}
+          skeleton={<BookmarkSkeletonGrid count={8} />}
+        >
+          {emptyState ? (
+            <EmptyState
+              type={emptyState}
+              onAction={() => {
+                if (emptyState === 'no-spaces') handleAddSpace()
+                else if (emptyState === 'no-groups') handleAddGroup()
+                else openCreateModal('bookmark')
+              }}
+            />
+          ) : (
+            <BookmarkGrid
+              bookmarks={bookmarks}
+              onAddBookmark={() => openCreateModal('bookmark')}
+              onEditBookmark={(bookmark) => openEditModal('bookmark', bookmark)}
+              onDeleteBookmark={(bookmark) => openDeleteDialog('bookmark', bookmark)}
+            />
+          )}
+        </ContentState>
       </MainLayout>
 
       {/* Add/Edit Modal */}
