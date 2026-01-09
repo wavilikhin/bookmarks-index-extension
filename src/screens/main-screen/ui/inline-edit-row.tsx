@@ -55,16 +55,14 @@ export function InlineEditRow({
   }
 
   return (
-    <div className={cn('relative flex items-center gap-1', className)}>
+    <div className={cn('flex items-center gap-1', className)}>
       {showIcon && <EmojiPickerPopover value={icon} onChange={setIcon} className="size-10" />}
       <InlineEditInput value={name} onChange={setName} onSave={handleSave} onCancel={handleCancel} className="flex-1" />
-      {/* Action buttons - positioned below on the right, high z-index to stay on top */}
+      {/* Action buttons - inline on the right, subtle styling */}
       <div
-        className="absolute -bottom-7 right-0 z-50 flex items-center gap-1"
+        className="flex shrink-0 items-center gap-0.5"
         onMouseDown={(e) => e.stopPropagation()}
         onMouseUp={(e) => e.stopPropagation()}
-        onMouseEnter={(e) => e.stopPropagation()}
-        onMouseLeave={(e) => e.stopPropagation()}
       >
         <button
           type="button"
@@ -74,9 +72,9 @@ export function InlineEditRow({
             handleSave()
           }}
           className={cn(
-            'flex size-6 items-center justify-center rounded-md',
-            'bg-primary text-primary-foreground hover:bg-primary/90',
-            'transition-colors cursor-pointer shadow-md'
+            'flex size-5 items-center justify-center rounded',
+            'text-muted-foreground hover:text-primary hover:bg-primary/10',
+            'transition-colors cursor-pointer'
           )}
           title="Save (Enter)"
         >
@@ -90,9 +88,9 @@ export function InlineEditRow({
             handleCancel()
           }}
           className={cn(
-            'flex size-6 items-center justify-center rounded-md',
-            'bg-muted text-muted-foreground hover:bg-destructive hover:text-destructive-foreground',
-            'transition-colors cursor-pointer shadow-md'
+            'flex size-5 items-center justify-center rounded',
+            'text-muted-foreground hover:text-destructive hover:bg-destructive/10',
+            'transition-colors cursor-pointer'
           )}
           title="Cancel (Escape)"
         >

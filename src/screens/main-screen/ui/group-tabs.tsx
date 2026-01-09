@@ -275,7 +275,7 @@ function GroupTab({
 
       {/* Group name - editable when isEditing */}
       {isEditing ? (
-        <div className="relative flex items-center">
+        <div className="flex items-center gap-1">
           <InlineEditInput
             value={name}
             onChange={setName}
@@ -283,13 +283,11 @@ function GroupTab({
             onCancel={handleCancel}
             className="min-w-20 text-foreground"
           />
-          {/* Action buttons - positioned below, high z-index to stay on top */}
+          {/* Action buttons - inline, subtle styling */}
           <div
-            className="absolute -bottom-7 right-0 z-50 flex items-center gap-1"
+            className="flex shrink-0 items-center gap-0.5"
             onMouseDown={(e) => e.stopPropagation()}
             onMouseUp={(e) => e.stopPropagation()}
-            onMouseEnter={(e) => e.stopPropagation()}
-            onMouseLeave={(e) => e.stopPropagation()}
           >
             <button
               type="button"
@@ -300,8 +298,8 @@ function GroupTab({
               }}
               className={cn(
                 'flex size-5 items-center justify-center rounded',
-                'bg-primary text-primary-foreground hover:bg-primary/90',
-                'transition-colors cursor-pointer shadow-md'
+                'text-muted-foreground hover:text-primary hover:bg-primary/10',
+                'transition-colors cursor-pointer'
               )}
               title="Save (Enter)"
             >
@@ -316,8 +314,8 @@ function GroupTab({
               }}
               className={cn(
                 'flex size-5 items-center justify-center rounded',
-                'bg-muted text-muted-foreground hover:bg-destructive hover:text-destructive-foreground',
-                'transition-colors cursor-pointer shadow-md'
+                'text-muted-foreground hover:text-destructive hover:bg-destructive/10',
+                'transition-colors cursor-pointer'
               )}
               title="Cancel (Escape)"
             >
