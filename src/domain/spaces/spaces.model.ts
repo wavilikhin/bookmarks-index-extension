@@ -15,6 +15,9 @@ export const spacesAtom = atom<Atom<Space>[]>([], 'spaces.atom')
 // Loading state for spaces
 export const spacesLoadingAtom = atom(false, 'spaces.loading')
 
+// Error state for spaces
+export const spacesErrorAtom = atom<string | null>(null, 'spaces.error')
+
 /**
  * Helper to normalize server timestamps to ISO strings
  */
@@ -30,10 +33,19 @@ export function getSpaceById(id: string) {
 }
 
 /**
+ * Helper to extract error message from unknown error
+ */
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message
+  return 'An unexpected error occurred'
+}
+
+/**
  * Load spaces from server
  */
 export const loadSpaces = action(async () => {
   spacesLoadingAtom.set(true)
+  spacesErrorAtom.set(null)
   try {
     const serverSpaces = await api.spaces.list.query()
     const sortedSpaces = [...serverSpaces].sort((a, b) => a.order - b.order)
@@ -47,6 +59,9 @@ export const loadSpaces = action(async () => {
       )
     )
     return sortedSpaces
+  } catch (error) {
+    spacesErrorAtom.set(getErrorMessage(error))
+    throw error
   } finally {
     spacesLoadingAtom.set(false)
   }

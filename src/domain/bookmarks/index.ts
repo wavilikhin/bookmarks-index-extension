@@ -3,6 +3,7 @@ export type { Bookmark, CreateBookmarkInput, UpdateBookmarkInput } from './bookm
 export {
   bookmarksAtom,
   bookmarksLoadingAtom,
+  bookmarksErrorAtom,
   loadBookmarks,
   createBookmark,
   updateBookmark,

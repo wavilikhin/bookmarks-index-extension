@@ -29,6 +29,7 @@ build/
 
 prompt.md
 plans/
+review/
 
 .env
 .env.local

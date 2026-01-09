@@ -7,8 +7,10 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator
+  DropdownMenuSeparator,
+  ContentState
 } from '@/shared/ui'
+import { spacesLoadingAtom, spacesErrorAtom, loadSpaces } from '@/domain/spaces'
 import { InlineEditRow } from './inline-edit-row'
 import type { Space } from '@/types'
 import type { Atom } from '@reatom/core'
@@ -88,41 +90,48 @@ export function SpacesSidebar({
       </div>
 
       {/* Spaces list */}
-      <nav className={cn('flex flex-1 flex-col gap-1', isCollapsed ? 'px-0' : 'px-3')}>
-        {spaces.map((spaceAtom) => {
-          const space = spaceAtom()
-          return (
+      <nav className={cn('flex flex-1 flex-col gap-1 overflow-y-auto', isCollapsed ? 'px-0' : 'px-3')}>
+        <ContentState
+          loading={spacesLoadingAtom()}
+          error={spacesErrorAtom()}
+          onRetry={() => loadSpaces()}
+          loadingMessage={isCollapsed ? undefined : 'Loading spaces...'}
+        >
+          {spaces.map((spaceAtom) => {
+            const space = spaceAtom()
+            return (
+              <SpaceItem
+                key={space.id}
+                space={space}
+                isActive={space.id === activeSpaceId}
+                isCollapsed={isCollapsed}
+                isEditing={space.id === editingSpaceId}
+                isDraft={false}
+                onSelect={() => onSelectSpace(space.id)}
+                onEdit={() => onEditSpace(space)}
+                onDelete={() => onDeleteSpace(space)}
+                onSave={(name, icon) => onSpaceSave(space.id, name, icon)}
+                onCancel={() => onSpaceCancel(space.id)}
+              />
+            )
+          })}
+          {/* Draft space - rendered at the end when creating */}
+          {draftSpace && (
             <SpaceItem
-              key={space.id}
-              space={space}
-              isActive={space.id === activeSpaceId}
+              key={draftSpace.id}
+              space={draftSpace as Space}
+              isActive={draftSpace.id === activeSpaceId}
               isCollapsed={isCollapsed}
-              isEditing={space.id === editingSpaceId}
-              isDraft={false}
-              onSelect={() => onSelectSpace(space.id)}
-              onEdit={() => onEditSpace(space)}
-              onDelete={() => onDeleteSpace(space)}
-              onSave={(name, icon) => onSpaceSave(space.id, name, icon)}
-              onCancel={() => onSpaceCancel(space.id)}
+              isEditing={draftSpace.id === editingSpaceId}
+              isDraft={true}
+              onSelect={() => {}}
+              onEdit={() => {}}
+              onDelete={() => {}}
+              onSave={(name, icon) => onSpaceSave(draftSpace.id, name, icon)}
+              onCancel={() => onSpaceCancel(draftSpace.id)}
             />
-          )
-        })}
-        {/* Draft space - rendered at the end when creating */}
-        {draftSpace && (
-          <SpaceItem
-            key={draftSpace.id}
-            space={draftSpace as Space}
-            isActive={draftSpace.id === activeSpaceId}
-            isCollapsed={isCollapsed}
-            isEditing={draftSpace.id === editingSpaceId}
-            isDraft={true}
-            onSelect={() => {}}
-            onEdit={() => {}}
-            onDelete={() => {}}
-            onSave={(name, icon) => onSpaceSave(draftSpace.id, name, icon)}
-            onCancel={() => onSpaceCancel(draftSpace.id)}
-          />
-        )}
+          )}
+        </ContentState>
       </nav>
 
       {/* Bottom controls */}
