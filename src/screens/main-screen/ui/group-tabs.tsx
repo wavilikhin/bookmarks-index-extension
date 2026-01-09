@@ -120,24 +120,6 @@ export function GroupTabs({
     )
   }
 
-  // Show empty state only if no groups AND no draft
-  if (groups.length === 0 && !draftGroup) {
-    return (
-      <div className={cn('flex items-center justify-between py-3', widthClasses, className)}>
-        <span className="text-sm text-muted-foreground">No groups yet</span>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onAddGroup}
-          className="gap-1.5 text-muted-foreground hover:text-foreground"
-        >
-          <Plus className="size-3.5" />
-          Add Group
-        </Button>
-      </div>
-    )
-  }
-
   return (
     <div
       className={cn(

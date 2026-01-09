@@ -415,7 +415,9 @@ export const MainScreen = reatomComponent(() => {
           skeleton={<BookmarkSkeletonGrid count={8} />}
         >
           {emptyState === 'no-spaces' ? (
-            <EmptyState type={emptyState} onAction={handleAddSpace} />
+            <div className="flex flex-1 items-center justify-center">
+              <EmptyState type={emptyState} onAction={handleAddSpace} />
+            </div>
           ) : (
             <div className="flex w-full flex-1 flex-col items-center pt-[25vh]">
               {/* Always show GroupTabs when there's a real space */}
