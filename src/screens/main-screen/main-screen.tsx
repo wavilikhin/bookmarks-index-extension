@@ -91,8 +91,18 @@ export const MainScreen = reatomComponent(() => {
   const allBookmarks = bookmarksAtom()
 
   // Filter groups and bookmarks based on selection
-  const groups = activeSpaceId ? allGroups.filter((g) => g().spaceId === activeSpaceId) : []
+  // Don't filter by draft space ID - it's not a real space
+  const isRealSpace = activeSpaceId && activeSpaceId !== 'draft-space'
+  const groups = isRealSpace ? allGroups.filter((g) => g().spaceId === activeSpaceId) : []
   const bookmarks = selectedGroupId ? allBookmarks.filter((b) => b().groupId === selectedGroupId).map((b) => b()) : []
+
+  // Auto-select first group when space changes and has groups but no group selected
+  const firstGroupId = groups.length > 0 ? groups[0]().id : null
+  React.useEffect(() => {
+    if (isRealSpace && firstGroupId && !selectedGroupId) {
+      setSelectedGroup(firstGroupId)
+    }
+  }, [activeSpaceId, firstGroupId, selectedGroupId, isRealSpace])
 
   // Modal states
   const [modalState, setModalState] = React.useState<ModalState>({
@@ -145,7 +155,8 @@ export const MainScreen = reatomComponent(() => {
   }
 
   const handleAddGroup = () => {
-    if (!activeSpaceId) return
+    // Can't add group without a real space (not draft)
+    if (!activeSpaceId || activeSpaceId === 'draft-space') return
     const count = groups.length + 1
     const draft = {
       id: 'draft-group',
@@ -349,9 +360,16 @@ export const MainScreen = reatomComponent(() => {
 
   // Determine empty state
   const getEmptyState = () => {
-    if (allSpaces.length === 0) return 'no-spaces'
-    if (groups.length === 0) return 'no-groups'
-    if (bookmarks.length === 0) return 'no-bookmarks'
+    // No spaces at all (excluding draft)
+    if (allSpaces.length === 0 && !draftSpace) return 'no-spaces'
+    // Currently on a draft space - don't show "no groups" until space is saved
+    if (activeSpaceId === 'draft-space') return null
+    // No space selected but spaces exist
+    if (!activeSpaceId && allSpaces.length > 0) return null
+    // Real space selected but has no groups
+    if (isRealSpace && groups.length === 0) return 'no-groups'
+    // Group selected but has no bookmarks
+    if (selectedGroupId && selectedGroupId !== 'draft-group' && bookmarks.length === 0) return 'no-bookmarks'
     return null
   }
 
