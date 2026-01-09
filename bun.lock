@@ -6,7 +6,7 @@
       "name": "bookmarks-index",
       "dependencies": {
         "@base-ui/react": "^1.0.0",
-        "@bookmarks/shared-types": "file:../bookmarks-index-types",
+        "@bookmarks/shared-types": "github:wavilikhin/bookmarks-index-types",
         "@clerk/chrome-extension": "^2.8.14",
         "@fontsource-variable/inter": "^5.2.8",
         "@reatom/core": "^1000.1.0",
@@ -149,7 +149,7 @@
 
     "@base-ui/utils": ["@base-ui/utils@0.2.3", "", { "dependencies": { "@babel/runtime": "^7.28.4", "@floating-ui/utils": "^0.2.10", "reselect": "^5.1.1", "use-sync-external-store": "^1.6.0" }, "peerDependencies": { "@types/react": "^17 || ^18 || ^19", "react": "^17 || ^18 || ^19", "react-dom": "^17 || ^18 || ^19" }, "optionalPeers": ["@types/react"] }, "sha512-/CguQ2PDaOzeVOkllQR8nocJ0FFIDqsWIcURsVmm53QGo8NhFNpePjNlyPIB41luxfOqnG7PU0xicMEw3ls7XQ=="],
 
-    "@bookmarks/shared-types": ["@bookmarks/shared-types@file:../bookmarks-index-types", { "devDependencies": { "typescript": "~5.9.3" }, "peerDependencies": { "@trpc/server": "^11.0.0" } }],
+    "@bookmarks/shared-types": ["@bookmarks/shared-types@github:wavilikhin/bookmarks-index-types#286ffc3", { "peerDependencies": { "@trpc/server": "^11.0.0" } }, "wavilikhin-bookmarks-index-types-286ffc3"],
 
     "@clerk/chrome-extension": ["@clerk/chrome-extension@2.8.14", "", { "dependencies": { "@clerk/clerk-js": "^5.117.0", "@clerk/clerk-react": "^5.59.2", "@clerk/shared": "^3.41.1", "webextension-polyfill": "~0.12.0" }, "peerDependencies": { "react": "^18.0.0 || ~19.0.3 || ~19.1.4 || ~19.2.3 || ~19.3.0-0", "react-dom": "^18.0.0 || ~19.0.3 || ~19.1.4 || ~19.2.3 || ~19.3.0-0" } }, "sha512-FdJbCedJOY20xwp884EBt6Q1Gzlu1fuD7hIxeOebxojqGFpL2COTd8tTY+hTUwbo75eNjh/c/sMCAW+PAkYzsg=="],
 
