@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Plus, MoreHorizontal, Pencil, Trash2, GripVertical, Check, X } from 'lucide-react'
+import { Plus, MoreHorizontal, Pencil, Trash2, Check, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   Button,
@@ -16,18 +16,32 @@ import { InlineError } from '@/shared/ui'
 import type { Group } from '@/types'
 import type { Atom } from '@reatom/core'
 import type { DraftGroup } from '@/stores'
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragOverlay,
+  type DragStartEvent,
+  type DragEndEvent
+} from '@dnd-kit/core'
+import { arrayMove, SortableContext, horizontalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 interface GroupTabsProps {
   groups: Atom<Group>[]
   draftGroup: DraftGroup | null
   activeGroupId: string | null
   editingGroupId: string | null
+  spaceId: string | null
   onSelectGroup: (groupId: string) => void
   onAddGroup: () => void
   onEditGroup: (group: Group) => void
   onDeleteGroup: (group: Group) => void
   onGroupNameSave: (groupId: string, name: string) => void
   onGroupNameCancel: (groupId: string) => void
+  onReorderGroups: (spaceId: string, orderedIds: string[]) => void
   className?: string
 }
 
@@ -36,21 +50,60 @@ interface GroupTabsProps {
  *
  * Design: Underline-style tabs with smooth transitions.
  * Active tab has a subtle bottom border and slightly elevated typography.
- * Includes drag handle placeholder for future reordering.
  */
 export function GroupTabs({
   groups,
   draftGroup,
   activeGroupId,
   editingGroupId,
+  spaceId,
   onSelectGroup,
   onAddGroup,
   onEditGroup,
   onDeleteGroup,
   onGroupNameSave,
   onGroupNameCancel,
+  onReorderGroups,
   className
 }: GroupTabsProps) {
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8
+      }
+    })
+  )
+
+  const groupIds = React.useMemo(() => groups.map((g) => g().id), [groups])
+  const [activeId, setActiveId] = React.useState<string | null>(null)
+
+  const activeGroup = React.useMemo(() => {
+    if (!activeId) return null
+    const groupAtom = groups.find((g) => g().id === activeId)
+    return groupAtom ? groupAtom() : null
+  }, [activeId, groups])
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string)
+  }
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    setActiveId(null)
+    if (over && active.id !== over.id && spaceId) {
+      const oldIndex = groupIds.findIndex((id) => id === active.id)
+      const newIndex = groupIds.findIndex((id) => id === over.id)
+      if (oldIndex !== -1 && newIndex !== -1) {
+        const newOrder = arrayMove(groupIds, oldIndex, newIndex)
+        onReorderGroups(spaceId, newOrder)
+      }
+    }
+  }
+
+  const handleDragCancel = () => {
+    setActiveId(null)
+  }
+
   const tabsRef = React.useRef<HTMLDivElement>(null)
   const [showLeftFade, setShowLeftFade] = React.useState(false)
   const [showRightFade, setShowRightFade] = React.useState(false)
@@ -140,27 +193,51 @@ export function GroupTabs({
         className="flex items-center gap-1 overflow-x-auto scrollbar-none"
         style={{ scrollbarWidth: 'none' }}
       >
-        {groups.map((groupAtom) => {
-          const group = groupAtom()
-          return (
-            <GroupTab
-              key={group.id}
-              group={group}
-              isActive={group.id === activeGroupId}
-              isEditing={group.id === editingGroupId}
-              isDraft={false}
-              onSelect={() => onSelectGroup(group.id)}
-              onEdit={() => onEditGroup(group)}
-              onDelete={() => onDeleteGroup(group)}
-              onSave={(name) => onGroupNameSave(group.id, name)}
-              onCancel={() => onGroupNameCancel(group.id)}
-            />
-          )
-        })}
-        {/* Draft group - rendered at the end when creating */}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
+        >
+          <SortableContext items={groupIds} strategy={horizontalListSortingStrategy}>
+            {groups.map((groupAtom) => {
+              const group = groupAtom()
+              return (
+                <SortableGroupTab
+                  key={group.id}
+                  id={group.id}
+                  group={group}
+                  isActive={group.id === activeGroupId}
+                  isEditing={group.id === editingGroupId}
+                  onSelect={() => onSelectGroup(group.id)}
+                  onEdit={() => onEditGroup(group)}
+                  onDelete={() => onDeleteGroup(group)}
+                  onSave={(name) => onGroupNameSave(group.id, name)}
+                  onCancel={() => onGroupNameCancel(group.id)}
+                />
+              )
+            })}
+          </SortableContext>
+          <DragOverlay>
+            {activeGroup ? (
+              <GroupTab
+                group={activeGroup}
+                isActive={activeGroup.id === activeGroupId}
+                isEditing={false}
+                isDragging={true}
+                onSelect={() => {}}
+                onEdit={() => {}}
+                onDelete={() => {}}
+                onSave={() => {}}
+                onCancel={() => {}}
+              />
+            ) : null}
+          </DragOverlay>
+        </DndContext>
+        {/* Draft group - rendered at the end when creating (not draggable) */}
         {draftGroup && (
           <GroupTab
-            key={draftGroup.id}
             group={draftGroup as Group}
             isActive={draftGroup.id === activeGroupId}
             isEditing={draftGroup.id === editingGroupId}
@@ -196,7 +273,8 @@ interface GroupTabProps {
   group: Group
   isActive: boolean
   isEditing: boolean
-  isDraft: boolean
+  isDraft?: boolean
+  isDragging?: boolean
   onSelect: () => void
   onEdit: () => void
   onDelete: () => void
@@ -204,17 +282,75 @@ interface GroupTabProps {
   onCancel: () => void
 }
 
-function GroupTab({
+interface SortableGroupTabProps extends Omit<GroupTabProps, 'isDraft' | 'isDragging'> {
+  id: string
+}
+
+function SortableGroupTab({
+  id,
   group,
   isActive,
   isEditing,
-  isDraft,
   onSelect,
   onEdit,
   onDelete,
   onSave,
   onCancel
-}: GroupTabProps) {
+}: SortableGroupTabProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+    disabled: isEditing
+  })
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    // Use fast transition only when not dragging for snappy reordering
+    transition: isDragging ? undefined : transition,
+    // Dim original when dragging (DragOverlay shows the clone)
+    opacity: isDragging ? 0.4 : undefined,
+    touchAction: 'none'
+  }
+
+  return (
+    <GroupTab
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      group={group}
+      isActive={isActive}
+      isEditing={isEditing}
+      isDragging={isDragging}
+      onSelect={onSelect}
+      onEdit={onEdit}
+      onDelete={onDelete}
+      onSave={onSave}
+      onCancel={onCancel}
+    />
+  )
+}
+
+const GroupTab = React.forwardRef<
+  HTMLDivElement,
+  GroupTabProps & React.HTMLAttributes<HTMLDivElement> & { style?: React.CSSProperties }
+>(function GroupTab(
+  {
+    group,
+    isActive,
+    isEditing,
+    isDraft,
+    isDragging,
+    onSelect,
+    onEdit,
+    onDelete,
+    onSave,
+    onCancel,
+    style,
+    className,
+    ...dragProps
+  },
+  ref
+) {
   const [showMenu, setShowMenu] = React.useState(false)
   const [name, setName] = React.useState(group.name)
   const hasSavedRef = React.useRef(false)
@@ -247,12 +383,18 @@ function GroupTab({
 
   return (
     <div
+      ref={ref}
+      style={style}
+      {...(isDraft || isEditing ? {} : dragProps)}
       className={cn(
-        'group relative flex shrink-0 items-center gap-1.5 px-3 py-3 transition-colors duration-150',
-        'cursor-pointer select-none',
-        isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
+        'group relative flex shrink-0 items-center gap-1.5 px-3 py-3',
+        isDragging
+          ? 'shadow-lg !cursor-grabbing bg-muted rounded-lg border border-border'
+          : 'cursor-grab select-none transition-colors duration-150 active:cursor-grabbing',
+        isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
+        className
       )}
-      onClick={isEditing ? undefined : onSelect}
+      onClick={isEditing || isDragging ? undefined : onSelect}
       onDoubleClick={handleDoubleClick}
       role="tab"
       tabIndex={isEditing ? -1 : 0}
@@ -263,16 +405,6 @@ function GroupTab({
         }
       }}
     >
-      {/* Drag handle - hidden when editing or draft */}
-      {!isEditing && !isDraft && (
-        <GripVertical
-          className={cn(
-            'size-3 shrink-0 text-muted-foreground/50 opacity-0 transition-opacity',
-            'group-hover:opacity-100'
-          )}
-        />
-      )}
-
       {/* Group name - editable when isEditing */}
       {isEditing ? (
         <div className="flex items-center gap-1">
@@ -339,6 +471,7 @@ function GroupTab({
                   showMenu && 'opacity-100'
                 )}
                 onClick={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
               />
             }
           >
@@ -373,6 +506,6 @@ function GroupTab({
       {isActive && <div className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-primary" />}
     </div>
   )
-}
+})
 
 export type { GroupTabsProps }

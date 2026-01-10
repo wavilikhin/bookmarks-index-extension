@@ -171,28 +171,40 @@ export const deleteGroup = action(async (groupId: string) => {
  * Reorder groups within a space with optimistic update
  */
 export const reorderGroups = action(async (spaceId: string, orderedIds: string[]) => {
-  // Store previous state for rollback
+  // Store previous array order and states for rollback
+  const previousArray = groupsAtom()
   const previousStates = new Map<string, Group>()
 
-  // Optimistic update
-  orderedIds.forEach((id, index) => {
-    const groupAtom = groupsAtom().find((g) => g().id === id)
-    if (groupAtom) {
-      previousStates.set(id, groupAtom())
-      groupAtom.set((currentGroup) => ({
-        ...currentGroup,
-        order: index,
-        ...updateTimestamp()
-      }))
-    }
-  })
+  // Get groups for this space and other spaces separately
+  const currentGroups = groupsAtom()
+  const otherSpaceGroups = currentGroups.filter((g) => g().spaceId !== spaceId)
+
+  // Build new array order for groups in this space
+  const reorderedSpaceGroups = orderedIds
+    .map((id, index) => {
+      const groupAtom = currentGroups.find((g) => g().id === id)
+      if (groupAtom) {
+        previousStates.set(id, groupAtom())
+        groupAtom.set((currentGroup) => ({
+          ...currentGroup,
+          order: index,
+          ...updateTimestamp()
+        }))
+      }
+      return groupAtom
+    })
+    .filter(Boolean) as typeof currentGroups
+
+  // Optimistic update - combine other space groups with reordered groups
+  groupsAtom.set([...otherSpaceGroups, ...reorderedSpaceGroups])
 
   try {
     await api.groups.reorder.mutate({ spaceId, orderedIds })
   } catch (error) {
-    // Rollback on error
+    // Rollback on error - restore array order and states
+    groupsAtom.set(previousArray)
     previousStates.forEach((previousState, id) => {
-      const groupAtom = groupsAtom().find((g) => g().id === id)
+      const groupAtom = previousArray.find((g) => g().id === id)
       if (groupAtom) {
         groupAtom.set(previousState)
       }

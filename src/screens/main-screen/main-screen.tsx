@@ -24,8 +24,8 @@ import {
   GROUP_ICONS,
   getRandomIcon
 } from '@/stores/ui/atoms'
-import { createSpace, updateSpace, deleteSpace, spacesAtom } from '@/domain/spaces'
-import { groupsAtom, createGroup, updateGroup, deleteGroup } from '@/domain/groups'
+import { createSpace, updateSpace, deleteSpace, spacesAtom, reorderSpaces } from '@/domain/spaces'
+import { groupsAtom, createGroup, updateGroup, deleteGroup, reorderGroups } from '@/domain/groups'
 import {
   bookmarksAtom,
   bookmarksLoadingAtom,
@@ -380,6 +380,23 @@ export const MainScreen = reatomComponent(() => {
   const bookmarksLoading = bookmarksLoadingAtom()
   const bookmarksError = bookmarksErrorAtom()
 
+  // Reorder handlers
+  const handleReorderSpaces = async (orderedIds: string[]) => {
+    try {
+      await reorderSpaces(orderedIds)
+    } catch (error) {
+      console.error('Failed to reorder spaces:', error)
+    }
+  }
+
+  const handleReorderGroups = async (spaceId: string, orderedIds: string[]) => {
+    try {
+      await reorderGroups(spaceId, orderedIds)
+    } catch (error) {
+      console.error('Failed to reorder groups:', error)
+    }
+  }
+
   // Render sidebar slot
   const sidebarSlot = (
     <SpacesSidebar
@@ -395,6 +412,7 @@ export const MainScreen = reatomComponent(() => {
       onToggleCollapse={toggleSidebar}
       onSpaceSave={handleSpaceSave}
       onSpaceCancel={handleSpaceCancel}
+      onReorderSpaces={handleReorderSpaces}
     />
   )
 
@@ -428,12 +446,14 @@ export const MainScreen = reatomComponent(() => {
                 draftGroup={draftGroup}
                 activeGroupId={selectedGroupId}
                 editingGroupId={editingGroupId}
+                spaceId={activeSpaceId}
                 onSelectGroup={setSelectedGroup}
                 onAddGroup={handleAddGroup}
                 onEditGroup={(group) => startEditingGroup(group)}
                 onDeleteGroup={(group) => openDeleteDialog('group', group)}
                 onGroupNameSave={handleGroupNameSave}
                 onGroupNameCancel={handleGroupCancel}
+                onReorderGroups={handleReorderGroups}
                 className="mb-4"
               />
               {/* Bookmark grid */}
