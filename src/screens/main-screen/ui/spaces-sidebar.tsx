@@ -16,6 +16,18 @@ import { InlineEditRow } from './inline-edit-row'
 import type { Space } from '@/types'
 import type { Atom } from '@reatom/core'
 import type { DraftSpace } from '@/stores'
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragOverlay,
+  type DragStartEvent,
+  type DragEndEvent
+} from '@dnd-kit/core'
+import { arrayMove, SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 interface SpacesSidebarProps {
   spaces: Atom<Space>[]
@@ -30,6 +42,7 @@ interface SpacesSidebarProps {
   onToggleCollapse: () => void
   onSpaceSave: (spaceId: string, name: string, icon: string) => void
   onSpaceCancel: (spaceId: string) => void
+  onReorderSpaces: (orderedIds: string[]) => void
 }
 
 /**
@@ -51,8 +64,47 @@ export function SpacesSidebar({
   onDeleteSpace,
   onToggleCollapse,
   onSpaceSave,
-  onSpaceCancel
+  onSpaceCancel,
+  onReorderSpaces
 }: SpacesSidebarProps) {
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8
+      }
+    })
+  )
+
+  const spaceIds = React.useMemo(() => spaces.map((s) => s().id), [spaces])
+  const [activeId, setActiveId] = React.useState<string | null>(null)
+
+  const activeSpace = React.useMemo(() => {
+    if (!activeId) return null
+    const spaceAtom = spaces.find((s) => s().id === activeId)
+    return spaceAtom ? spaceAtom() : null
+  }, [activeId, spaces])
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string)
+  }
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    setActiveId(null)
+    if (over && active.id !== over.id) {
+      const oldIndex = spaceIds.findIndex((id) => id === active.id)
+      const newIndex = spaceIds.findIndex((id) => id === over.id)
+      if (oldIndex !== -1 && newIndex !== -1) {
+        const newOrder = arrayMove(spaceIds, oldIndex, newIndex)
+        onReorderSpaces(newOrder)
+      }
+    }
+  }
+
+  const handleDragCancel = () => {
+    setActiveId(null)
+  }
+
   return (
     <aside
       className={cn(
@@ -98,28 +150,53 @@ export function SpacesSidebar({
           onRetry={() => loadSpaces()}
           skeleton={<SpaceSkeletonList count={3} isCollapsed={isCollapsed} />}
         >
-          {spaces.map((spaceAtom) => {
-            const space = spaceAtom()
-            return (
-              <SpaceItem
-                key={space.id}
-                space={space}
-                isActive={space.id === activeSpaceId}
-                isCollapsed={isCollapsed}
-                isEditing={space.id === editingSpaceId}
-                isDraft={false}
-                onSelect={() => onSelectSpace(space.id)}
-                onEdit={() => onEditSpace(space)}
-                onDelete={() => onDeleteSpace(space)}
-                onSave={(name, icon) => onSpaceSave(space.id, name, icon)}
-                onCancel={() => onSpaceCancel(space.id)}
-              />
-            )
-          })}
-          {/* Draft space - rendered at the end when creating */}
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            onDragCancel={handleDragCancel}
+          >
+            <SortableContext items={spaceIds} strategy={verticalListSortingStrategy}>
+              {spaces.map((spaceAtom) => {
+                const space = spaceAtom()
+                return (
+                  <SortableSpaceItem
+                    key={space.id}
+                    id={space.id}
+                    space={space}
+                    isActive={space.id === activeSpaceId}
+                    isCollapsed={isCollapsed}
+                    isEditing={space.id === editingSpaceId}
+                    onSelect={() => onSelectSpace(space.id)}
+                    onEdit={() => onEditSpace(space)}
+                    onDelete={() => onDeleteSpace(space)}
+                    onSave={(name, icon) => onSpaceSave(space.id, name, icon)}
+                    onCancel={() => onSpaceCancel(space.id)}
+                  />
+                )
+              })}
+            </SortableContext>
+            <DragOverlay>
+              {activeSpace ? (
+                <SpaceItem
+                  space={activeSpace}
+                  isActive={activeSpace.id === activeSpaceId}
+                  isCollapsed={isCollapsed}
+                  isEditing={false}
+                  isDragging={true}
+                  onSelect={() => {}}
+                  onEdit={() => {}}
+                  onDelete={() => {}}
+                  onSave={() => {}}
+                  onCancel={() => {}}
+                />
+              ) : null}
+            </DragOverlay>
+          </DndContext>
+          {/* Draft space - rendered at the end when creating (not draggable) */}
           {draftSpace && (
             <SpaceItem
-              key={draftSpace.id}
               space={draftSpace as Space}
               isActive={draftSpace.id === activeSpaceId}
               isCollapsed={isCollapsed}
@@ -178,7 +255,8 @@ interface SpaceItemProps {
   isActive: boolean
   isCollapsed: boolean
   isEditing: boolean
-  isDraft: boolean
+  isDraft?: boolean
+  isDragging?: boolean
   onSelect: () => void
   onEdit: () => void
   onDelete: () => void
@@ -186,18 +264,78 @@ interface SpaceItemProps {
   onCancel: () => void
 }
 
-function SpaceItem({
+interface SortableSpaceItemProps extends Omit<SpaceItemProps, 'isDraft' | 'isDragging'> {
+  id: string
+}
+
+function SortableSpaceItem({
+  id,
   space,
   isActive,
   isCollapsed,
   isEditing,
-  isDraft,
   onSelect,
   onEdit,
   onDelete,
   onSave,
   onCancel
-}: SpaceItemProps) {
+}: SortableSpaceItemProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+    disabled: isEditing
+  })
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    // Use fast transition only when not dragging for snappy reordering
+    transition: isDragging ? undefined : transition,
+    // Hide original when dragging (DragOverlay shows the clone)
+    opacity: isDragging ? 0.4 : undefined,
+    touchAction: 'none'
+  }
+
+  return (
+    <SpaceItem
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      space={space}
+      isActive={isActive}
+      isCollapsed={isCollapsed}
+      isEditing={isEditing}
+      isDragging={isDragging}
+      onSelect={onSelect}
+      onEdit={onEdit}
+      onDelete={onDelete}
+      onSave={onSave}
+      onCancel={onCancel}
+    />
+  )
+}
+
+const SpaceItem = React.forwardRef<
+  HTMLDivElement,
+  SpaceItemProps & React.HTMLAttributes<HTMLDivElement> & { style?: React.CSSProperties }
+>(function SpaceItem(
+  {
+    space,
+    isActive,
+    isCollapsed,
+    isEditing,
+    isDraft,
+    isDragging,
+    onSelect,
+    onEdit,
+    onDelete,
+    onSave,
+    onCancel,
+    style,
+    className,
+    ...dragProps
+  },
+  ref
+) {
   const [showMenu, setShowMenu] = React.useState(false)
 
   const handleDoubleClick = () => {
@@ -208,13 +346,19 @@ function SpaceItem({
 
   return (
     <div
+      ref={ref}
+      style={style}
+      {...(isDraft || isEditing ? {} : dragProps)}
       className={cn(
-        'group relative flex h-10 items-center rounded-lg transition-all duration-300',
-        'cursor-pointer select-none',
+        'group relative flex h-10 items-center rounded-lg',
+        isDragging
+          ? 'shadow-lg !cursor-grabbing bg-muted border border-border'
+          : 'cursor-grab select-none transition-colors duration-150 active:cursor-grabbing',
         isCollapsed ? 'justify-center px-1' : 'gap-3 px-3',
-        isActive ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+        isActive ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+        className
       )}
-      onClick={isEditing ? undefined : onSelect}
+      onClick={isEditing || isDragging ? undefined : onSelect}
       onDoubleClick={handleDoubleClick}
       role="button"
       tabIndex={isEditing ? -1 : 0}
@@ -275,6 +419,7 @@ function SpaceItem({
                   showMenu && 'opacity-100'
                 )}
                 onClick={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
                 disabled={isCollapsed || isEditing || isDraft}
               />
             }
@@ -317,6 +462,6 @@ function SpaceItem({
       )}
     </div>
   )
-}
+})
 
 export type { SpacesSidebarProps }

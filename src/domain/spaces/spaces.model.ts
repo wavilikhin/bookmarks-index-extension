@@ -180,28 +180,37 @@ export const deleteSpace = action(async (spaceId: string) => {
  * Reorder spaces with optimistic update
  */
 export const reorderSpaces = action(async (orderedIds: string[]) => {
-  // Store previous state for rollback
+  // Store previous array order and states for rollback
+  const previousArray = spacesAtom()
   const previousStates = new Map<string, Space>()
 
-  // Optimistic update
-  orderedIds.forEach((id, index) => {
-    const spaceAtom = spacesAtom().find((s) => s().id === id)
-    if (spaceAtom) {
-      previousStates.set(id, spaceAtom())
-      spaceAtom.set((currentSpace) => ({
-        ...currentSpace,
-        order: index,
-        ...updateTimestamp()
-      }))
-    }
-  })
+  // Build new array order and update order fields
+  const currentSpaces = spacesAtom()
+  const reorderedSpaces = orderedIds
+    .map((id, index) => {
+      const spaceAtom = currentSpaces.find((s) => s().id === id)
+      if (spaceAtom) {
+        previousStates.set(id, spaceAtom())
+        spaceAtom.set((currentSpace) => ({
+          ...currentSpace,
+          order: index,
+          ...updateTimestamp()
+        }))
+      }
+      return spaceAtom
+    })
+    .filter(Boolean) as typeof currentSpaces
+
+  // Optimistic update - reorder the array
+  spacesAtom.set(reorderedSpaces)
 
   try {
     await api.spaces.reorder.mutate({ orderedIds })
   } catch (error) {
-    // Rollback on error
+    // Rollback on error - restore array order and states
+    spacesAtom.set(previousArray)
     previousStates.forEach((previousState, id) => {
-      const spaceAtom = spacesAtom().find((s) => s().id === id)
+      const spaceAtom = previousArray.find((s) => s().id === id)
       if (spaceAtom) {
         spaceAtom.set(previousState)
       }
