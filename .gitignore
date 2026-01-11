@@ -37,3 +37,5 @@ review/
 .env.production
 keys/
 tsconfig.tsbuildinfo
+
+.worktrees/
