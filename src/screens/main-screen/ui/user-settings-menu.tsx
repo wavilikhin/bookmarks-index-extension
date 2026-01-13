@@ -37,23 +37,31 @@ export function UserSettingsMenu({ isCollapsed, theme, onThemeChange }: UserSett
         render={
           <button
             className={cn(
-              'flex items-center rounded-lg transition-all duration-300 hover:bg-muted',
-              'h-10 w-full gap-3 px-3'
+              'flex h-10 w-full items-center rounded-lg hover:bg-muted',
+              'transition-all duration-300',
+              isCollapsed ? 'justify-center' : 'pr-3'
             )}
           />
         }
       >
-        {/* Avatar */}
-        <img
-          src={avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${userName}`}
-          alt={userName}
-          className="size-10 shrink-0 rounded-full object-cover"
-        />
-        {/* Name - hidden when collapsed */}
+        {/* Avatar wrapper - fixed size, centered in container, stays in place during collapse */}
+        <span
+          className={cn('flex shrink-0 items-center justify-center', 'transition-all duration-300 ease-out')}
+          style={{ width: '2.5rem', height: '2.5rem' }}
+        >
+          <img
+            src={avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${userName}`}
+            alt={userName}
+            className="size-10 rounded-full object-cover"
+            style={{ width: '40px', height: '40px' }}
+          />
+        </span>
+        {/* Name - fades early (120ms), no width collapse to prevent reflow */}
         <span
           className={cn(
-            'flex-1 truncate text-sm font-medium text-foreground transition-all duration-300',
-            isCollapsed ? 'w-0 opacity-0' : 'opacity-100'
+            'flex-1 truncate whitespace-nowrap text-sm font-medium text-foreground overflow-hidden',
+            'transition-opacity duration-120 ease-out',
+            isCollapsed ? 'opacity-0' : 'opacity-100'
           )}
         >
           {userName}

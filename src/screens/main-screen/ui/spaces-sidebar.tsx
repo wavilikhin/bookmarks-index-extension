@@ -118,7 +118,7 @@ export function SpacesSidebar({
       )}
     >
       {/* User settings menu */}
-      <div className={cn('mb-6 overflow-hidden px-3', isCollapsed && 'flex justify-center')}>
+      <div className="mb-6 overflow-hidden px-3">
         <UserSettingsMenu isCollapsed={isCollapsed} theme={theme} onThemeChange={onThemeChange} />
       </div>
 
@@ -194,44 +194,64 @@ export function SpacesSidebar({
 
       {/* Bottom controls */}
       <div className="mt-auto flex flex-col gap-1 px-3">
-        {/* Add space button */}
+        {/* Add space button - matches space items animation pattern exactly */}
         <Button
           variant="ghost"
           size="sm"
           onClick={onAddSpace}
           className={cn(
-            'flex text-muted-foreground hover:text-foreground transition-all duration-300 p-3 h-10',
-            isCollapsed ? 'justify-center gap-0 w-11' : 'justify-start gap-3 w-full'
+            'flex h-10 w-full items-center text-muted-foreground hover:text-foreground',
+            'transition-all duration-300',
+            isCollapsed ? 'justify-center' : 'pr-3'
           )}
         >
-          <div className={cn('relative z-20 shrink-0 size-5 bg-sidebar', isCollapsed ? 'mr-auto' : 'mr-inherit')}>
-            <div className="absolute w-10 h-5 -left-10 top-0 bottom-0 inset-0 bg-sidebar" />
-            <Plus className={cn('size-5')} />
-          </div>
+          {/* Icon wrapper - fixed size, centered in container, stays in place during collapse */}
+          <span
+            className={cn('flex shrink-0 items-center justify-center', 'transition-all duration-300 ease-out')}
+            style={{ width: '2.5rem', height: '2.5rem' }}
+          >
+            <Plus className="size-5" />
+          </span>
 
+          {/* Text - fades early (120ms), no width collapse to prevent reflow */}
           <span
             className={cn(
-              'absolute transition-transform duration-300, z-10',
-              isCollapsed ? ' -translate-x-16' : 'translate-x-16'
+              'flex-1 truncate whitespace-nowrap text-sm font-medium overflow-hidden',
+              'transition-opacity duration-120 ease-out',
+              isCollapsed ? 'opacity-0' : 'opacity-100'
             )}
           >
             Add Space
           </span>
         </Button>
 
-        {/* Collapse toggle button */}
+        {/* Collapse toggle button - matches space items animation pattern exactly */}
         <Button
           variant="ghost"
           size="sm"
           onClick={onToggleCollapse}
           className={cn(
-            'text-muted-foreground hover:text-foreground transition-all duration-300',
-            'h-10 w-full justify-start gap-3 px-3',
-            isCollapsed ? 'justify-center gap-0 w-11' : 'justify-start gap-3 w-full'
+            'flex h-10 w-full items-center text-muted-foreground hover:text-foreground',
+            'transition-all duration-300',
+            isCollapsed ? 'justify-center' : 'pr-3'
           )}
         >
-          {isCollapsed ? <PanelLeftOpen className="size-5 shrink-0" /> : <PanelLeftClose className="size-5 shrink-0" />}
-          <span className={cn('transition-all duration-300', isCollapsed ? 'w-0 opacity-0' : 'opacity-100')}>
+          {/* Icon wrapper - fixed size, centered in container, stays in place during collapse */}
+          <span
+            className={cn('flex shrink-0 items-center justify-center', 'transition-all duration-300 ease-out')}
+            style={{ width: '2.5rem', height: '2.5rem' }}
+          >
+            {isCollapsed ? <PanelLeftOpen className="size-5" /> : <PanelLeftClose className="size-5" />}
+          </span>
+
+          {/* Text - fades early (120ms), no width collapse to prevent reflow */}
+          <span
+            className={cn(
+              'flex-1 truncate whitespace-nowrap text-sm font-medium overflow-hidden',
+              'transition-opacity duration-120 ease-out',
+              isCollapsed ? 'opacity-0' : 'opacity-100'
+            )}
+          >
             Collapse
           </span>
         </Button>
@@ -340,11 +360,12 @@ const SpaceItem = React.forwardRef<
       style={style}
       {...(isDraft || isEditing ? {} : dragProps)}
       className={cn(
-        'group relative flex items-center rounded-lg gap-3 pl-0 pr-3 h-10 transition-all duration-200',
+        'group relative flex h-10 items-center rounded-lg transition-all duration-300',
         isDragging
           ? 'shadow-lg !cursor-grabbing bg-muted border border-border'
           : 'cursor-grab select-none active:cursor-grabbing',
         isActive ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+        isCollapsed ? 'justify-center' : 'pr-3',
         className
       )}
       onClick={isEditing || isDragging ? undefined : onSelect}
@@ -365,25 +386,29 @@ const SpaceItem = React.forwardRef<
           onSave={({ name, icon }) => onSave(name, icon)}
           onCancel={onCancel}
           showIcon={!isCollapsed}
-          className={cn('flex-1', isCollapsed ? 'w-0 opacity-0' : 'opacity-100')}
+          className={cn('flex-1 transition-opacity duration-120', isCollapsed ? 'opacity-0' : 'opacity-100')}
         />
       ) : (
         <>
-          {/* Space icon - 40x40 with subtle background for emoji visibility */}
+          {/* Space icon - centered with flex, never squishes */}
           <span
             className={cn(
-              'flex size-10 shrink-0 items-center justify-center rounded-lg text-xl',
-              'bg-foreground/[0.04] dark:bg-transparent'
+              'flex shrink-0 items-center justify-center rounded-lg text-xl',
+              'bg-foreground/[0.04] dark:bg-transparent',
+              'transition-all duration-300 ease-out',
+              isCollapsed && 'mr-auto'
             )}
+            style={{ width: '2.5rem', height: '2.5rem' }}
           >
             {space.icon}
           </span>
 
-          {/* Space name - hidden when collapsed */}
+          {/* Space name - fades early (120ms), no width collapse */}
           <span
             className={cn(
-              'flex-1 truncate text-sm font-medium whitespace-nowrap overflow-hidden transition-opacity duration-200',
-              isCollapsed ? 'w-0 opacity-0' : 'opacity-100'
+              'flex-1 truncate whitespace-nowrap text-sm font-medium overflow-hidden',
+              'transition-opacity duration-120 ease-out',
+              isCollapsed ? 'opacity-0' : 'opacity-100'
             )}
           >
             {space.name}
@@ -394,8 +419,8 @@ const SpaceItem = React.forwardRef<
       {/* Context menu trigger - hidden when collapsed, editing, or draft */}
       <div
         className={cn(
-          'transition-all duration-300 overflow-hidden',
-          isCollapsed || isEditing || isDraft ? 'w-0 opacity-0' : 'w-6 opacity-100'
+          'overflow-hidden transition-opacity duration-120',
+          isCollapsed || isEditing || isDraft ? 'opacity-0' : 'opacity-100'
         )}
       >
         <DropdownMenu open={showMenu} onOpenChange={setShowMenu}>
