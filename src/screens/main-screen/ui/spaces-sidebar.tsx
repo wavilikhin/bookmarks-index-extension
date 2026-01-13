@@ -200,23 +200,23 @@ export function SpacesSidebar({
           size="sm"
           onClick={onAddSpace}
           className={cn(
-            'flex h-10 w-full items-center text-muted-foreground hover:text-foreground',
+            'flex h-10 w-full items-center justify-start px-0 text-muted-foreground hover:text-foreground',
             'transition-all duration-300',
-            isCollapsed ? 'justify-center' : 'pr-3'
+            !isCollapsed && 'pr-3'
           )}
         >
-          {/* Icon wrapper - fixed size, centered in container, stays in place during collapse */}
+          {/* Icon wrapper - fixed size, no movement during collapse */}
           <span
-            className={cn('flex shrink-0 items-center justify-center', 'transition-all duration-300 ease-out')}
+            className="flex shrink-0 items-center justify-center transition-all duration-300 ease-out"
             style={{ width: '2.5rem', height: '2.5rem' }}
           >
-            <Plus className="size-5" />
+            <Plus className="size-4" />
           </span>
 
           {/* Text - fades early (120ms), no width collapse to prevent reflow */}
           <span
             className={cn(
-              'flex-1 truncate whitespace-nowrap text-sm font-medium overflow-hidden',
+              'truncate whitespace-nowrap text-xs overflow-hidden',
               'transition-opacity duration-120 ease-out',
               isCollapsed ? 'opacity-0' : 'opacity-100'
             )}
@@ -231,23 +231,23 @@ export function SpacesSidebar({
           size="sm"
           onClick={onToggleCollapse}
           className={cn(
-            'flex h-10 w-full items-center text-muted-foreground hover:text-foreground',
+            'flex h-10 w-full items-center justify-start px-0 text-muted-foreground hover:text-foreground',
             'transition-all duration-300',
-            isCollapsed ? 'justify-center' : 'pr-3'
+            !isCollapsed && 'pr-3'
           )}
         >
-          {/* Icon wrapper - fixed size, centered in container, stays in place during collapse */}
+          {/* Icon wrapper - fixed size, no movement during collapse */}
           <span
-            className={cn('flex shrink-0 items-center justify-center', 'transition-all duration-300 ease-out')}
+            className="flex shrink-0 items-center justify-center transition-all duration-300 ease-out"
             style={{ width: '2.5rem', height: '2.5rem' }}
           >
-            {isCollapsed ? <PanelLeftOpen className="size-5" /> : <PanelLeftClose className="size-5" />}
+            {isCollapsed ? <PanelLeftOpen className="size-4" /> : <PanelLeftClose className="size-4" />}
           </span>
 
           {/* Text - fades early (120ms), no width collapse to prevent reflow */}
           <span
             className={cn(
-              'flex-1 truncate whitespace-nowrap text-sm font-medium overflow-hidden',
+              'truncate whitespace-nowrap text-xs overflow-hidden',
               'transition-opacity duration-120 ease-out',
               isCollapsed ? 'opacity-0' : 'opacity-100'
             )}
