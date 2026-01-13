@@ -1,5 +1,5 @@
 // Bookmark atoms and actions with server sync
-import { atom, action, withAsync, type Atom } from '@reatom/core'
+import { atom, action, withAsync, wrap, type Atom } from '@reatom/core'
 
 import { api } from '@/api'
 import { userIdAtom } from '@/stores/auth/atoms'
@@ -38,7 +38,7 @@ export const loadBookmarks = action(async () => {
   bookmarksLoadingAtom.set(true)
   bookmarksErrorAtom.set(null)
   try {
-    const serverBookmarks = await api.bookmarks.list.query()
+    const serverBookmarks = await wrap(api.bookmarks.list.query())
     const sortedBookmarks = [...serverBookmarks].sort((a, b) => a.order - b.order)
     bookmarksAtom.set(
       sortedBookmarks.map((serverBookmark) =>
@@ -87,15 +87,17 @@ export const createBookmark = action(async (input: CreateBookmarkInput) => {
   bookmarksAtom.set((curr) => [...curr, optimisticAtom])
 
   try {
-    const serverBookmark = await api.bookmarks.create.mutate({
-      id: newId,
-      spaceId: input.spaceId,
-      groupId: input.groupId,
-      title: input.title,
-      url: input.url,
-      description: input.description,
-      order
-    })
+    const serverBookmark = await wrap(
+      api.bookmarks.create.mutate({
+        id: newId,
+        spaceId: input.spaceId,
+        groupId: input.groupId,
+        title: input.title,
+        url: input.url,
+        description: input.description,
+        order
+      })
+    )
     // Update optimistic atom with server response
     optimisticAtom.set({
       ...serverBookmark,
@@ -128,17 +130,19 @@ export const updateBookmark = action(async (bookmarkId: string, partialBookmark:
   }))
 
   try {
-    const serverBookmark = await api.bookmarks.update.mutate({
-      id: bookmarkId,
-      title: partialBookmark.title,
-      url: partialBookmark.url,
-      description: partialBookmark.description,
-      faviconUrl: partialBookmark.faviconUrl,
-      groupId: partialBookmark.groupId,
-      spaceId: partialBookmark.spaceId,
-      isPinned: partialBookmark.isPinned,
-      isArchived: partialBookmark.isArchived
-    })
+    const serverBookmark = await wrap(
+      api.bookmarks.update.mutate({
+        id: bookmarkId,
+        title: partialBookmark.title,
+        url: partialBookmark.url,
+        description: partialBookmark.description,
+        faviconUrl: partialBookmark.faviconUrl,
+        groupId: partialBookmark.groupId,
+        spaceId: partialBookmark.spaceId,
+        isPinned: partialBookmark.isPinned,
+        isArchived: partialBookmark.isArchived
+      })
+    )
     // Update with server response
     bookmarkToUpdateAtom.set({
       ...serverBookmark,
@@ -164,7 +168,7 @@ export const deleteBookmark = action(async (bookmarkId: string) => {
   bookmarksAtom.set((curr) => curr.filter((b) => b().id !== bookmarkId))
 
   try {
-    await api.bookmarks.delete.mutate({ id: bookmarkId })
+    await wrap(api.bookmarks.delete.mutate({ id: bookmarkId }))
   } catch (error) {
     // Rollback on error
     bookmarksAtom.set(previousBookmarks)

@@ -1,5 +1,5 @@
 // Space atoms and actions with server sync
-import { atom, action, withAsync, type Atom } from '@reatom/core'
+import { atom, action, withAsync, wrap, type Atom } from '@reatom/core'
 
 import { api } from '@/api'
 import { userIdAtom } from '@/stores/auth/atoms'
@@ -47,7 +47,7 @@ export const loadSpaces = action(async () => {
   spacesLoadingAtom.set(true)
   spacesErrorAtom.set(null)
   try {
-    const serverSpaces = await api.spaces.list.query()
+    const serverSpaces = await wrap(api.spaces.list.query())
     const sortedSpaces = [...serverSpaces].sort((a, b) => a.order - b.order)
     spacesAtom.set(
       sortedSpaces.map((serverSpace) =>
@@ -91,13 +91,15 @@ export const createSpace = action(async (input: CreateSpaceInput) => {
   spacesAtom.set((curr) => [...curr, optimisticAtom])
 
   try {
-    const serverSpace = await api.spaces.create.mutate({
-      id: newId,
-      name: input.name,
-      icon: input.icon,
-      color: input.color,
-      order: optimisticSpace.order
-    })
+    const serverSpace = await wrap(
+      api.spaces.create.mutate({
+        id: newId,
+        name: input.name,
+        icon: input.icon,
+        color: input.color,
+        order: optimisticSpace.order
+      })
+    )
     // Update optimistic atom with server response
     optimisticAtom.set({
       ...serverSpace,
@@ -130,13 +132,15 @@ export const updateSpace = action(async (spaceId: string, partialSpace: UpdateSp
   }))
 
   try {
-    const serverSpace = await api.spaces.update.mutate({
-      id: spaceId,
-      name: partialSpace.name,
-      icon: partialSpace.icon,
-      color: partialSpace.color,
-      isArchived: partialSpace.isArchived
-    })
+    const serverSpace = await wrap(
+      api.spaces.update.mutate({
+        id: spaceId,
+        name: partialSpace.name,
+        icon: partialSpace.icon,
+        color: partialSpace.color,
+        isArchived: partialSpace.isArchived
+      })
+    )
     // Update with server response
     spaceToUpdateAtom.set({
       ...serverSpace,
@@ -166,7 +170,7 @@ export const deleteSpace = action(async (spaceId: string) => {
   bookmarksAtom.set((curr) => curr.filter((b) => b().spaceId !== spaceId))
 
   try {
-    await api.spaces.delete.mutate({ id: spaceId })
+    await wrap(api.spaces.delete.mutate({ id: spaceId }))
   } catch (error) {
     // Rollback on error
     spacesAtom.set(previousSpaces)
@@ -205,7 +209,7 @@ export const reorderSpaces = action(async (orderedIds: string[]) => {
   spacesAtom.set(reorderedSpaces)
 
   try {
-    await api.spaces.reorder.mutate({ orderedIds })
+    await wrap(api.spaces.reorder.mutate({ orderedIds }))
   } catch (error) {
     // Rollback on error - restore array order and states
     spacesAtom.set(previousArray)

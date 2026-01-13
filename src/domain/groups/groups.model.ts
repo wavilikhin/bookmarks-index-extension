@@ -1,5 +1,5 @@
 // Group atoms and actions with server sync
-import { atom, action, withAsync, type Atom } from '@reatom/core'
+import { atom, action, withAsync, wrap, type Atom } from '@reatom/core'
 
 import { api } from '@/api'
 import { generateId, createTimestamps, updateTimestamp } from '@/lib/utils/entity'
@@ -39,7 +39,7 @@ export const loadGroups = action(async () => {
   groupsLoadingAtom.set(true)
   groupsErrorAtom.set(null)
   try {
-    const serverGroups = await api.groups.list.query()
+    const serverGroups = await wrap(api.groups.list.query())
     const sortedGroups = [...serverGroups].sort((a, b) => a.order - b.order)
     groupsAtom.set(
       sortedGroups.map((serverGroup) =>
@@ -85,13 +85,15 @@ export const createGroup = action(async (input: CreateGroupInput) => {
   groupsAtom.set((curr) => [...curr, optimisticAtom])
 
   try {
-    const serverGroup = await api.groups.create.mutate({
-      id: newId,
-      spaceId: input.spaceId,
-      name: input.name,
-      icon: input.icon,
-      order
-    })
+    const serverGroup = await wrap(
+      api.groups.create.mutate({
+        id: newId,
+        spaceId: input.spaceId,
+        name: input.name,
+        icon: input.icon,
+        order
+      })
+    )
     // Update optimistic atom with server response
     optimisticAtom.set({
       ...serverGroup,
@@ -124,13 +126,15 @@ export const updateGroup = action(async (id: string, input: UpdateGroupInput) =>
   }))
 
   try {
-    const serverGroup = await api.groups.update.mutate({
-      id,
-      name: input.name,
-      icon: input.icon,
-      spaceId: input.spaceId,
-      isArchived: input.isArchived
-    })
+    const serverGroup = await wrap(
+      api.groups.update.mutate({
+        id,
+        name: input.name,
+        icon: input.icon,
+        spaceId: input.spaceId,
+        isArchived: input.isArchived
+      })
+    )
     // Update with server response
     groupToUpdateAtom.set({
       ...serverGroup,
@@ -158,7 +162,7 @@ export const deleteGroup = action(async (groupId: string) => {
   bookmarksAtom.set((curr) => curr.filter((b) => b().groupId !== groupId))
 
   try {
-    await api.groups.delete.mutate({ id: groupId })
+    await wrap(api.groups.delete.mutate({ id: groupId }))
   } catch (error) {
     // Rollback on error
     groupsAtom.set(previousGroups)
@@ -199,7 +203,7 @@ export const reorderGroups = action(async (spaceId: string, orderedIds: string[]
   groupsAtom.set([...otherSpaceGroups, ...reorderedSpaceGroups])
 
   try {
-    await api.groups.reorder.mutate({ spaceId, orderedIds })
+    await wrap(api.groups.reorder.mutate({ spaceId, orderedIds }))
   } catch (error) {
     // Rollback on error - restore array order and states
     groupsAtom.set(previousArray)
