@@ -4,7 +4,6 @@ import { MainLayout } from '@/app/layout/main-layout'
 import { SpacesSidebar } from './ui/spaces-sidebar'
 import { GroupTabs } from './ui/group-tabs'
 import { BookmarkGrid } from './ui/bookmark-grid'
-import { UserMenu } from './ui/user-menu'
 import { AddEditModal } from './ui/add-edit-modal'
 import { EmptyState } from './ui/empty-state'
 import { DeleteConfirmationDialog } from './ui/delete-confirmation-dialog'
@@ -405,6 +404,8 @@ export const MainScreen = reatomComponent(() => {
       activeSpaceId={activeSpaceId}
       isCollapsed={sidebarCollapsed}
       editingSpaceId={editingSpaceId}
+      theme={theme}
+      onThemeChange={setTheme}
       onSelectSpace={setActiveSpace}
       onAddSpace={handleAddSpace}
       onEditSpace={(space) => startEditingSpace(space)}
@@ -416,12 +417,8 @@ export const MainScreen = reatomComponent(() => {
     />
   )
 
-  // Render header slot
-  const headerSlot = (
-    <div className="flex items-center gap-2 px-4 py-2">
-      <UserMenu onSettings={() => console.log('Open settings')} theme={theme} onThemeChange={setTheme} />
-    </div>
-  )
+  // Header slot - currently empty, user settings moved to sidebar
+  const headerSlot = null
 
   // Render content
 
