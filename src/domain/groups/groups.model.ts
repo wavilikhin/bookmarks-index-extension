@@ -11,12 +11,6 @@ import type { Group, CreateGroupInput, UpdateGroupInput } from './group.types'
 // Entity array - each group is wrapped in its own atom for granular updates
 export const groupsAtom = atom<Atom<Group>[]>([], 'groups.atom')
 
-// Loading state for groups
-export const groupsLoadingAtom = atom(false, 'groups.loading')
-
-// Error state for groups
-export const groupsErrorAtom = atom<string | null>(null, 'groups.error')
-
 /**
  * Helper to normalize server timestamps to ISO strings
  */
@@ -25,38 +19,21 @@ function normalizeTimestamp(timestamp: string | Date): string {
 }
 
 /**
- * Helper to extract error message from unknown error
- */
-function getErrorMessage(error: unknown): string {
-  if (error instanceof Error) return error.message
-  return 'An unexpected error occurred'
-}
-
-/**
  * Load all groups from server
  */
 export const loadGroups = action(async () => {
-  groupsLoadingAtom.set(true)
-  groupsErrorAtom.set(null)
-  try {
-    const serverGroups = await wrap(api.groups.list.query())
-    const sortedGroups = [...serverGroups].sort((a, b) => a.order - b.order)
-    groupsAtom.set(
-      sortedGroups.map((serverGroup) =>
-        atom({
-          ...serverGroup,
-          createdAt: normalizeTimestamp(serverGroup.createdAt),
-          updatedAt: normalizeTimestamp(serverGroup.updatedAt)
-        } as Group)
-      )
+  const serverGroups = await wrap(api.groups.list.query())
+  const sortedGroups = [...serverGroups].sort((a, b) => a.order - b.order)
+  groupsAtom.set(
+    sortedGroups.map((serverGroup) =>
+      atom({
+        ...serverGroup,
+        createdAt: normalizeTimestamp(serverGroup.createdAt),
+        updatedAt: normalizeTimestamp(serverGroup.updatedAt)
+      } as Group)
     )
-    return sortedGroups
-  } catch (error) {
-    groupsErrorAtom.set(getErrorMessage(error))
-    throw error
-  } finally {
-    groupsLoadingAtom.set(false)
-  }
+  )
+  return sortedGroups
 }, 'groups.load').extend(withAsync())
 
 /**

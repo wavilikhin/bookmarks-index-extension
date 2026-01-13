@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   GroupTabSkeletonList
 } from '@/shared/ui'
-import { groupsLoadingAtom, groupsErrorAtom, loadGroups } from '@/domain/groups'
+import { loadGroups } from '@/domain/groups'
 import { InlineEditInput } from './inline-edit-input'
 import { InlineError } from '@/shared/ui'
 import type { Group } from '@/types'
@@ -129,8 +129,8 @@ export function GroupTabs({
     }
   }, [checkOverflow, groups, draftGroup])
 
-  const loading = groupsLoadingAtom()
-  const error = groupsErrorAtom()
+  const loading = loadGroups.pending() > 0
+  const error = loadGroups.error()?.message || null
 
   // Shared width classes to match BookmarkGrid
   const widthClasses = 'w-[304px] sm:w-[408px] md:w-[512px] lg:w-[616px] xl:w-[824px]'

@@ -11,7 +11,7 @@ import {
   ContentState,
   SpaceSkeletonList
 } from '@/shared/ui'
-import { spacesLoadingAtom, spacesErrorAtom, loadSpaces } from '@/domain/spaces'
+import { loadSpaces } from '@/domain/spaces'
 import { InlineEditRow } from './inline-edit-row'
 import { UserSettingsMenu } from './user-settings-menu'
 import type { Space } from '@/types'
@@ -125,8 +125,8 @@ export function SpacesSidebar({
       {/* Spaces list - centered vertically */}
       <nav className="flex flex-1 flex-col justify-center gap-1 overflow-y-auto px-3">
         <ContentState
-          loading={spacesLoadingAtom()}
-          error={spacesErrorAtom()}
+          loading={loadSpaces.pending() > 0}
+          error={loadSpaces.error()?.message || null}
           onRetry={() => loadSpaces()}
           skeleton={<SpaceSkeletonList count={3} isCollapsed={isCollapsed} />}
         >

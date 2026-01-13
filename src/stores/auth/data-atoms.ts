@@ -1,9 +1,9 @@
 // Data loading state atoms
-import { atom } from '@reatom/core'
+import { atom, wrap } from '@reatom/core'
 
-import { loadSpaces, spacesLoadingAtom } from '@/domain/spaces'
-import { loadGroups, groupsLoadingAtom } from '@/domain/groups'
-import { loadBookmarks, bookmarksLoadingAtom } from '@/domain/bookmarks'
+import { loadSpaces } from '@/domain/spaces'
+import { loadGroups } from '@/domain/groups'
+import { loadBookmarks } from '@/domain/bookmarks'
 import { setActiveSpace, setSelectedGroup } from '@/stores/ui/actions'
 import { api } from '@/api'
 
@@ -36,19 +36,15 @@ export async function loadUserDataWithRetry(email?: string, name?: string, avata
     dataLoadingAtom.set(true)
     dataErrorAtom.set(null)
 
-    // Set domain loading atoms immediately so UI shows spinners
-    // even during ensureUser call
-    spacesLoadingAtom.set(true)
-    groupsLoadingAtom.set(true)
-    bookmarksLoadingAtom.set(true)
-
     try {
       // Ensure user exists on server
-      await api.sync.ensureUser.mutate({
-        email: email,
-        name: name,
-        avatarUrl: avatarUrl
-      })
+      await wrap(
+        api.sync.ensureUser.mutate({
+          email: email,
+          name: name,
+          avatarUrl: avatarUrl
+        })
+      )
 
       // Load all data in parallel
       const [spaces, groups] = await Promise.all([loadSpaces(), loadGroups(), loadBookmarks()])
@@ -74,11 +70,6 @@ export async function loadUserDataWithRetry(email?: string, name?: string, avata
     } catch (error) {
       retries++
       retryCountAtom.set(retries)
-
-      // Reset domain loading atoms on error
-      spacesLoadingAtom.set(false)
-      groupsLoadingAtom.set(false)
-      bookmarksLoadingAtom.set(false)
 
       if (retries > MAX_RETRIES) {
         // Max retries exceeded - show error

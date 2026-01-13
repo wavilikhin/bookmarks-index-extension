@@ -25,15 +25,7 @@ import {
 } from '@/stores/ui/atoms'
 import { createSpace, updateSpace, deleteSpace, spacesAtom, reorderSpaces } from '@/domain/spaces'
 import { groupsAtom, createGroup, updateGroup, deleteGroup, reorderGroups } from '@/domain/groups'
-import {
-  bookmarksAtom,
-  bookmarksLoadingAtom,
-  bookmarksErrorAtom,
-  loadBookmarks,
-  createBookmark,
-  deleteBookmark,
-  updateBookmark
-} from '@/domain/bookmarks'
+import { bookmarksAtom, loadBookmarks, createBookmark, deleteBookmark, updateBookmark } from '@/domain/bookmarks'
 import { ContentState, BookmarkSkeletonGrid } from '@/shared/ui'
 import {
   setActiveSpace,
@@ -376,8 +368,8 @@ export const MainScreen = reatomComponent(() => {
   const emptyState = getEmptyState()
 
   // Bookmarks loading/error state
-  const bookmarksLoading = bookmarksLoadingAtom()
-  const bookmarksError = bookmarksErrorAtom()
+  const bookmarksLoading = loadBookmarks.pending() > 0
+  const bookmarksError = loadBookmarks.error()?.message || null
 
   // Reorder handlers
   const handleReorderSpaces = async (orderedIds: string[]) => {

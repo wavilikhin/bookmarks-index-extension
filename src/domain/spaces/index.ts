@@ -2,8 +2,6 @@
 export type { Space, CreateSpaceInput, UpdateSpaceInput } from './spaces.types'
 export {
   spacesAtom,
-  spacesLoadingAtom,
-  spacesErrorAtom,
   getSpaceById,
   loadSpaces,
   createSpace,

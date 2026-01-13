@@ -10,12 +10,6 @@ import type { Bookmark, CreateBookmarkInput, UpdateBookmarkInput } from './bookm
 // Entity array - each bookmark is wrapped in its own atom for granular updates
 export const bookmarksAtom = atom<Atom<Bookmark>[]>([], 'bookmarks.atom')
 
-// Loading state for bookmarks
-export const bookmarksLoadingAtom = atom(false, 'bookmarks.loading')
-
-// Error state for bookmarks
-export const bookmarksErrorAtom = atom<string | null>(null, 'bookmarks.error')
-
 /**
  * Helper to normalize server timestamps to ISO strings
  */
@@ -24,38 +18,21 @@ function normalizeTimestamp(timestamp: string | Date): string {
 }
 
 /**
- * Helper to extract error message from unknown error
- */
-function getErrorMessage(error: unknown): string {
-  if (error instanceof Error) return error.message
-  return 'An unexpected error occurred'
-}
-
-/**
  * Load all bookmarks from server
  */
 export const loadBookmarks = action(async () => {
-  bookmarksLoadingAtom.set(true)
-  bookmarksErrorAtom.set(null)
-  try {
-    const serverBookmarks = await wrap(api.bookmarks.list.query())
-    const sortedBookmarks = [...serverBookmarks].sort((a, b) => a.order - b.order)
-    bookmarksAtom.set(
-      sortedBookmarks.map((serverBookmark) =>
-        atom({
-          ...serverBookmark,
-          createdAt: normalizeTimestamp(serverBookmark.createdAt),
-          updatedAt: normalizeTimestamp(serverBookmark.updatedAt)
-        } as Bookmark)
-      )
+  const serverBookmarks = await wrap(api.bookmarks.list.query())
+  const sortedBookmarks = [...serverBookmarks].sort((a, b) => a.order - b.order)
+  bookmarksAtom.set(
+    sortedBookmarks.map((serverBookmark) =>
+      atom({
+        ...serverBookmark,
+        createdAt: normalizeTimestamp(serverBookmark.createdAt),
+        updatedAt: normalizeTimestamp(serverBookmark.updatedAt)
+      } as Bookmark)
     )
-    return sortedBookmarks
-  } catch (error) {
-    bookmarksErrorAtom.set(getErrorMessage(error))
-    throw error
-  } finally {
-    bookmarksLoadingAtom.set(false)
-  }
+  )
+  return sortedBookmarks
 }, 'bookmarks.load').extend(withAsync())
 
 /**
@@ -197,7 +174,7 @@ export const reorderBookmarks = action(async (groupId: string, orderedIds: strin
   })
 
   try {
-    await api.bookmarks.reorder.mutate({ groupId, orderedIds })
+    await wrap(api.bookmarks.reorder.mutate({ groupId, orderedIds }))
   } catch (error) {
     // Rollback on error
     previousStates.forEach((previousState, id) => {
@@ -233,11 +210,13 @@ export const moveBookmark = action(async (bookmarkId: string, groupId: string, s
   }))
 
   try {
-    const serverBookmark = await api.bookmarks.move.mutate({
-      id: bookmarkId,
-      groupId,
-      spaceId
-    })
+    const serverBookmark = await wrap(
+      api.bookmarks.move.mutate({
+        id: bookmarkId,
+        groupId,
+        spaceId
+      })
+    )
     // Update with server response
     bookmarkToMoveAtom.set({
       ...serverBookmark,
