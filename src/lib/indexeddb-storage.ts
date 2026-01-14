@@ -1,4 +1,4 @@
-import { reatomPersist, createMemStorage } from '@reatom/core/build/persist'
+import { reatomPersist, createMemStorage } from '@reatom/core'
 import { get, set, del } from 'idb-keyval'
 
 const STORAGE_NAMESPACE = 'bookmarks-index:'
