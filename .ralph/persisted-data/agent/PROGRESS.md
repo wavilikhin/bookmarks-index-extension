@@ -4,6 +4,37 @@ Notes from each phase. Newest entries at the top.
 
 ---
 
+## Phase 2: Create IndexedDB Storage Adapter ✅ COMPLETE
+
+**Date:** 2025-01-14
+**Tasks Completed:** 8/8
+
+### What Was Done
+
+- Created `src/lib/indexeddb-storage.ts` with IndexedDB persistence adapter
+- Implemented `createIndexedDBStorage()` function:
+  - Returns object implementing `PersistStorage` interface
+  - Includes async `get()`, `set()`, `clear()` methods
+  - All operations wrapped in try/catch with error logging
+  - Fallback to memory storage via `createMemStorage()`
+- Implemented `getStorageKey()` helper for key namespacing
+- Exported `withIndexedDBStorage` as main extension for Reatom atoms
+- Verified TypeScript compilation with `bun run tsc --noEmit`
+
+### Key Findings
+
+1. Import path for Reatom persist is `@reatom/core/build/persist` (not `@reatom/core/persist`)
+2. `idb-keyval` package provides correct `get`, `set`, `del` functions
+3. Namespace prefix `'bookmarks-index:'` prevents collisions with other storage
+
+### Success Criteria Met
+
+✅ TypeScript compilation succeeds (`bun run tsc` exits with code 0)
+✅ File `src/lib/indexeddb-storage.ts` exports `withIndexedDBStorage`
+✅ File `src/lib/indexeddb-storage.ts` exports `createIndexedDBStorage`
+
+---
+
 ## Phase 1: Install idb_kval Package ✅ COMPLETE
 
 **Date:** 2025-01-14
