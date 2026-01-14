@@ -4,6 +4,42 @@ Notes from each phase. Newest entries at the top.
 
 ---
 
+## Phase 6: Update Bookmarks Model with Persistence ✅ COMPLETE
+
+**Date:** 2025-01-14
+**Tasks Completed:** 5/5
+
+### What Was Done
+
+- Added `withConnectHook` import to `src/domain/bookmarks/bookmarks.model.ts`
+- Added `persistEntityArray` import from `@/lib/storage-serializers`
+- Restructured bookmarks model to follow same pattern as spaces and groups:
+  - `bookmarksAtom` declared at top (line 12)
+  - `loadBookmarks` action defined after helper functions (lines 24-37)
+  - Extensions applied after both atom and action are available (lines 40-44)
+- Extended `bookmarksAtom` with:
+  - `.extend(persistEntityArray<Bookmark>('bookmarks'))` for IndexedDB persistence
+  - `.extend(withConnectHook(() => { loadBookmarks() }))` for lifecycle loading
+- Verified TypeScript compilation with `bun run tsc --noEmit`
+
+### Key Design Points
+
+1. **Pattern consistency**: Followed same structure as Phase 4 (spaces) and Phase 5 (groups)
+2. **withConnectHook pattern**: Wraps async action in arrow function since lifecycle hooks don't support returning promises
+3. **Dual declaration**: `bookmarksAtom` declared early for reference, extended later after dependencies available
+4. **CRUD actions unchanged**: All create/update/delete/reorder/move actions continue to work as-is
+5. **Auto-persistence**: Any `bookmarksAtom.set()` call automatically persists to IndexedDB via `persistEntityArray`
+
+### Success Criteria Met
+
+✅ TypeScript compilation succeeds (`bun run tsc --noEmit` exits with code 0)
+✅ `bookmarksAtom` has `.extend(persistEntityArray(...))` and `.extend(withConnectHook(...))`
+✅ `loadBookmarks` action is defined before atom extensions
+✅ Import order follows AGENTS.md conventions
+✅ Pattern matches groups.model.ts exactly
+
+---
+
 ## Phase 5: Update Groups Model with Persistence ✅ COMPLETE
 
 **Date:** 2025-01-14

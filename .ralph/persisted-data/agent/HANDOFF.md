@@ -1,18 +1,18 @@
-# Phase 5 Handoff: Update Groups Model with Persistence
+# Phase 6 Handoff: Update Bookmarks Model with Persistence
 
 ## What Was Done
 
 - ✅ **Task 1**: Added import `withConnectHook` from `@reatom/core`
-  - Import added to line 2 of groups.model.ts
+  - Import added to line 2 of bookmarks.model.ts
 - ✅ **Task 2**: Added import `persistEntityArray` from `@/lib/storage-serializers`
-  - Import added to line 6 of groups.model.ts (follows AGENTS.md ordering)
-- ✅ **Task 3**: Verified `loadGroups` action is defined after `groupsAtom` declaration
-  - `groupsAtom` declared at line 20 (for early reference if needed)
-  - `loadGroups` defined at lines 25-38 (after atom declaration)
-  - Extensions applied at lines 41-45 (after both atom and loadGroups are available)
-- ✅ **Task 4**: Extended `groupsAtom` with persistence and lifecycle hooks
-  - Lines 41-45: `groupsAtom.extend(persistEntityArray<Group>('groups')).extend(withConnectHook(...))`
-  - withConnectHook callback wraps loadGroups in arrow function: `() => { loadGroups() }`
+  - Import added to line 7 of bookmarks.model.ts (follows AGENTS.md ordering)
+- ✅ **Task 3**: Verified `loadBookmarks` action is defined after `bookmarksAtom` declaration
+  - `bookmarksAtom` declared at line 12 (for early reference if needed)
+  - `loadBookmarks` defined at lines 24-37 (after atom declaration)
+  - Extensions applied at lines 40-44 (after both atom and loadBookmarks are available)
+- ✅ **Task 4**: Extended `bookmarksAtom` with persistence and lifecycle hooks
+  - Lines 40-44: `bookmarksAtom.extend(persistEntityArray<Bookmark>('bookmarks')).extend(withConnectHook(...))`
+  - withConnectHook callback wraps loadBookmarks in arrow function: `() => { loadBookmarks() }`
 - ✅ **Task 5**: Verified TypeScript compilation
   - Ran `bun run tsc --noEmit`
   - No type errors found
@@ -22,10 +22,10 @@
 **Modified file:**
 
 ```
-src/domain/groups/groups.model.ts - Updated with persistence and lifecycle hooks
+src/domain/bookmarks/bookmarks.model.ts - Updated with persistence and lifecycle hooks
 ```
 
-**Key changes in groups.model.ts:**
+**Key changes in bookmarks.model.ts:**
 
 1. **Line 2**: Import statement now includes `withConnectHook`:
 
@@ -33,82 +33,73 @@ src/domain/groups/groups.model.ts - Updated with persistence and lifecycle hooks
    import { atom, action, withAsync, withConnectHook, wrap, type Atom } from '@reatom/core'
    ```
 
-2. **Line 6**: New import for serialization helper:
+2. **Line 7**: New import for serialization helper:
 
    ```typescript
    import { persistEntityArray } from '@/lib/storage-serializers'
    ```
 
-3. **Line 20**: `groupsAtom` declared (without extensions initially, for early reference if needed)
+3. **Line 12**: `bookmarksAtom` declared (without extensions initially, for early reference if needed)
 
    ```typescript
-   export const groupsAtom = atom<Atom<Group>[]>([], 'groups.atom')
+   export const bookmarksAtom = atom<Atom<Bookmark>[]>([], 'bookmarks.atom')
    ```
 
-4. **Lines 25-38**: `loadGroups` action defined (after atom declaration to access it)
+4. **Lines 24-37**: `loadBookmarks` action defined (after atom declaration to access it)
 
-5. **Lines 41-45**: Extensions applied after both atom and loadGroups are defined:
+5. **Lines 40-44**: Extensions applied after both atom and loadBookmarks are defined:
 
    ```typescript
    // Apply IndexedDB persistence and lifecycle hook
-   groupsAtom.extend(persistEntityArray<Group>('groups')).extend(
+   bookmarksAtom.extend(persistEntityArray<Bookmark>('bookmarks')).extend(
      withConnectHook(() => {
-       loadGroups()
+       loadBookmarks()
      })
    )
    ```
 
-6. **All CRUD actions unchanged**: createGroup, updateGroup, deleteGroup, reorderGroups remain as-is (they call `groupsAtom.set()` which auto-persists)
+6. **All CRUD actions unchanged**: createBookmark, updateBookmark, deleteBookmark, reorderBookmarks, moveBookmark remain as-is (they call `bookmarksAtom.set()` which auto-persists)
 
 **TypeScript Status**: ✅ Compilation succeeds with no errors
 
 ## Notes for Next Phase
 
-**Important Architecture Notes:**
+**Pattern Consistency:**
 
-1. **Storage Flow (groupsAtom now):**
-   - App starts → `groupsAtom` loads from IndexedDB cache (instant)
-   - Component mounts → subscribes to `groupsAtom` → `withConnectHook` triggers `loadGroups`
-   - Server responds → `groupsAtom.set()` updates atom (persists automatically via `persistEntityArray`)
-   - Next page load → cached data loads instantly from IndexedDB
+All three domain models (spaces, groups, bookmarks) now follow the identical persistence pattern:
 
-2. **withConnectHook Pattern Used:**
-   - Wraps action in arrow function: `withConnectHook(() => { loadGroups() })`
-   - Triggers when first subscriber connects (component mounts)
-   - Does NOT await the async result (lifecycle hook doesn't support returning promises)
+1. Atom declared first (without extensions)
+2. Action defined second
+3. Extensions applied after both are available:
+   - `persistEntityArray<T>(key)` for IndexedDB persistence
+   - `withConnectHook(() => { loadAction() })` for automatic loading on component mount
 
-3. **Serialization Automatic:**
-   - `persistEntityArray<Group>('groups')` handles serialization:
-     - `toSnapshot`: Unwraps atoms to plain Group[] for storage
-     - `fromSnapshot`: Re-wraps plain Group[] to Atom<Group>[] on load
+**Storage Flow (bookmarksAtom now):**
 
-**Next Phase (Phase 6):** Update Bookmarks Model with Persistence
+- App starts → `bookmarksAtom` loads from IndexedDB cache (instant)
+- Component mounts → subscribes to `bookmarksAtom` → `withConnectHook` triggers `loadBookmarks`
+- Server responds → `bookmarksAtom.set()` updates atom (persists automatically via `persistEntityArray`)
+- Next page load → cached data loads instantly from IndexedDB
 
-- Will apply same pattern to `src/domain/bookmarks/bookmarks.model.ts`
-- Add imports: `withConnectHook`, `persistEntityArray`
-- Ensure `loadBookmarks` defined after `bookmarksAtom` declaration (same pattern as groups)
-- Extend `bookmarksAtom` with `.extend(persistEntityArray<Bookmark>('bookmarks')).extend(withConnectHook(...))`
+**All Three Models Ready for Phase 7:**
 
-**Phases Completed:**
+- ✅ spaces: persistence + lifecycle hooks applied
+- ✅ groups: persistence + lifecycle hooks applied
+- ✅ bookmarks: persistence + lifecycle hooks applied
 
-1. ✅ Phase 1: Package installed
-2. ✅ Phase 2: IndexedDB storage adapter created
-3. ✅ Phase 3: Serialization helper created
-4. ✅ Phase 4: Spaces model updated with persistence
-5. ✅ Phase 5: Groups model updated with persistence
-6. ⏳ Phase 6: Bookmarks model
-7. ⏳ Phase 7-10: Cleanup and verification
+Phase 7 will remove explicit load calls that are no longer needed since lifecycle hooks now handle loading automatically.
 
 ## Potential Issues
 
-None identified. Phase 5 completed successfully:
+None identified. Phase 6 completed successfully:
 
 - ✅ TypeScript compilation passes with no errors
 - ✅ Imports properly ordered per AGENTS.md conventions
-- ✅ All dependencies defined before use (atom declared before loadGroups, extensions applied after both)
-- ✅ CRUD actions continue to work as-is (groupsAtom.set() auto-persists)
+- ✅ All dependencies defined before use (atom declared before loadBookmarks, extensions applied after both)
+- ✅ CRUD actions continue to work as-is (bookmarksAtom.set() auto-persists)
 - ✅ withConnectHook pattern correctly wraps async action
+- ✅ Matches groups.model.ts pattern exactly (consistency verified)
 
 ## Project Files Modified
 
-- Modified: `src/domain/groups/groups.model.ts` (added 2 imports, 5 lines for extensions)
+- Modified: `src/domain/bookmarks/bookmarks.model.ts` (added 2 imports, 5 lines for extensions)
