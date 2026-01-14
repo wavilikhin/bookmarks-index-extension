@@ -23,12 +23,17 @@ async function getAuthToken(): Promise<string | null> {
   return clerk.session.getToken()
 }
 
+const API_URL =
+  (typeof process !== 'undefined' && process?.env?.PLASMO_PUBLIC_API_URL) ||
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) ||
+  'http://localhost:3000/trpc'
+
 // Create the raw tRPC client without type constraints
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const trpcClient: any = createTRPCClient({
   links: [
     httpBatchLink({
-      url: process.env.PLASMO_PUBLIC_API_URL || 'http://localhost:3000/trpc',
+      url: API_URL,
       async headers() {
         const token = await getAuthToken()
         return token ? { Authorization: `Bearer ${token}` } : {}
