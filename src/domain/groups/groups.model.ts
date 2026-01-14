@@ -1,15 +1,13 @@
 // Group atoms and actions with server sync
-import { atom, action, withAsync, wrap, type Atom } from '@reatom/core'
+import { atom, action, withAsync, withConnectHook, wrap, type Atom } from '@reatom/core'
 
 import { api } from '@/api'
 import { generateId, createTimestamps, updateTimestamp } from '@/lib/utils/entity'
+import { persistEntityArray } from '@/lib/storage-serializers'
 import { userIdAtom } from '@/stores/auth/atoms'
 import { bookmarksAtom } from '@/domain/bookmarks'
 
 import type { Group, CreateGroupInput, UpdateGroupInput } from './group.types'
-
-// Entity array - each group is wrapped in its own atom for granular updates
-export const groupsAtom = atom<Atom<Group>[]>([], 'groups.atom')
 
 /**
  * Helper to normalize server timestamps to ISO strings
@@ -17,6 +15,9 @@ export const groupsAtom = atom<Atom<Group>[]>([], 'groups.atom')
 function normalizeTimestamp(timestamp: string | Date): string {
   return typeof timestamp === 'string' ? timestamp : timestamp.toISOString()
 }
+
+// Entity array - each group is wrapped in its own atom for granular updates
+export const groupsAtom = atom<Atom<Group>[]>([], 'groups.atom')
 
 /**
  * Load all groups from server
@@ -35,6 +36,13 @@ export const loadGroups = action(async () => {
   )
   return sortedGroups
 }, 'groups.load').extend(withAsync())
+
+// Apply IndexedDB persistence and lifecycle hook
+groupsAtom.extend(persistEntityArray<Group>('groups')).extend(
+  withConnectHook(() => {
+    loadGroups()
+  })
+)
 
 /**
  * Create a new group with optimistic update
