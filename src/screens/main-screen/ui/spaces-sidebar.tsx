@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { reatomComponent } from '@reatom/react'
 import { Plus, MoreHorizontal, Pencil, Trash2, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
@@ -55,210 +56,213 @@ interface SpacesSidebarProps {
  * The sidebar uses a narrow width to maximize main content area,
  * with icons + text that truncate elegantly. Supports collapse animation.
  */
-export function SpacesSidebar({
-  spaces,
-  draftSpace,
-  activeSpaceId,
-  isCollapsed,
-  editingSpaceId,
-  theme,
-  onThemeChange,
-  onSelectSpace,
-  onAddSpace,
-  onEditSpace,
-  onDeleteSpace,
-  onToggleCollapse,
-  onSpaceSave,
-  onSpaceCancel,
-  onReorderSpaces
-}: SpacesSidebarProps) {
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8
-      }
-    })
-  )
+export const SpacesSidebar = reatomComponent<SpacesSidebarProps>(
+  ({
+    spaces,
+    draftSpace,
+    activeSpaceId,
+    isCollapsed,
+    editingSpaceId,
+    theme,
+    onThemeChange,
+    onSelectSpace,
+    onAddSpace,
+    onEditSpace,
+    onDeleteSpace,
+    onToggleCollapse,
+    onSpaceSave,
+    onSpaceCancel,
+    onReorderSpaces
+  }) => {
+    const sensors = useSensors(
+      useSensor(PointerSensor, {
+        activationConstraint: {
+          distance: 8
+        }
+      })
+    )
 
-  const spaceIds = React.useMemo(() => spaces.map((s) => s().id), [spaces])
-  const [activeId, setActiveId] = React.useState<string | null>(null)
+    const spaceIds = React.useMemo(() => spaces.map((s) => s().id), [spaces])
+    const [activeId, setActiveId] = React.useState<string | null>(null)
 
-  const activeSpace = React.useMemo(() => {
-    if (!activeId) return null
-    const spaceAtom = spaces.find((s) => s().id === activeId)
-    return spaceAtom ? spaceAtom() : null
-  }, [activeId, spaces])
+    const activeSpace = React.useMemo(() => {
+      if (!activeId) return null
+      const spaceAtom = spaces.find((s) => s().id === activeId)
+      return spaceAtom ? spaceAtom() : null
+    }, [activeId, spaces])
 
-  const handleDragStart = (event: DragStartEvent) => {
-    setActiveId(event.active.id as string)
-  }
+    const handleDragStart = (event: DragStartEvent) => {
+      setActiveId(event.active.id as string)
+    }
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event
-    setActiveId(null)
-    if (over && active.id !== over.id) {
-      const oldIndex = spaceIds.findIndex((id) => id === active.id)
-      const newIndex = spaceIds.findIndex((id) => id === over.id)
-      if (oldIndex !== -1 && newIndex !== -1) {
-        const newOrder = arrayMove(spaceIds, oldIndex, newIndex)
-        onReorderSpaces(newOrder)
+    const handleDragEnd = (event: DragEndEvent) => {
+      const { active, over } = event
+      setActiveId(null)
+      if (over && active.id !== over.id) {
+        const oldIndex = spaceIds.findIndex((id) => id === active.id)
+        const newIndex = spaceIds.findIndex((id) => id === over.id)
+        if (oldIndex !== -1 && newIndex !== -1) {
+          const newOrder = arrayMove(spaceIds, oldIndex, newIndex)
+          onReorderSpaces(newOrder)
+        }
       }
     }
-  }
 
-  const handleDragCancel = () => {
-    setActiveId(null)
-  }
+    const handleDragCancel = () => {
+      setActiveId(null)
+    }
 
-  return (
-    <aside
-      className={cn(
-        'flex h-full flex-col border-r border-border bg-sidebar py-6 transition-all duration-300 ease-out',
-        isCollapsed ? 'w-[4.25rem]' : 'w-[16.25rem]'
-      )}
-    >
-      {/* User settings menu */}
-      <div className="mb-6 overflow-hidden px-3">
-        <UserSettingsMenu isCollapsed={isCollapsed} theme={theme} onThemeChange={onThemeChange} />
-      </div>
+    return (
+      <aside
+        className={cn(
+          'flex h-full flex-col border-r border-border bg-sidebar py-6 transition-all duration-300 ease-out',
+          isCollapsed ? 'w-[4.25rem]' : 'w-[16.25rem]'
+        )}
+      >
+        {/* User settings menu */}
+        <div className="mb-6 overflow-hidden px-3">
+          <UserSettingsMenu isCollapsed={isCollapsed} theme={theme} onThemeChange={onThemeChange} />
+        </div>
 
-      {/* Spaces list - centered vertically */}
-      <nav className="flex flex-1 flex-col justify-center gap-1 overflow-y-auto px-3">
-        <ContentState
-          loading={loadSpaces.pending() > 0}
-          error={loadSpaces.error()?.message || null}
-          onRetry={() => loadSpaces()}
-          skeleton={<SpaceSkeletonList count={3} isCollapsed={isCollapsed} />}
-        >
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-            onDragCancel={handleDragCancel}
+        {/* Spaces list - centered vertically */}
+        <nav className="flex flex-1 flex-col justify-center gap-1 overflow-y-auto px-3">
+          <ContentState
+            loading={loadSpaces.pending() > 0}
+            error={loadSpaces.error()?.message || null}
+            onRetry={() => loadSpaces()}
+            skeleton={<SpaceSkeletonList count={3} isCollapsed={isCollapsed} />}
           >
-            <SortableContext items={spaceIds} strategy={verticalListSortingStrategy}>
-              {spaces.map((spaceAtom) => {
-                const space = spaceAtom()
-                return (
-                  <SortableSpaceItem
-                    key={space.id}
-                    id={space.id}
-                    space={space}
-                    isActive={space.id === activeSpaceId}
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+              onDragCancel={handleDragCancel}
+            >
+              <SortableContext items={spaceIds} strategy={verticalListSortingStrategy}>
+                {spaces.map((spaceAtom) => {
+                  const space = spaceAtom()
+                  return (
+                    <SortableSpaceItem
+                      key={space.id}
+                      id={space.id}
+                      space={space}
+                      isActive={space.id === activeSpaceId}
+                      isCollapsed={isCollapsed}
+                      isEditing={space.id === editingSpaceId}
+                      onSelect={() => onSelectSpace(space.id)}
+                      onEdit={() => onEditSpace(space)}
+                      onDelete={() => onDeleteSpace(space)}
+                      onSave={(name, icon) => onSpaceSave(space.id, name, icon)}
+                      onCancel={() => onSpaceCancel(space.id)}
+                    />
+                  )
+                })}
+              </SortableContext>
+              <DragOverlay>
+                {activeSpace ? (
+                  <SpaceItem
+                    space={activeSpace}
+                    isActive={activeSpace.id === activeSpaceId}
                     isCollapsed={isCollapsed}
-                    isEditing={space.id === editingSpaceId}
-                    onSelect={() => onSelectSpace(space.id)}
-                    onEdit={() => onEditSpace(space)}
-                    onDelete={() => onDeleteSpace(space)}
-                    onSave={(name, icon) => onSpaceSave(space.id, name, icon)}
-                    onCancel={() => onSpaceCancel(space.id)}
+                    isEditing={false}
+                    isDragging={true}
+                    onSelect={() => {}}
+                    onEdit={() => {}}
+                    onDelete={() => {}}
+                    onSave={() => {}}
+                    onCancel={() => {}}
                   />
-                )
-              })}
-            </SortableContext>
-            <DragOverlay>
-              {activeSpace ? (
-                <SpaceItem
-                  space={activeSpace}
-                  isActive={activeSpace.id === activeSpaceId}
-                  isCollapsed={isCollapsed}
-                  isEditing={false}
-                  isDragging={true}
-                  onSelect={() => {}}
-                  onEdit={() => {}}
-                  onDelete={() => {}}
-                  onSave={() => {}}
-                  onCancel={() => {}}
-                />
-              ) : null}
-            </DragOverlay>
-          </DndContext>
-          {/* Draft space - rendered at the end when creating (not draggable) */}
-          {draftSpace && (
-            <SpaceItem
-              space={draftSpace as Space}
-              isActive={draftSpace.id === activeSpaceId}
-              isCollapsed={isCollapsed}
-              isEditing={draftSpace.id === editingSpaceId}
-              isDraft={true}
-              onSelect={() => {}}
-              onEdit={() => {}}
-              onDelete={() => {}}
-              onSave={(name, icon) => onSpaceSave(draftSpace.id, name, icon)}
-              onCancel={() => onSpaceCancel(draftSpace.id)}
-            />
-          )}
-        </ContentState>
-      </nav>
+                ) : null}
+              </DragOverlay>
+            </DndContext>
+            {/* Draft space - rendered at the end when creating (not draggable) */}
+            {draftSpace && (
+              <SpaceItem
+                space={draftSpace as Space}
+                isActive={draftSpace.id === activeSpaceId}
+                isCollapsed={isCollapsed}
+                isEditing={draftSpace.id === editingSpaceId}
+                isDraft={true}
+                onSelect={() => {}}
+                onEdit={() => {}}
+                onDelete={() => {}}
+                onSave={(name, icon) => onSpaceSave(draftSpace.id, name, icon)}
+                onCancel={() => onSpaceCancel(draftSpace.id)}
+              />
+            )}
+          </ContentState>
+        </nav>
 
-      {/* Bottom controls */}
-      <div className="mt-auto flex flex-col gap-1 px-3">
-        {/* Add space button - matches space items animation pattern exactly */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onAddSpace}
-          className={cn(
-            'flex h-10 w-full items-center justify-start px-0 text-muted-foreground hover:text-foreground',
-            'transition-all duration-300',
-            !isCollapsed && 'pr-3'
-          )}
-        >
-          {/* Icon wrapper - fixed size, no movement during collapse */}
-          <span
-            className="flex shrink-0 items-center justify-center transition-all duration-300 ease-out"
-            style={{ width: '2.5rem', height: '2.5rem' }}
-          >
-            <Plus className="size-4" />
-          </span>
-
-          {/* Text - fades early (120ms), no width collapse to prevent reflow */}
-          <span
+        {/* Bottom controls */}
+        <div className="mt-auto flex flex-col gap-1 px-3">
+          {/* Add space button - matches space items animation pattern exactly */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onAddSpace}
             className={cn(
-              'truncate whitespace-nowrap text-xs overflow-hidden',
-              'transition-opacity duration-120 ease-out',
-              isCollapsed ? 'opacity-0' : 'opacity-100'
+              'flex h-10 w-full items-center justify-start px-0 text-muted-foreground hover:text-foreground',
+              'transition-all duration-300',
+              !isCollapsed && 'pr-3'
             )}
           >
-            Add Space
-          </span>
-        </Button>
+            {/* Icon wrapper - fixed size, no movement during collapse */}
+            <span
+              className="flex shrink-0 items-center justify-center transition-all duration-300 ease-out"
+              style={{ width: '2.5rem', height: '2.5rem' }}
+            >
+              <Plus className="size-4" />
+            </span>
 
-        {/* Collapse toggle button - matches space items animation pattern exactly */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onToggleCollapse}
-          className={cn(
-            'flex h-10 w-full items-center justify-start px-0 text-muted-foreground hover:text-foreground',
-            'transition-all duration-300',
-            !isCollapsed && 'pr-3'
-          )}
-        >
-          {/* Icon wrapper - fixed size, no movement during collapse */}
-          <span
-            className="flex shrink-0 items-center justify-center transition-all duration-300 ease-out"
-            style={{ width: '2.5rem', height: '2.5rem' }}
-          >
-            {isCollapsed ? <PanelLeftOpen className="size-4" /> : <PanelLeftClose className="size-4" />}
-          </span>
+            {/* Text - fades early (120ms), no width collapse to prevent reflow */}
+            <span
+              className={cn(
+                'truncate whitespace-nowrap text-xs overflow-hidden',
+                'transition-opacity duration-120 ease-out',
+                isCollapsed ? 'opacity-0' : 'opacity-100'
+              )}
+            >
+              Add Space
+            </span>
+          </Button>
 
-          {/* Text - fades early (120ms), no width collapse to prevent reflow */}
-          <span
+          {/* Collapse toggle button - matches space items animation pattern exactly */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onToggleCollapse}
             className={cn(
-              'truncate whitespace-nowrap text-xs overflow-hidden',
-              'transition-opacity duration-120 ease-out',
-              isCollapsed ? 'opacity-0' : 'opacity-100'
+              'flex h-10 w-full items-center justify-start px-0 text-muted-foreground hover:text-foreground',
+              'transition-all duration-300',
+              !isCollapsed && 'pr-3'
             )}
           >
-            Collapse
-          </span>
-        </Button>
-      </div>
-    </aside>
-  )
-}
+            {/* Icon wrapper - fixed size, no movement during collapse */}
+            <span
+              className="flex shrink-0 items-center justify-center transition-all duration-300 ease-out"
+              style={{ width: '2.5rem', height: '2.5rem' }}
+            >
+              {isCollapsed ? <PanelLeftOpen className="size-4" /> : <PanelLeftClose className="size-4" />}
+            </span>
+
+            {/* Text - fades early (120ms), no width collapse to prevent reflow */}
+            <span
+              className={cn(
+                'truncate whitespace-nowrap text-xs overflow-hidden',
+                'transition-opacity duration-120 ease-out',
+                isCollapsed ? 'opacity-0' : 'opacity-100'
+              )}
+            >
+              Collapse
+            </span>
+          </Button>
+        </div>
+      </aside>
+    )
+  },
+  'SpacesSidebar'
+)
 
 interface SpaceItemProps {
   space: Space

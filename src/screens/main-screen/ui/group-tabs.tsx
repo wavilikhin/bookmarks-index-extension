@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { reatomComponent } from '@reatom/react'
 import { Plus, MoreHorizontal, Pencil, Trash2, Check, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
@@ -51,223 +52,226 @@ interface GroupTabsProps {
  * Design: Underline-style tabs with smooth transitions.
  * Active tab has a subtle bottom border and slightly elevated typography.
  */
-export function GroupTabs({
-  groups,
-  draftGroup,
-  activeGroupId,
-  editingGroupId,
-  spaceId,
-  onSelectGroup,
-  onAddGroup,
-  onEditGroup,
-  onDeleteGroup,
-  onGroupNameSave,
-  onGroupNameCancel,
-  onReorderGroups,
-  className
-}: GroupTabsProps) {
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8
-      }
-    })
-  )
-
-  const groupIds = React.useMemo(() => groups.map((g) => g().id), [groups])
-  const [activeId, setActiveId] = React.useState<string | null>(null)
-
-  const activeGroup = React.useMemo(() => {
-    if (!activeId) return null
-    const groupAtom = groups.find((g) => g().id === activeId)
-    return groupAtom ? groupAtom() : null
-  }, [activeId, groups])
-
-  const handleDragStart = (event: DragStartEvent) => {
-    setActiveId(event.active.id as string)
-  }
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event
-    setActiveId(null)
-    if (over && active.id !== over.id && spaceId) {
-      const oldIndex = groupIds.findIndex((id) => id === active.id)
-      const newIndex = groupIds.findIndex((id) => id === over.id)
-      if (oldIndex !== -1 && newIndex !== -1) {
-        const newOrder = arrayMove(groupIds, oldIndex, newIndex)
-        onReorderGroups(spaceId, newOrder)
-      }
-    }
-  }
-
-  const handleDragCancel = () => {
-    setActiveId(null)
-  }
-
-  const tabsRef = React.useRef<HTMLDivElement>(null)
-  const [showLeftFade, setShowLeftFade] = React.useState(false)
-  const [showRightFade, setShowRightFade] = React.useState(false)
-
-  // Check for overflow and show fade indicators
-  const checkOverflow = React.useCallback(() => {
-    if (!tabsRef.current) return
-    const { scrollLeft, scrollWidth, clientWidth } = tabsRef.current
-    setShowLeftFade(scrollLeft > 0)
-    setShowRightFade(scrollLeft + clientWidth < scrollWidth - 1)
-  }, [])
-
-  React.useEffect(() => {
-    checkOverflow()
-    const el = tabsRef.current
-    if (el) {
-      el.addEventListener('scroll', checkOverflow)
-      window.addEventListener('resize', checkOverflow)
-    }
-    return () => {
-      if (el) el.removeEventListener('scroll', checkOverflow)
-      window.removeEventListener('resize', checkOverflow)
-    }
-  }, [checkOverflow, groups, draftGroup])
-
-  const loading = loadGroups.pending() > 0
-  const error = loadGroups.error()?.message || null
-
-  // Shared width classes to match BookmarkGrid
-  const widthClasses = 'w-[304px] sm:w-[408px] md:w-[512px] lg:w-[616px] xl:w-[824px]'
-
-  // Show skeleton loading state
-  if (loading) {
-    return (
-      <div className={cn('flex items-center justify-between', widthClasses, className)}>
-        <GroupTabSkeletonList count={3} />
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onAddGroup}
-          disabled={true}
-          className="gap-1.5 text-muted-foreground hover:text-foreground"
-        >
-          <Plus className="size-3.5" />
-          Add Group
-        </Button>
-      </div>
+export const GroupTabs = reatomComponent<GroupTabsProps>(
+  ({
+    groups,
+    draftGroup,
+    activeGroupId,
+    editingGroupId,
+    spaceId,
+    onSelectGroup,
+    onAddGroup,
+    onEditGroup,
+    onDeleteGroup,
+    onGroupNameSave,
+    onGroupNameCancel,
+    onReorderGroups,
+    className
+  }) => {
+    const sensors = useSensors(
+      useSensor(PointerSensor, {
+        activationConstraint: {
+          distance: 8
+        }
+      })
     )
-  }
 
-  // Show error state
-  if (error) {
+    const groupIds = React.useMemo(() => groups.map((g) => g().id), [groups])
+    const [activeId, setActiveId] = React.useState<string | null>(null)
+
+    const activeGroup = React.useMemo(() => {
+      if (!activeId) return null
+      const groupAtom = groups.find((g) => g().id === activeId)
+      return groupAtom ? groupAtom() : null
+    }, [activeId, groups])
+
+    const handleDragStart = (event: DragStartEvent) => {
+      setActiveId(event.active.id as string)
+    }
+
+    const handleDragEnd = (event: DragEndEvent) => {
+      const { active, over } = event
+      setActiveId(null)
+      if (over && active.id !== over.id && spaceId) {
+        const oldIndex = groupIds.findIndex((id) => id === active.id)
+        const newIndex = groupIds.findIndex((id) => id === over.id)
+        if (oldIndex !== -1 && newIndex !== -1) {
+          const newOrder = arrayMove(groupIds, oldIndex, newIndex)
+          onReorderGroups(spaceId, newOrder)
+        }
+      }
+    }
+
+    const handleDragCancel = () => {
+      setActiveId(null)
+    }
+
+    const tabsRef = React.useRef<HTMLDivElement>(null)
+    const [showLeftFade, setShowLeftFade] = React.useState(false)
+    const [showRightFade, setShowRightFade] = React.useState(false)
+
+    // Check for overflow and show fade indicators
+    const checkOverflow = React.useCallback(() => {
+      if (!tabsRef.current) return
+      const { scrollLeft, scrollWidth, clientWidth } = tabsRef.current
+      setShowLeftFade(scrollLeft > 0)
+      setShowRightFade(scrollLeft + clientWidth < scrollWidth - 1)
+    }, [])
+
+    React.useEffect(() => {
+      checkOverflow()
+      const el = tabsRef.current
+      if (el) {
+        el.addEventListener('scroll', checkOverflow)
+        window.addEventListener('resize', checkOverflow)
+      }
+      return () => {
+        if (el) el.removeEventListener('scroll', checkOverflow)
+        window.removeEventListener('resize', checkOverflow)
+      }
+    }, [checkOverflow, groups, draftGroup])
+
+    const loading = loadGroups.pending() > 0
+    const error = loadGroups.error()?.message || null
+
+    // Shared width classes to match BookmarkGrid
+    const widthClasses = 'w-[304px] sm:w-[408px] md:w-[512px] lg:w-[616px] xl:w-[824px]'
+
+    // Show skeleton loading state
+    if (loading) {
+      return (
+        <div className={cn('flex items-center justify-between', widthClasses, className)}>
+          <GroupTabSkeletonList count={3} />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onAddGroup}
+            disabled={true}
+            className="gap-1.5 text-muted-foreground hover:text-foreground"
+          >
+            <Plus className="size-3.5" />
+            Add Group
+          </Button>
+        </div>
+      )
+    }
+
+    // Show error state
+    if (error) {
+      return (
+        <div className={cn('flex items-center justify-between py-3', widthClasses, className)}>
+          <InlineError message={error} onRetry={() => loadGroups()} />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onAddGroup}
+            disabled={true}
+            className="gap-1.5 text-muted-foreground hover:text-foreground"
+          >
+            <Plus className="size-3.5" />
+            Add Group
+          </Button>
+        </div>
+      )
+    }
+
     return (
-      <div className={cn('flex items-center justify-between py-3', widthClasses, className)}>
-        <InlineError message={error} onRetry={() => loadGroups()} />
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onAddGroup}
-          disabled={true}
-          className="gap-1.5 text-muted-foreground hover:text-foreground"
-        >
-          <Plus className="size-3.5" />
-          Add Group
-        </Button>
-      </div>
-    )
-  }
-
-  return (
-    <div
-      className={cn(
-        'relative',
-        // Match BookmarkGrid responsive width: (cols * 96px) + ((cols-1) * 8px gap)
-        'w-[304px] sm:w-[408px] md:w-[512px] lg:w-[616px] xl:w-[824px]',
-        className
-      )}
-    >
-      {/* Left fade indicator */}
-      {showLeftFade && (
-        <div className="pointer-events-none absolute bottom-0 left-0 top-0 z-10 w-8 bg-gradient-to-r from-background to-transparent" />
-      )}
-
-      {/* Tabs container */}
       <div
-        ref={tabsRef}
-        className="flex items-center gap-1 overflow-x-auto scrollbar-none"
-        style={{ scrollbarWidth: 'none' }}
+        className={cn(
+          'relative',
+          // Match BookmarkGrid responsive width: (cols * 96px) + ((cols-1) * 8px gap)
+          'w-[304px] sm:w-[408px] md:w-[512px] lg:w-[616px] xl:w-[824px]',
+          className
+        )}
       >
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-          onDragCancel={handleDragCancel}
-        >
-          <SortableContext items={groupIds} strategy={horizontalListSortingStrategy}>
-            {groups.map((groupAtom) => {
-              const group = groupAtom()
-              return (
-                <SortableGroupTab
-                  key={group.id}
-                  id={group.id}
-                  group={group}
-                  isActive={group.id === activeGroupId}
-                  isEditing={group.id === editingGroupId}
-                  onSelect={() => onSelectGroup(group.id)}
-                  onEdit={() => onEditGroup(group)}
-                  onDelete={() => onDeleteGroup(group)}
-                  onSave={(name) => onGroupNameSave(group.id, name)}
-                  onCancel={() => onGroupNameCancel(group.id)}
-                />
-              )
-            })}
-          </SortableContext>
-          <DragOverlay>
-            {activeGroup ? (
-              <GroupTab
-                group={activeGroup}
-                isActive={activeGroup.id === activeGroupId}
-                isEditing={false}
-                isDragging={true}
-                onSelect={() => {}}
-                onEdit={() => {}}
-                onDelete={() => {}}
-                onSave={() => {}}
-                onCancel={() => {}}
-              />
-            ) : null}
-          </DragOverlay>
-        </DndContext>
-        {/* Draft group - rendered at the end when creating (not draggable) */}
-        {draftGroup && (
-          <GroupTab
-            group={draftGroup as Group}
-            isActive={draftGroup.id === activeGroupId}
-            isEditing={draftGroup.id === editingGroupId}
-            isDraft={true}
-            onSelect={() => {}}
-            onEdit={() => {}}
-            onDelete={() => {}}
-            onSave={(name) => onGroupNameSave(draftGroup.id, name)}
-            onCancel={() => onGroupNameCancel(draftGroup.id)}
-          />
+        {/* Left fade indicator */}
+        {showLeftFade && (
+          <div className="pointer-events-none absolute bottom-0 left-0 top-0 z-10 w-8 bg-gradient-to-r from-background to-transparent" />
         )}
 
-        {/* Add group button */}
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={onAddGroup}
-          className="ml-1 shrink-0 text-muted-foreground hover:text-foreground"
+        {/* Tabs container */}
+        <div
+          ref={tabsRef}
+          className="flex items-center gap-1 overflow-x-auto scrollbar-none"
+          style={{ scrollbarWidth: 'none' }}
         >
-          <Plus className="size-4" />
-        </Button>
-      </div>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            onDragCancel={handleDragCancel}
+          >
+            <SortableContext items={groupIds} strategy={horizontalListSortingStrategy}>
+              {groups.map((groupAtom) => {
+                const group = groupAtom()
+                return (
+                  <SortableGroupTab
+                    key={group.id}
+                    id={group.id}
+                    group={group}
+                    isActive={group.id === activeGroupId}
+                    isEditing={group.id === editingGroupId}
+                    onSelect={() => onSelectGroup(group.id)}
+                    onEdit={() => onEditGroup(group)}
+                    onDelete={() => onDeleteGroup(group)}
+                    onSave={(name) => onGroupNameSave(group.id, name)}
+                    onCancel={() => onGroupNameCancel(group.id)}
+                  />
+                )
+              })}
+            </SortableContext>
+            <DragOverlay>
+              {activeGroup ? (
+                <GroupTab
+                  group={activeGroup}
+                  isActive={activeGroup.id === activeGroupId}
+                  isEditing={false}
+                  isDragging={true}
+                  onSelect={() => {}}
+                  onEdit={() => {}}
+                  onDelete={() => {}}
+                  onSave={() => {}}
+                  onCancel={() => {}}
+                />
+              ) : null}
+            </DragOverlay>
+          </DndContext>
+          {/* Draft group - rendered at the end when creating (not draggable) */}
+          {draftGroup && (
+            <GroupTab
+              group={draftGroup as Group}
+              isActive={draftGroup.id === activeGroupId}
+              isEditing={draftGroup.id === editingGroupId}
+              isDraft={true}
+              onSelect={() => {}}
+              onEdit={() => {}}
+              onDelete={() => {}}
+              onSave={(name) => onGroupNameSave(draftGroup.id, name)}
+              onCancel={() => onGroupNameCancel(draftGroup.id)}
+            />
+          )}
 
-      {/* Right fade indicator */}
-      {showRightFade && (
-        <div className="pointer-events-none absolute bottom-0 right-0 top-0 z-10 w-8 bg-gradient-to-l from-background to-transparent" />
-      )}
-    </div>
-  )
-}
+          {/* Add group button */}
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={onAddGroup}
+            className="ml-1 shrink-0 text-muted-foreground hover:text-foreground"
+          >
+            <Plus className="size-4" />
+          </Button>
+        </div>
+
+        {/* Right fade indicator */}
+        {showRightFade && (
+          <div className="pointer-events-none absolute bottom-0 right-0 top-0 z-10 w-8 bg-gradient-to-l from-background to-transparent" />
+        )}
+      </div>
+    )
+  },
+  'GroupTabs'
+)
 
 interface GroupTabProps {
   group: Group
