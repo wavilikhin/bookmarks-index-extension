@@ -1,9 +1,6 @@
 // Data loading state atoms
 import { atom, wrap } from '@reatom/core'
 
-import { loadSpaces } from '@/domain/spaces'
-import { loadGroups } from '@/domain/groups'
-import { loadBookmarks } from '@/domain/bookmarks'
 import { setActiveSpace, setSelectedGroup } from '@/stores/ui/actions'
 import { api } from '@/api'
 
@@ -28,6 +25,10 @@ const BASE_DELAY_MS = 2000
 
 /**
  * Load all user data from server with auto-retry
+ *
+ * Note: Individual atoms (spacesAtom, groupsAtom, bookmarksAtom) now load themselves
+ * via withConnectHook when first subscribed. This function just ensures the user exists
+ * on the server and sets up initial selection state.
  */
 export async function loadUserDataWithRetry(email?: string, name?: string, avatarUrl?: string) {
   let retries = 0
@@ -46,21 +47,9 @@ export async function loadUserDataWithRetry(email?: string, name?: string, avata
         })
       )
 
-      // Load all data in parallel
-      const [spaces, groups] = await Promise.all([loadSpaces(), loadGroups(), loadBookmarks()])
-
-      // Set active space and group if we have data
-      if (spaces && spaces.length > 0) {
-        setActiveSpace(spaces[0].id)
-
-        // Find first group in active space
-        if (groups && groups.length > 0) {
-          const firstGroup = groups.find((g) => g.spaceId === spaces[0].id)
-          if (firstGroup) {
-            setSelectedGroup(firstGroup.id)
-          }
-        }
-      }
+      // Data loading is now handled by lifecycle hooks on atoms.
+      // Just mark as loaded and let components subscribe to atoms
+      // which will trigger withConnectHook callbacks to load data.
 
       // Success - reset retry count and mark as loaded
       retryCountAtom.set(0)

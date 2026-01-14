@@ -4,6 +4,42 @@ Notes from each phase. Newest entries at the top.
 
 ---
 
+## Phase 7: Remove Explicit Load Calls from Auth Flow ✅ COMPLETE
+
+**Date:** 2025-01-14
+**Tasks Completed:** 4/4
+
+### What Was Done
+
+- Searched codebase and found 7 occurrences of explicit load calls across 5 files
+- Categorized finds:
+  - 3 intentional lifecycle hook calls (kept as-is)
+  - 1 explicit call in auth flow (removed)
+  - 3 retry callbacks in component error states (kept for manual refresh)
+- Removed imports from `src/stores/auth/data-atoms.ts`: `loadSpaces`, `loadGroups`, `loadBookmarks`
+- Removed explicit `await Promise.all([loadSpaces(), loadGroups(), loadBookmarks()])` from `loadUserDataWithRetry()`
+- Removed space/group initial selection logic from auth function
+- Simplified `loadUserDataWithRetry()` to only ensure user exists on server
+- Verified TypeScript compilation with `bun run tsc --noEmit`
+
+### Key Design Points
+
+1. **Lifecycle hooks are now primary**: Initial data loading completely delegated to atom lifecycle hooks
+2. **Cleaner separation**: Auth flow now only handles auth/sync, not data loading
+3. **Retry capability preserved**: Component retry buttons still functional via direct action imports
+4. **No redundancy**: Removed duplicate loading - auth flow doesn't load, lifecycle hooks do
+5. **Simpler flow**: Subscribe to atom → lifecycle hook fires → load happens
+
+### Success Criteria Met
+
+✅ TypeScript compilation succeeds with no errors
+✅ No explicit load calls remain in auth flow
+✅ Load actions still exported and callable
+✅ Lifecycle hooks still active in domain models
+✅ Component retry callbacks preserved
+
+---
+
 ## Phase 6: Update Bookmarks Model with Persistence ✅ COMPLETE
 
 **Date:** 2025-01-14
