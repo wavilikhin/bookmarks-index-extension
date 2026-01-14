@@ -1,32 +1,19 @@
-# Phase 2 Handoff: Create IndexedDB Storage Adapter
+# Phase 3 Handoff: Create Serialization Helper for Atom Arrays
 
 ## What Was Done
 
-- ✅ **Task 1**: Created new file `src/lib/indexeddb-storage.ts`
+- ✅ **Task 1**: Created new file `src/lib/storage-serializers.ts`
   - File created with complete implementation
-- ✅ **Task 2**: Imported `reatomPersist` and `createMemStorage` from `@reatom/core/build/persist`
-  - Note: The import path is `@reatom/core/build/persist` (not `@reatom/core/persist` which doesn't exist)
-  - Both functions imported successfully
-- ✅ **Task 3**: Imported storage functions from `idb-keyval`
-  - Imported: `get`, `set`, `del` functions for IndexedDB operations
-- ✅ **Task 4**: Defined constants
-  - `DB_NAME = 'bookmarks-index-storage'`
-  - `STORAGE_NAMESPACE = 'bookmarks-index:'`
-- ✅ **Task 5**: Implemented `createIndexedDBStorage()` function
-  - Returns object implementing `PersistStorage` interface
-  - `name`: `'indexeddb-storage'`
-  - `cache`: Created via `createMemStorage({ name: 'indexeddb-fallback' }).cache`
-  - `get({ key })`: Async function that retrieves from IndexedDB with try/catch error handling
-  - `set({ key }, record)`: Async function that writes to IndexedDB with error logging
-  - `clear({ key })`: Async function that deletes from IndexedDB with error logging
-  - All operations prefixed with namespace via `getStorageKey()`
-- ✅ **Task 6**: Created `getStorageKey()` helper function
-  - Takes a key string and returns `${STORAGE_NAMESPACE}${key}`
-  - Used internally by get/set/clear operations
-- ✅ **Task 7**: Exported public API
-  - `withIndexedDBStorage`: Created via `reatomPersist(createIndexedDBStorage())`
-  - `createIndexedDBStorage`: Exported for flexibility
-- ✅ **Task 8**: Verified TypeScript compilation
+- ✅ **Task 2**: Imported `atom` and `type Atom` from `@reatom/core`
+  - Both imports added successfully
+- ✅ **Task 3**: Imported `withIndexedDBStorage` from `@/lib/indexeddb-storage`
+  - Import added successfully using path alias
+- ✅ **Task 4**: Created and exported `persistEntityArray<T>(key: string)` function
+  - Generic function that returns `withIndexedDBStorage()` configuration
+  - `toSnapshot`: Unwraps atom array to plain entity array via `atoms.map((a) => a())`
+  - `fromSnapshot`: Wraps plain entity array back to atom array via `snapshot.map((entity) => atom(entity))`
+  - `version: 1` set for schema versioning
+- ✅ **Task 5**: Verified TypeScript compilation
   - Ran `bun run tsc --noEmit`
   - No errors found
 
@@ -35,50 +22,62 @@
 **New file created:**
 
 ```
-src/lib/indexeddb-storage.ts - IndexedDB persistence adapter (46 lines)
+src/lib/storage-serializers.ts - Serialization helper for atom arrays (11 lines)
 ```
 
-**Key Implementation Details:**
+**File structure matches AGENTS.md conventions:**
 
-- All IndexedDB operations are async and wrapped in try/catch
-- Errors are logged with console.warn() and operation silently fails (returns null or doesn't throw)
-- Fallback to memory storage if IndexedDB fails
-- Uses namespacing to avoid key collisions: `'bookmarks-index:spaces'`, `'bookmarks-index:groups'`, `'bookmarks-index:bookmarks'`
+- Import order: External packages first, then internal aliases
+- Function naming: camelCase (`persistEntityArray`)
+- Type naming: PascalCase generic `<T>`
+- Uses `@/` path alias for internal imports
+
+**Exports:**
+
+- `persistEntityArray<T>(key: string)`: Reusable persistence config for atom arrays
 
 **TypeScript Status:** ✅ Compilation succeeds with no errors
 
 ## Notes for Next Phase
 
-**Important:** The PLAN.md references `idb_kval` but the correct npm package is `idb-keyval` (with hyphen). The correct import is:
+**Important:** The serialization helper bridges the gap between:
 
-```typescript
-import { get, set, del } from 'idb-keyval'
-```
+1. **Storage format** (IndexedDB): Stores plain objects `T[]`
+2. **Memory format** (Atoms): Stores wrapped objects `Atom<T>[]`
 
-**Important:** The import path for Reatom persist is `@reatom/core/build/persist` not `@reatom/core/persist`.
+This helper will be used in Phases 4-6 to add persistence to the three domain models:
 
-**Next Phase (Phase 3):** Create serialization helper for atom arrays in `src/lib/storage-serializers.ts`
+- `spacesAtom` with `persistEntityArray<Space>('spaces')`
+- `groupsAtom` with `persistEntityArray<Group>('groups')`
+- `bookmarksAtom` with `persistEntityArray<Bookmark>('bookmarks')`
 
-- Will import `withIndexedDBStorage` from `@/lib/indexeddb-storage`
-- Will create `persistEntityArray<T>(key: string)` function for serializing atom arrays
-- This helper will be used in Phases 4-6 to add persistence to domain models
+**Next Phase (Phase 4):** Update Spaces Model with Persistence
 
-**Current Architecture:**
+- Will modify `src/domain/spaces/spaces.model.ts`
+- Add import: `withConnectHook` from `@reatom/core`
+- Add import: `persistEntityArray` from `@/lib/storage-serializers`
+- Extend `spacesAtom` with `.extend(persistEntityArray<Space>('spaces'))`
+- Extend `spacesAtom` with `.extend(withConnectHook(loadSpaces))`
+- Ensure `loadSpaces` action is defined BEFORE `spacesAtom`
 
-1. IndexedDB stores raw data: `Space[]`, `Group[]`, `Bookmark[]`
-2. Atoms store wrapped data: `Atom<Space>[]`, `Atom<Group>[]`, `Atom<Bookmark>[]`
-3. Serializers will handle the conversion between these formats
+**Architecture now complete through Phase 3:**
+
+1. ✅ Phase 1: Package installed
+2. ✅ Phase 2: IndexedDB storage adapter created
+3. ✅ Phase 3: Serialization helper created
+4. ⏳ Phase 4-6: Apply to domain models
+5. ⏳ Phase 7-10: Cleanup and verification
 
 ## Potential Issues
 
-None identified. Phase 2 completed successfully:
+None identified. Phase 3 completed successfully:
 
 - ✅ File created with all required functionality
-- ✅ All TypeScript types satisfy `PersistStorage` interface
-- ✅ Error handling implemented for all IndexedDB operations
-- ✅ Namespace prevents collisions with other storage layers
-- ✅ Fallback memory storage provides graceful degradation
+- ✅ Imports correctly reference Phase 2 storage adapter
+- ✅ Generic type `<T>` allows reuse for any entity type
+- ✅ Serialization logic properly unwraps/wraps atoms
+- ✅ Export is simple and clean for domain models to import
 
 ## Project Files Modified
 
-- Created: `src/lib/indexeddb-storage.ts` (46 lines)
+- Created: `src/lib/storage-serializers.ts` (11 lines)
