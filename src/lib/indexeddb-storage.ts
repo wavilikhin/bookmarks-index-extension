@@ -1,7 +1,6 @@
 import { reatomPersist, createMemStorage } from '@reatom/core/build/persist'
 import { get, set, del } from 'idb-keyval'
 
-const DB_NAME = 'bookmarks-index-storage'
 const STORAGE_NAMESPACE = 'bookmarks-index:'
 
 function getStorageKey(key: string): string {

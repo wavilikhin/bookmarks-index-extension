@@ -1,7 +1,6 @@
 // Data loading state atoms
 import { atom, wrap } from '@reatom/core'
 
-import { setActiveSpace, setSelectedGroup } from '@/stores/ui/actions'
 import { api } from '@/api'
 
 // Loading state atom for initial data load
