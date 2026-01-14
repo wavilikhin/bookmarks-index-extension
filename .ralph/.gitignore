@@ -1,4 +1,0 @@
-# Don't commit phase logs (can be large)
-*/agent/phases/
-# Active feature marker
-.active
