@@ -1,9 +1,10 @@
 // Space atoms and actions with server sync
-import { atom, action, withAsync, wrap, type Atom } from '@reatom/core'
+import { atom, action, withAsync, withConnectHook, wrap, type Atom } from '@reatom/core'
 
 import { api } from '@/api'
 import { userIdAtom } from '@/stores/auth/atoms'
 import { generateId, createTimestamps, updateTimestamp } from '@/lib/utils/entity'
+import { persistEntityArray } from '@/lib/storage-serializers'
 import { groupsAtom } from '@/domain/groups'
 import { bookmarksAtom } from '@/domain/bookmarks'
 
@@ -43,6 +44,13 @@ export const loadSpaces = action(async () => {
   )
   return sortedSpaces
 }, 'spaces.load').extend(withAsync())
+
+// Apply IndexedDB persistence and lifecycle hook
+spacesAtom.extend(persistEntityArray<Space>('spaces')).extend(
+  withConnectHook(() => {
+    loadSpaces()
+  })
+)
 
 /**
  * Create a new space with optimistic update

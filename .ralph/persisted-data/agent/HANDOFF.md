@@ -1,83 +1,111 @@
-# Phase 3 Handoff: Create Serialization Helper for Atom Arrays
+# Phase 4 Handoff: Update Spaces Model with Persistence
 
 ## What Was Done
 
-- ✅ **Task 1**: Created new file `src/lib/storage-serializers.ts`
-  - File created with complete implementation
-- ✅ **Task 2**: Imported `atom` and `type Atom` from `@reatom/core`
-  - Both imports added successfully
-- ✅ **Task 3**: Imported `withIndexedDBStorage` from `@/lib/indexeddb-storage`
-  - Import added successfully using path alias
-- ✅ **Task 4**: Created and exported `persistEntityArray<T>(key: string)` function
-  - Generic function that returns `withIndexedDBStorage()` configuration
-  - `toSnapshot`: Unwraps atom array to plain entity array via `atoms.map((a) => a())`
-  - `fromSnapshot`: Wraps plain entity array back to atom array via `snapshot.map((entity) => atom(entity))`
-  - `version: 1` set for schema versioning
+- ✅ **Task 1**: Added import `withConnectHook` from `@reatom/core`
+  - Import added to line 2 of spaces.model.ts
+- ✅ **Task 2**: Added import `persistEntityArray` from `@/lib/storage-serializers`
+  - Import added to line 7 of spaces.model.ts (follows AGENTS.md ordering)
+- ✅ **Task 3**: Verified `loadSpaces` action is defined before `spacesAtom`
+  - `spacesAtom` declared at line 14 (for early reference in getSpaceById)
+  - `loadSpaces` defined at lines 33-46 (after atom declaration)
+  - Extensions applied at lines 48-53 (after both atom and loadSpaces are available)
+- ✅ **Task 4**: Extended `spacesAtom` with persistence and lifecycle hooks
+  - Line 48-53: `spacesAtom.extend(persistEntityArray<Space>('spaces')).extend(withConnectHook(...))`
+  - withConnectHook callback wraps loadSpaces in arrow function: `() => { loadSpaces() }`
 - ✅ **Task 5**: Verified TypeScript compilation
   - Ran `bun run tsc --noEmit`
-  - No errors found
+  - No type errors found
 
 ## Current State
 
-**New file created:**
+**Modified file:**
 
 ```
-src/lib/storage-serializers.ts - Serialization helper for atom arrays (11 lines)
+src/domain/spaces/spaces.model.ts - Updated with persistence and lifecycle hooks
 ```
 
-**File structure matches AGENTS.md conventions:**
+**Key changes in spaces.model.ts:**
 
-- Import order: External packages first, then internal aliases
-- Function naming: camelCase (`persistEntityArray`)
-- Type naming: PascalCase generic `<T>`
-- Uses `@/` path alias for internal imports
+1. **Line 2**: Import statement now includes `withConnectHook`:
 
-**Exports:**
+   ```typescript
+   import { atom, action, withAsync, withConnectHook, wrap, type Atom } from '@reatom/core'
+   ```
 
-- `persistEntityArray<T>(key: string)`: Reusable persistence config for atom arrays
+2. **Line 7**: New import for serialization helper:
 
-**TypeScript Status:** ✅ Compilation succeeds with no errors
+   ```typescript
+   import { persistEntityArray } from '@/lib/storage-serializers'
+   ```
+
+3. **Line 14**: `spacesAtom` declared (without extensions, for early reference)
+
+   ```typescript
+   export const spacesAtom = atom<Atom<Space>[]>([], 'spaces.atom')
+   ```
+
+4. **Lines 48-53**: Extensions applied after `loadSpaces` is defined:
+
+   ```typescript
+   // Apply IndexedDB persistence and lifecycle hook
+   spacesAtom.extend(persistEntityArray<Space>('spaces')).extend(
+     withConnectHook(() => {
+       loadSpaces()
+     })
+   )
+   ```
+
+5. **All CRUD actions unchanged**: createSpace, updateSpace, deleteSpace, reorderSpaces remain as-is (they call `spacesAtom.set()` which auto-persists)
+
+**TypeScript Status**: ✅ Compilation succeeds with no errors
 
 ## Notes for Next Phase
 
-**Important:** The serialization helper bridges the gap between:
+**Important Architecture Notes:**
 
-1. **Storage format** (IndexedDB): Stores plain objects `T[]`
-2. **Memory format** (Atoms): Stores wrapped objects `Atom<T>[]`
+1. **Storage Flow (spacesAtom now):**
+   - App starts → `spacesAtom` loads from IndexedDB cache (instant)
+   - Component mounts → subscribes to `spacesAtom` → `withConnectHook` triggers `loadSpaces`
+   - Server responds → `spacesAtom.set()` updates atom (persists automatically via `persistEntityArray`)
+   - Next page load → cached data loads instantly from IndexedDB
 
-This helper will be used in Phases 4-6 to add persistence to the three domain models:
+2. **withConnectHook Pattern Used:**
+   - Wraps action in arrow function: `withConnectHook(() => { loadSpaces() })`
+   - Triggers when first subscriber connects (component mounts)
+   - Does NOT await the async result (lifecycle hook doesn't support returning promises)
 
-- `spacesAtom` with `persistEntityArray<Space>('spaces')`
-- `groupsAtom` with `persistEntityArray<Group>('groups')`
-- `bookmarksAtom` with `persistEntityArray<Bookmark>('bookmarks')`
+3. **Serialization Automatic:**
+   - `persistEntityArray<Space>('spaces')` handles serialization:
+     - `toSnapshot`: Unwraps atoms to plain Space[] for storage
+     - `fromSnapshot`: Re-wraps plain Space[] to Atom<Space>[] on load
 
-**Next Phase (Phase 4):** Update Spaces Model with Persistence
+**Next Phase (Phase 5):** Update Groups Model with Persistence
 
-- Will modify `src/domain/spaces/spaces.model.ts`
-- Add import: `withConnectHook` from `@reatom/core`
-- Add import: `persistEntityArray` from `@/lib/storage-serializers`
-- Extend `spacesAtom` with `.extend(persistEntityArray<Space>('spaces'))`
-- Extend `spacesAtom` with `.extend(withConnectHook(loadSpaces))`
-- Ensure `loadSpaces` action is defined BEFORE `spacesAtom`
+- Will apply same pattern to `src/domain/groups/groups.model.ts`
+- Add imports: `withConnectHook`, `persistEntityArray`
+- Ensure `loadGroups` defined before extensions applied
+- Extend `groupsAtom` with `.extend(persistEntityArray<Group>('groups')).extend(withConnectHook(...))`
 
-**Architecture now complete through Phase 3:**
+**Phases Completed:**
 
 1. ✅ Phase 1: Package installed
 2. ✅ Phase 2: IndexedDB storage adapter created
 3. ✅ Phase 3: Serialization helper created
-4. ⏳ Phase 4-6: Apply to domain models
-5. ⏳ Phase 7-10: Cleanup and verification
+4. ✅ Phase 4: Spaces model updated with persistence
+5. ⏳ Phase 5-6: Groups and bookmarks models
+6. ⏳ Phase 7-10: Cleanup and verification
 
 ## Potential Issues
 
-None identified. Phase 3 completed successfully:
+None identified. Phase 4 completed successfully:
 
-- ✅ File created with all required functionality
-- ✅ Imports correctly reference Phase 2 storage adapter
-- ✅ Generic type `<T>` allows reuse for any entity type
-- ✅ Serialization logic properly unwraps/wraps atoms
-- ✅ Export is simple and clean for domain models to import
+- ✅ TypeScript compilation passes with no errors
+- ✅ Imports properly ordered per AGENTS.md conventions
+- ✅ All dependencies defined before use (atom before getSpaceById, loadSpaces before withConnectHook)
+- ✅ CRUD actions continue to work as-is (spacesAtom.set() auto-persists)
+- ✅ withConnectHook pattern correctly wraps async action
 
 ## Project Files Modified
 
-- Created: `src/lib/storage-serializers.ts` (11 lines)
+- Modified: `src/domain/spaces/spaces.model.ts` (added 2 imports, 5 lines for extensions, removed 1 blank line)

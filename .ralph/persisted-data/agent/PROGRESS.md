@@ -4,6 +4,39 @@ Notes from each phase. Newest entries at the top.
 
 ---
 
+## Phase 4: Update Spaces Model with Persistence ✅ COMPLETE
+
+**Date:** 2025-01-14
+**Tasks Completed:** 5/5
+
+### What Was Done
+
+- Added `withConnectHook` import to `src/domain/spaces/spaces.model.ts`
+- Added `persistEntityArray` import from `@/lib/storage-serializers`
+- Restructured spaces model to ensure `loadSpaces` is defined before atom extensions:
+  - `spacesAtom` declared at top (needed for early reference in `getSpaceById`)
+  - `loadSpaces` action defined after helper functions
+  - Extensions applied after both atom and action are available
+- Extended `spacesAtom` with:
+  - `.extend(persistEntityArray<Space>('spaces'))` for IndexedDB persistence
+  - `.extend(withConnectHook(() => { loadSpaces() }))` for lifecycle loading
+- Verified TypeScript compilation with `bun run tsc --noEmit`
+
+### Key Design Points
+
+1. **withConnectHook pattern**: Wraps async action in arrow function since lifecycle hooks don't support returning promises
+2. **Dual declaration**: `spacesAtom` declared early for reference, extended later after dependencies available
+3. **CRUD actions unchanged**: All create/update/delete/reorder actions continue to work as-is
+4. **Auto-persistence**: Any `spacesAtom.set()` call automatically persists to IndexedDB via `persistEntityArray`
+
+### Success Criteria Met
+
+✅ TypeScript compilation succeeds (`bun run tsc --noEmit` exits with code 0)
+✅ `spacesAtom` has `.extend(persistEntityArray(...))` and `.extend(withConnectHook(...))`
+✅ `loadSpaces` action is defined before atom extensions
+
+---
+
 ## Phase 3: Create Serialization Helper for Atom Arrays ✅ COMPLETE
 
 **Date:** 2025-01-14
