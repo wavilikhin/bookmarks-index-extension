@@ -140,18 +140,10 @@ export const GroupTabs = reatomComponent<GroupTabsProps>(
     // Show skeleton loading state
     if (loading) {
       return (
-        <div className={cn('flex items-center justify-between', widthClasses, className)}>
-          <GroupTabSkeletonList count={3} />
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onAddGroup}
-            disabled={true}
-            className="gap-1.5 text-muted-foreground hover:text-foreground"
-          >
-            <Plus className="size-3.5" />
-            Add Group
-          </Button>
+        <div className={cn('relative', widthClasses, className)}>
+          <div className="flex items-center gap-1">
+            <GroupTabSkeletonList count={2} />
+          </div>
         </div>
       )
     }

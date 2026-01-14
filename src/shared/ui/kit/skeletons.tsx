@@ -70,7 +70,7 @@ interface GroupTabSkeletonListProps {
   count?: number
 }
 
-export function GroupTabSkeletonList({ count = 3 }: GroupTabSkeletonListProps) {
+export function GroupTabSkeletonList({ count = 2 }: GroupTabSkeletonListProps) {
   return (
     <div className="flex items-center gap-1">
       {Array.from({ length: count }).map((_, i) => (
@@ -107,7 +107,7 @@ interface BookmarkSkeletonGridProps {
   count?: number
 }
 
-export function BookmarkSkeletonGrid({ count = 6 }: BookmarkSkeletonGridProps) {
+export function BookmarkSkeletonGrid({ count = 3 }: BookmarkSkeletonGridProps) {
   return (
     <div className="flex w-full flex-col items-center pt-[25vh]">
       {/* Group tabs skeleton - matches GroupTabs width */}
@@ -117,7 +117,7 @@ export function BookmarkSkeletonGrid({ count = 6 }: BookmarkSkeletonGridProps) {
           'w-[304px] sm:w-[408px] md:w-[512px] lg:w-[616px] xl:w-[824px]'
         )}
       >
-        <GroupTabSkeletonList count={3} />
+        <GroupTabSkeletonList count={2} />
       </div>
       {/* Bookmark grid skeleton */}
       <div className={cn('grid gap-2', 'grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8')}>
